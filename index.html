@@ -19,7 +19,6 @@
       }
 
       try{
-        // One-time privacy purge: remove old downloaded student/program snapshots and old COMPASS caches.
         const purgeKey='compass-student-purge-20261009';
         if(localStorage.getItem(purgeKey)!=='done'){
           try{indexedDB.deleteDatabase('compass-offline-v1')}catch(e){}
@@ -32,26 +31,29 @@
           localStorage.setItem(purgeKey,'done');
         }
 
-        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=student-purge-20261009',{cache:'no-store'});
+        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=auth-refresh-20261009',{cache:'no-store'});
         if(!response.ok) throw new Error('Unable to load COMPASS application');
         let html=await response.text();
 
-        // "My Caseload" is personal even for platform admins.
         html=html.replaceAll(
           "let rows=[...state.caseloadRows];if(!isAdmin()){const mine=rows.filter(r=>r.provider_user_id===state.user.id);if(mine.length)rows=mine}",
           "let rows=[...state.caseloadRows].filter(r=>r.provider_user_id===state.user.id);"
         );
 
-        // An empty caseload must remain empty. Never substitute the student directory.
         html=html.replaceAll(
           "state.caseloadStudents=list.length?list:(isAdmin()?[...state.students]:[]);",
           "state.caseloadStudents=list;"
         );
 
-        // Program assignment from the caseload flow must not fall back to the full directory.
         html=html.replaceAll(
           "const students=state.caseloadStudents.length?state.caseloadStudents:state.students",
           "const students=state.caseloadStudents"
+        );
+
+        // Ensure privileged student creation is sent with a fresh Supabase access token.
+        html=html.replaceAll(
+          "$('createStudentForm').addEventListener('submit',async e=>{e.preventDefault();const row=",
+          "$('createStudentForm').addEventListener('submit',async e=>{e.preventDefault();const {data:refreshData,error:refreshError}=await sb.auth.refreshSession();if(refreshError||!refreshData?.session?.user){toast('Your COMPASS sign-in session expired. Sign in again before adding a student.','error');return}state.user=refreshData.session.user;const {data:roleCheck,error:roleError}=await sb.from('profiles').select('role,active').eq('id',state.user.id).maybeSingle();if(roleError||!roleCheck?.active||!['platform_admin','district_admin','school_admin'].includes(roleCheck.role)){toast('This signed-in account does not have permission to add students.','error');return}const row="
         );
 
         document.open();
