@@ -19,12 +19,24 @@
       }
 
       try{
-        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=caseload-fix-20261009b',{cache:'no-store'});
+        // One-time privacy purge: remove old downloaded student/program snapshots and old COMPASS caches.
+        const purgeKey='compass-student-purge-20261009';
+        if(localStorage.getItem(purgeKey)!=='done'){
+          try{indexedDB.deleteDatabase('compass-offline-v1')}catch(e){}
+          if('caches' in window){
+            try{
+              const keys=await caches.keys();
+              await Promise.all(keys.filter(k=>k.startsWith('compass-shell-')).map(k=>caches.delete(k)));
+            }catch(e){}
+          }
+          localStorage.setItem(purgeKey,'done');
+        }
+
+        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=student-purge-20261009',{cache:'no-store'});
         if(!response.ok) throw new Error('Unable to load COMPASS application');
         let html=await response.text();
 
         // "My Caseload" is personal even for platform admins.
-        // Only active provider_caseloads rows belonging to the signed-in user populate this page.
         html=html.replaceAll(
           "let rows=[...state.caseloadRows];if(!isAdmin()){const mine=rows.filter(r=>r.provider_user_id===state.user.id);if(mine.length)rows=mine}",
           "let rows=[...state.caseloadRows].filter(r=>r.provider_user_id===state.user.id);"
