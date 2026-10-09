@@ -1,0 +1,10 @@
+{
+  "name": "COMPASS Student Support",
+  "short_name": "COMPASS",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f7fb",
+  "theme_color": "#10396c",
+  "description": "COMPASS Student Support with offline student program lists."
+}
