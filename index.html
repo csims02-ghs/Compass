@@ -31,7 +31,7 @@
           localStorage.setItem(purgeKey,'done');
         }
 
-        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=auth-refresh-20261009',{cache:'no-store'});
+        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=edge-create-student-20261009',{cache:'no-store'});
         if(!response.ok) throw new Error('Unable to load COMPASS application');
         let html=await response.text();
 
@@ -50,11 +50,13 @@
           "const students=state.caseloadStudents"
         );
 
-        // Ensure privileged student creation is sent with a fresh Supabase access token.
-        html=html.replaceAll(
-          "$('createStudentForm').addEventListener('submit',async e=>{e.preventDefault();const row=",
-          "$('createStudentForm').addEventListener('submit',async e=>{e.preventDefault();const {data:refreshData,error:refreshError}=await sb.auth.refreshSession();if(refreshError||!refreshData?.session?.user){toast('Your COMPASS sign-in session expired. Sign in again before adding a student.','error');return}state.user=refreshData.session.user;const {data:roleCheck,error:roleError}=await sb.from('profiles').select('role,active').eq('id',state.user.id).maybeSingle();if(roleError||!roleCheck?.active||!['platform_admin','district_admin','school_admin'].includes(roleCheck.role)){toast('This signed-in account does not have permission to add students.','error');return}const row="
-        );
+        const createStart=html.indexOf('function openCreateStudent(){');
+        const createEnd=html.indexOf('function openEditStudent(){',createStart);
+        if(createStart<0||createEnd<0) throw new Error('Create Student handler was not found');
+
+        const createStudentReplacement="function openCreateStudent(){const groups=state.schools.map(s=>'<optgroup label=\"'+esc(s.name)+'\">'+state.classrooms.filter(c=>c.school_id===s.id).map(c=>'<option value=\"'+c.id+'\">'+esc(c.name)+'</option>').join('')+'</optgroup>').join('');openModal('Add Student','<form id=\"createStudentForm\" class=\"form-stack\"><label>Student Display Name / Label<input id=\"newStudentLabel\" required></label><label>Student ID / Code<input id=\"newStudentCode\" required></label><label>Grade Level<input id=\"newStudentGrade\"></label><label>Classroom<select id=\"newStudentClassroom\" required><option value=\"\">Choose classroom…</option>'+groups+'</select></label><label>Enrollment Date<input id=\"newStudentEnrollment\" type=\"date\" value=\"'+todayISO()+'\"></label><button class=\"btn primary\" type=\"submit\">Create Student</button></form>',()=>{$('createStudentForm').addEventListener('submit',async e=>{e.preventDefault();const submit=e.submitter;if(submit){submit.disabled=true;submit.textContent='Creating…'}try{const {data:refreshData,error:refreshError}=await sb.auth.refreshSession();if(refreshError||!refreshData?.session?.access_token){toast('Your COMPASS sign-in session expired. Sign in again before adding a student.','error');return}state.user=refreshData.session.user;const row={display_label:$('newStudentLabel').value.trim(),student_code:$('newStudentCode').value.trim(),grade_level:$('newStudentGrade').value.trim()||null,classroom_id:$('newStudentClassroom').value,enrollment_date:$('newStudentEnrollment').value||null};const {data,error}=await sb.functions.invoke('compass-admin-create-student',{body:row,headers:{Authorization:'Bearer '+refreshData.session.access_token}});if(error||data?.error){let message=data?.error||error?.message||'Student creation failed';try{if(error?.context?.clone){const detail=await error.context.clone().json();message=detail?.error||detail?.message||message}}catch(_){}toast(message,'error');return}const student=data?.student;if(!student?.id){toast('Student creation returned no student record.','error');return}closeModal();toast('Student created.','success');await refreshReferences();openStudent(student.id)}finally{if(submit){submit.disabled=false;submit.textContent='Create Student'}}})})}\n  ";
+
+        html=html.slice(0,createStart)+createStudentReplacement+html.slice(createEnd);
 
         document.open();
         document.write(html);
