@@ -4,17 +4,45 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>COMPASS Student Support</title>
+  <style>body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f2f7fb;color:#10396c;display:grid;place-items:center;min-height:100vh}.loading{font-weight:800}</style>
+</head>
+<body>
+  <div class="loading">Opening COMPASS…</div>
   <script>
-    (function(){
+    (async function(){
       const hash=window.location.hash||'';
       const search=window.location.search||'';
       const recovery=/type=recovery/i.test(hash+search)||/access_token=/i.test(hash);
-      const target=recovery?'./reset.html':'./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html';
-      window.location.replace(target+search+hash);
+      if(recovery){
+        window.location.replace('./reset.html'+search+hash);
+        return;
+      }
+
+      try{
+        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=caseload-fix-20261009',{cache:'no-store'});
+        if(!response.ok) throw new Error('Unable to load COMPASS application');
+        let html=await response.text();
+
+        // My Caseload must always come from active provider_caseloads rows.
+        // Do not fall back to every student merely because an administrator has an empty caseload.
+        html=html.replaceAll(
+          "state.caseloadStudents=list.length?list:(isAdmin()?[...state.students]:[]);",
+          "state.caseloadStudents=list;"
+        );
+
+        // Program assignment from the library should also respect the current caseload.
+        html=html.replaceAll(
+          "const students=state.caseloadStudents.length?state.caseloadStudents:state.students",
+          "const students=state.caseloadStudents"
+        );
+
+        document.open();
+        document.write(html);
+        document.close();
+      }catch(err){
+        document.body.innerHTML='<div style="max-width:620px;padding:28px"><h1>COMPASS could not open</h1><p>'+String(err.message||err)+'</p><button onclick="location.reload()">Retry</button></div>';
+      }
     })();
   </script>
-</head>
-<body>
-  <p>Opening COMPASS…</p>
 </body>
 </html>
