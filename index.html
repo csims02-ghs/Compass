@@ -19,18 +19,24 @@
       }
 
       try{
-        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=caseload-fix-20261009',{cache:'no-store'});
+        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=caseload-fix-20261009b',{cache:'no-store'});
         if(!response.ok) throw new Error('Unable to load COMPASS application');
         let html=await response.text();
 
-        // My Caseload must always come from active provider_caseloads rows.
-        // Do not fall back to every student merely because an administrator has an empty caseload.
+        // "My Caseload" is personal even for platform admins.
+        // Only active provider_caseloads rows belonging to the signed-in user populate this page.
+        html=html.replaceAll(
+          "let rows=[...state.caseloadRows];if(!isAdmin()){const mine=rows.filter(r=>r.provider_user_id===state.user.id);if(mine.length)rows=mine}",
+          "let rows=[...state.caseloadRows].filter(r=>r.provider_user_id===state.user.id);"
+        );
+
+        // An empty caseload must remain empty. Never substitute the student directory.
         html=html.replaceAll(
           "state.caseloadStudents=list.length?list:(isAdmin()?[...state.students]:[]);",
           "state.caseloadStudents=list;"
         );
 
-        // Program assignment from the library should also respect the current caseload.
+        // Program assignment from the caseload flow must not fall back to the full directory.
         html=html.replaceAll(
           "const students=state.caseloadStudents.length?state.caseloadStudents:state.students",
           "const students=state.caseloadStudents"
