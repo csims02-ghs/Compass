@@ -31,7 +31,7 @@
           localStorage.setItem(purgeKey,'done');
         }
 
-        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=edge-create-student-20261009',{cache:'no-store'});
+        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=program-editor-20261009',{cache:'no-store'});
         if(!response.ok) throw new Error('Unable to load COMPASS application');
         let html=await response.text();
 
@@ -57,6 +57,158 @@
         const createStudentReplacement="function openCreateStudent(){const groups=state.schools.map(s=>'<optgroup label=\"'+esc(s.name)+'\">'+state.classrooms.filter(c=>c.school_id===s.id).map(c=>'<option value=\"'+c.id+'\">'+esc(c.name)+'</option>').join('')+'</optgroup>').join('');openModal('Add Student','<form id=\"createStudentForm\" class=\"form-stack\"><label>Student Display Name / Label<input id=\"newStudentLabel\" required></label><label>Student ID / Code<input id=\"newStudentCode\" required></label><label>Grade Level<input id=\"newStudentGrade\"></label><label>Classroom<select id=\"newStudentClassroom\" required><option value=\"\">Choose classroom…</option>'+groups+'</select></label><label>Enrollment Date<input id=\"newStudentEnrollment\" type=\"date\" value=\"'+todayISO()+'\"></label><button class=\"btn primary\" type=\"submit\">Create Student</button></form>',()=>{$('createStudentForm').addEventListener('submit',async e=>{e.preventDefault();const submit=e.submitter;if(submit){submit.disabled=true;submit.textContent='Creating…'}try{const {data:refreshData,error:refreshError}=await sb.auth.refreshSession();if(refreshError||!refreshData?.session?.access_token){toast('Your COMPASS sign-in session expired. Sign in again before adding a student.','error');return}state.user=refreshData.session.user;const row={display_label:$('newStudentLabel').value.trim(),student_code:$('newStudentCode').value.trim(),grade_level:$('newStudentGrade').value.trim()||null,classroom_id:$('newStudentClassroom').value,enrollment_date:$('newStudentEnrollment').value||null};const {data,error}=await sb.functions.invoke('compass-admin-create-student',{body:row,headers:{Authorization:'Bearer '+refreshData.session.access_token}});if(error||data?.error){let message=data?.error||error?.message||'Student creation failed';try{if(error?.context?.clone){const detail=await error.context.clone().json();message=detail?.error||detail?.message||message}}catch(_){}toast(message,'error');return}const student=data?.student;if(!student?.id){toast('Student creation returned no student record.','error');return}closeModal();toast('Student created.','success');await refreshReferences();openStudent(student.id)}finally{if(submit){submit.disabled=false;submit.textContent='Create Student'}}})})}\n  ";
 
         html=html.slice(0,createStart)+createStudentReplacement+html.slice(createEnd);
+
+        const oldAssignedPrograms=`<article class="card panel"><div class="panel-head"><h2>Assigned Programs</h2><button class="btn primary small" data-action="assign-program" type="button">+ Assign Program</button></div><div class="table-scroll tall"><table><thead><tr><th>Program</th><th>Domain</th><th>IEP Goal</th><th>Status</th><th>Goal %</th><th>Order</th><th>Action</th></tr></thead><tbody id="studentProgramsBody"></tbody></table></div></article>`;
+        const newAssignedPrograms=`<article class="card panel assigned-programs-panel"><div class="panel-head assigned-programs-head"><h2>Assigned Programs</h2><div class="button-row program-admin-actions"><button class="btn small" data-action="edit-programs" type="button">Edit Programs</button><button class="btn primary small assign-program-compact" data-action="assign-program" type="button">+ Assign Program</button></div></div><div class="programs-table-wrap"><table class="programs-table"><thead><tr><th>Program</th><th>Domain</th><th>IEP Goal</th><th>Status</th><th>Goal %</th><th>Order</th><th>Action</th></tr></thead><tbody id="studentProgramsBody"></tbody></table></div></article>`;
+        if(!html.includes(oldAssignedPrograms)) throw new Error('Assigned Programs panel was not found');
+        html=html.replace(oldAssignedPrograms,newAssignedPrograms);
+
+        const compactCss=`
+<style id="compass-program-editor-css">
+.assign-program-compact{padding:7px 11px!important;font-size:13px!important;border-radius:9px!important}
+.program-admin-actions{gap:8px!important}
+.assigned-programs-head{align-items:center!important}
+.programs-table-wrap{width:100%;overflow-x:hidden}
+.programs-table{table-layout:fixed;width:100%}
+.programs-table th,.programs-table td{overflow:hidden;text-overflow:ellipsis}
+.programs-table th:nth-child(1),.programs-table td:nth-child(1){width:22%}
+.programs-table th:nth-child(2),.programs-table td:nth-child(2){width:18%}
+.programs-table th:nth-child(3),.programs-table td:nth-child(3){width:18%}
+.programs-table th:nth-child(4),.programs-table td:nth-child(4){width:15%}
+.programs-table th:nth-child(5),.programs-table td:nth-child(5){width:10%}
+.programs-table th:nth-child(6),.programs-table td:nth-child(6){width:7%}
+.programs-table th:nth-child(7),.programs-table td:nth-child(7){width:10%}
+.programs-table select,.programs-table input{max-width:100%;min-width:0}
+.assign-program-modal{width:min(540px,calc(100vw - 28px))!important}
+.assign-program-modal .modal-body{overflow-y:auto!important;overflow-x:hidden!important;padding:18px 20px!important}
+.assign-program-form{gap:10px!important}
+.assign-program-form label{gap:4px!important}
+.assign-program-form select,.assign-program-form input{width:100%!important;max-width:100%!important;min-width:0!important;padding:9px 11px!important;font-size:14px!important}
+.assign-program-form .two-col{grid-template-columns:1fr 1fr!important;gap:10px!important}
+.assign-program-submit{width:auto!important;justify-self:start!important;padding:8px 15px!important;font-size:13px!important;border-radius:9px!important}
+.edit-programs-modal{width:min(720px,calc(100vw - 28px))!important}
+.edit-programs-modal .modal-body{overflow-x:hidden!important}
+.program-edit-list{display:grid;gap:8px}
+.program-edit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff}
+.program-edit-row strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.program-edit-row small{display:block;color:var(--muted);margin-top:3px}
+.program-edit-actions{display:flex;gap:6px;align-items:center}
+.program-edit-actions .btn{padding:7px 9px!important;font-size:12px!important}
+.program-edit-actions .move-btn{min-width:34px}
+.program-edit-note{font-size:12px;color:var(--muted);margin-top:12px}
+@media(max-width:760px){
+  .assign-program-form .two-col{grid-template-columns:1fr!important}
+  .program-edit-row{grid-template-columns:1fr}
+  .program-edit-actions{justify-content:flex-start}
+  .programs-table th:nth-child(2),.programs-table td:nth-child(2),
+  .programs-table th:nth-child(3),.programs-table td:nth-child(3),
+  .programs-table th:nth-child(6),.programs-table td:nth-child(6){display:none}
+  .programs-table th:nth-child(1),.programs-table td:nth-child(1){width:35%}
+  .programs-table th:nth-child(4),.programs-table td:nth-child(4){width:25%}
+  .programs-table th:nth-child(5),.programs-table td:nth-child(5){width:18%}
+  .programs-table th:nth-child(7),.programs-table td:nth-child(7){width:22%}
+}
+</style>`;
+        html=html.replace('</head>',compactCss+'</head>');
+
+        const assignStart=html.indexOf("function openAssignProgram(pre=''){");
+        const assignEnd=html.indexOf('function openLibraryAssign(){',assignStart);
+        if(assignStart<0||assignEnd<0) throw new Error('Assign Program handler was not found');
+
+        const assignAndEditReplacement=`function openAssignProgram(pre=''){
+    if(!state.currentStudent){toast('Open a student profile first.','error');return}
+    const assigned=new Set(state.studentPrograms.filter(sp=>['active','hold','mastered'].includes(sp.status)).map(sp=>sp.program_id));
+    const opts=state.programCatalog.filter(p=>p.active!==false&&!assigned.has(p.id)).map(p=>\`<option value="\${p.id}"\${p.id===pre?' selected':''}>\${esc(p.program_name)} · \${esc(programDomain(p))}</option>\`).join('');
+    openModal('Assign COMPASS Program',\`<form id="assignProgramForm" class="form-stack assign-program-form"><label>Program<select id="assignProgramId" required><option value="">Choose from 155 programs…</option>\${opts}</select></label><div class="two-col"><label>Goal %<input id="assignProgramGoal" type="number" min="0" max="100" value="80"></label><label>Trials Per Session<input id="assignProgramTrials" type="number" min="1" max="100"></label></div><button class="btn primary assign-program-submit" type="submit">Assign Program</button></form>\`,()=>{
+      document.querySelector('.modal')?.classList.add('assign-program-modal');
+      $('assignProgramForm').addEventListener('submit',async e=>{
+        e.preventDefault();
+        const pid=$('assignProgramId').value;if(!pid)return;
+        const visible=state.studentPrograms.filter(x=>x.status!=='archived');
+        const max=Math.max(0,...visible.map(x=>Number(x.display_order||0)));
+        const row={student_id:state.currentStudent.id,program_id:pid,assigned_by:state.user.id,status:'active',goal_percentage:Number($('assignProgramGoal').value||80),display_order:max+1,trials_per_session:$('assignProgramTrials').value?Number($('assignProgramTrials').value):null};
+        const {error}=await sb.from('student_compass_programs').insert(row);
+        if(error){toast(error.message,'error');return}
+        closeModal();toast('COMPASS program assigned.');await loadStudentProfile()
+      })
+    })
+  }
+  function activeStudentProgramsOrdered(){
+    return [...state.studentPrograms].filter(sp=>sp.status!=='archived').sort((a,b)=>(Number(a.display_order||0)-Number(b.display_order||0))||String(a.id).localeCompare(String(b.id)))
+  }
+  async function persistProgramOrder(rows){
+    for(let i=0;i<rows.length;i++){
+      const {error}=await sb.from('student_compass_programs').update({display_order:i+1}).eq('id',rows[i].id);
+      if(error)throw error;
+      rows[i].display_order=i+1
+    }
+  }
+  async function moveAssignedProgram(id,direction){
+    const rows=activeStudentProgramsOrdered(),idx=rows.findIndex(x=>x.id===id),next=idx+direction;
+    if(idx<0||next<0||next>=rows.length)return;
+    [rows[idx],rows[next]]=[rows[next],rows[idx]];
+    try{
+      await persistProgramOrder(rows);
+      toast('Program order updated.','success');
+      closeModal();await loadStudentProfile();openEditPrograms()
+    }catch(error){toast(error.message||'Could not update program order.','error')}
+  }
+  async function removeAssignedProgram(id){
+    const sp=state.studentPrograms.find(x=>x.id===id),p=programById(sp?.program_id);
+    if(!sp)return;
+    if(!confirm('Remove '+(p?.program_name||'this program')+' from this student? Past session data will be preserved.'))return;
+    const {error}=await sb.from('student_compass_programs').update({status:'archived'}).eq('id',id);
+    if(error){toast(error.message,'error');return}
+    toast('Program removed from the student. Past data was preserved.','success');
+    closeModal();await loadStudentProfile();openEditPrograms()
+  }
+  function openEditPrograms(){
+    if(!state.currentStudent){toast('Open a student profile first.','error');return}
+    const rows=activeStudentProgramsOrdered();
+    const body=rows.map((sp,i)=>{
+      const p=programById(sp.program_id);
+      return \`<div class="program-edit-row"><div><strong>\${i+1}. \${esc(p?.program_name||'Program')}</strong><small>\${esc(programDomain(p))} · \${esc(roleName(sp.status))} · Goal \${Number(sp.goal_percentage||80)}%</small></div><div class="program-edit-actions"><button class="btn move-btn" type="button" data-move-assigned="\${sp.id}" data-move-dir="-1" \${i===0?'disabled':''} title="Move up">↑</button><button class="btn move-btn" type="button" data-move-assigned="\${sp.id}" data-move-dir="1" \${i===rows.length-1?'disabled':''} title="Move down">↓</button><button class="btn danger" type="button" data-remove-assigned="\${sp.id}">Delete</button></div></div>\`
+    }).join('');
+    openModal('Edit Programs',\`<div id="editProgramsList" class="program-edit-list">\${body||'<div class="empty-state compact">No assigned programs.</div>'}</div><div class="program-edit-note">Use ↑ and ↓ to change the order. Delete removes the program from the student while preserving past session data.</div>\`,()=>{
+      document.querySelector('.modal')?.classList.add('edit-programs-modal');
+      $('editProgramsList')?.addEventListener('click',async e=>{
+        const move=e.target.closest('[data-move-assigned]');
+        if(move){await moveAssignedProgram(move.dataset.moveAssigned,Number(move.dataset.moveDir));return}
+        const remove=e.target.closest('[data-remove-assigned]');
+        if(remove){await removeAssignedProgram(remove.dataset.removeAssigned);return}
+      })
+    })
+  }
+  `;
+
+        html=html.slice(0,assignStart)+assignAndEditReplacement+html.slice(assignEnd);
+
+        const renderStart=html.indexOf('function renderPrograms(){');
+        const renderEnd=html.indexOf('function renderNotes(){',renderStart);
+        if(renderStart<0||renderEnd<0) throw new Error('Program renderer was not found');
+
+        const renderProgramsReplacement=`function renderPrograms(){
+    const b=$('studentProgramsBody');b.innerHTML='';
+    const rows=activeStudentProgramsOrdered();
+    for(const sp of rows){
+      const p=programById(sp.program_id),tr=document.createElement('tr');
+      tr.innerHTML=\`<td><strong>\${esc(p?.program_name||'Program')}</strong></td><td>\${esc(programDomain(p))}</td><td>\${esc(goalForSP(sp.id))}</td><td><select class="control compact" data-program-status="\${sp.id}"><option value="active"\${sp.status==='active'?' selected':''}>Active</option><option value="hold"\${sp.status==='hold'?' selected':''}>On Hold</option><option value="mastered"\${sp.status==='mastered'?' selected':''}>Mastered</option></select></td><td><input class="control compact num" type="number" min="0" max="100" value="\${Number(sp.goal_percentage||80)}" data-program-goal="\${sp.id}"></td><td>\${sp.display_order??0}</td><td><button class="btn primary small" data-run-program="\${sp.id}" \${sp.status!=='active'?'disabled':''}>Run</button></td>\`;
+      b.appendChild(tr)
+    }
+    if(!rows.length)b.innerHTML='<tr><td colspan="7" class="muted">No assigned programs. Use + Assign Program to choose from the 155-program COMPASS library.</td></tr>';
+    $('pAssigned').textContent=rows.length;
+    $('pActive').textContent=rows.filter(x=>x.status==='active').length;
+    $('pMastered').textContent=rows.filter(x=>x.status==='mastered').length;
+    $('pHold').textContent=rows.filter(x=>x.status==='hold').length;
+    $('progressProgramFilter').innerHTML='<option value="">All Programs</option>'+rows.map(sp=>\`<option value="\${sp.id}">\${esc(programById(sp.program_id)?.program_name||'Program')}</option>\`).join('')
+  }
+  `;
+        html=html.slice(0,renderStart)+renderProgramsReplacement+html.slice(renderEnd);
+
+        html=html.replace(
+          "if(ac.dataset.action==='assign-program')openAssignProgram();if(ac.dataset.action==='add-goal')openGoalModal();",
+          "if(ac.dataset.action==='assign-program')openAssignProgram();if(ac.dataset.action==='edit-programs')openEditPrograms();if(ac.dataset.action==='add-goal')openGoalModal();"
+        );
 
         document.open();
         document.write(html);
