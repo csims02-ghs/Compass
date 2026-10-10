@@ -1,11 +1,19 @@
-const CACHE='compass-shell-v9';
-const RELEASE='v20261010-1';
+const CACHE='compass-shell-v10';
+const RELEASE='v20261010-3';
+const FILES=[
+  'part01.txt','part02.txt','part03.txt',
+  'part04a.txt','part04b.txt','part04c.txt',
+  'part05.txt','part06.txt','part07.txt',
+  'part08a.txt','part08b.txt','part08c.txt',
+  'part09a.txt','part09b.txt','part09c.txt',
+  'part10a.txt','part10b.txt'
+];
 const CORE=[
   './',
   './index.html',
   './reset.html',
   './manifest.webmanifest',
-  ...Array.from({length:8},(_,i)=>`./release/${RELEASE}/part${String(i+1).padStart(2,'0')}.txt?release=${RELEASE}`)
+  ...FILES.map(name=>`./release/${RELEASE}/${name}?release=${RELEASE}-calendar`)
 ];
 
 self.addEventListener('install',event=>{
