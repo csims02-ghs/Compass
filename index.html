@@ -5,59 +5,28 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b1727">
   <title>COMPASS</title>
-  <style>
-    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f8fc;color:#10243a}
-    body{display:grid;place-items:center}
-    .card{max-width:560px;margin:24px;padding:28px 30px;border:1px solid #dbe5ef;border-radius:18px;background:#fff;box-shadow:0 12px 38px rgba(13,34,56,.08);text-align:center}
-    .brand{font-weight:800;letter-spacing:.05em;font-size:24px;margin-bottom:8px}
-    .status{font-size:14px;color:#5f7388;line-height:1.5}
-    .error{color:#9f1d20;font-weight:700}
-  </style>
+  <style>html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f8fc;color:#10243a}body{display:grid;place-items:center}.card{max-width:560px;margin:24px;padding:28px 30px;border:1px solid #dbe5ef;border-radius:18px;background:#fff;box-shadow:0 12px 38px rgba(13,34,56,.08);text-align:center}.brand{font-weight:800;letter-spacing:.05em;font-size:24px;margin-bottom:8px}.status{font-size:14px;color:#5f7388;line-height:1.5}.error{color:#9f1d20;font-weight:700}</style>
 </head>
 <body>
-  <main class="card" role="status" aria-live="polite">
-    <div class="brand">COMPASS</div>
-    <div class="status" id="status">Opening the reviewed COMPASS calendar release…</div>
-  </main>
+  <main class="card" role="status" aria-live="polite"><div class="brand">COMPASS</div><div class="status" id="status">Opening COMPASS…</div></main>
 <script>
 (async()=>{
   const VERSION='v20261010-3';
-  const EXPECTED='cf0bda37c623f1599ff73c1a751284946261fa3472b11abe7a4917afe9cd93b0';
-  const FILES=[
-    'part01.txt','part02.txt','part03.txt',
-    'part04a.txt','part04b.txt','part04c.txt',
-    'part05.txt','part06.txt','part07.txt',
-    'part08a.txt','part08b.txt','part08c.txt',
-    'part09a.txt','part09b.txt','part09c.txt',
-    'part10a.txt','part10b.txt'
-  ];
+  const BASE_EXPECTED='cf0bda37c623f1599ff73c1a751284946261fa3472b11abe7a4917afe9cd93b0';
+  const FINAL_EXPECTED='511ee4cc5c5eb23e6e0a3681b7f7ba8bf75d675b50f057b364d27be7ab4b9fbc';
+  const FILES=["part01.txt", "part02.txt", "part03.txt", "part04a.txt", "part04b.txt", "part04c.txt", "part05.txt", "part06.txt", "part07.txt", "part08a.txt", "part08b.txt", "part08c.txt", "part09a.txt", "part09b.txt", "part09c.txt", "part10a.txt", "part10b.txt"];
+  const PATCHES=[["<nav class=\"nav\"><button data-page=\"calendar\">Calendar</button><button data-page=\"settings\">Settings</button></nav>", "<nav class=\"nav\"><button data-page=\"settings\">Settings</button></nav>", "sidebar Calendar"], ["<option value=\"data-collection\">Data Collection</option><option value=\"calendar\">Calendar</option>", "<option value=\"data-collection\">Data Collection</option>", "Browse Calendar"], ["                <button class=\"link-btn schedule-calendar-link\" type=\"button\" data-page=\"calendar\">View full calendar →</button>\n", "", "View full calendar"], ["<button id=\"homeCalendarAddEvent\" class=\"btn primary small\" type=\"button\">+ Add Event</button><button class=\"btn small\" type=\"button\" data-page=\"calendar\">Open Calendar</button>", "<button id=\"homeCalendarAddEvent\" class=\"btn primary small\" type=\"button\">+ Add Event</button>", "Open Calendar"], ["<section id=\"page-calendar\" class=\"page\"><div class=\"content calendar-content\"><div class=\"calendar-head\"><div class=\"calendar-controls\"><button id=\"calendarPrev\" class=\"btn primary\" type=\"button\">‹</button><button id=\"calendarNext\" class=\"btn primary\" type=\"button\">›</button><button id=\"calendarToday\" class=\"btn\" type=\"button\">Today</button></div><h1 id=\"calendarTitle\">Calendar</h1><button id=\"addEventBtn\" class=\"btn primary\" type=\"button\">+ Add Event</button></div><div id=\"calendarGrid\" class=\"calendar-grid\"></div></div></section>", "", "standalone Calendar page"], ["function renderCalendar(){renderCalendarInto('calendarTitle','calendarGrid');renderCalendarInto('homeCalendarTitle','homeCalendarGrid');showTodayInHomeCalendar()}", "function renderCalendar(){renderCalendarInto('homeCalendarTitle','homeCalendarGrid');showTodayInHomeCalendar()}", "calendar renderer"], ["function showPage(name,push=true){if(name==='student-search'||name==='student-directory')name='students';", "function showPage(name,push=true){if(name==='calendar')name='home';if(name==='student-search'||name==='student-directory')name='students';", "Calendar route redirect"], ["$('calendarPrev').addEventListener('click',()=>{state.calendarDate=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth()-1,1);renderCalendar()});$('calendarNext').addEventListener('click',()=>{state.calendarDate=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth()+1,1);renderCalendar()});$('calendarToday').addEventListener('click',()=>{state.calendarDate=new Date();renderCalendar()});$('calendarGrid').addEventListener('dblclick',e=>{const d=e.target.closest('.cal-day');if(d&&!e.target.closest('[data-event-id]'))openEventModal(d.dataset.date)});\n  ", "", "standalone Calendar listeners"], ["$('addEventBtn').addEventListener('click',()=>openEventModal());", "", "standalone Add Event listener"]];
   const status=document.getElementById('status');
   let b64='';
-  for(let i=0;i<FILES.length;i++){
-    const name=FILES[i];
-    status.textContent=`Loading COMPASS ${i+1}/${FILES.length}…`;
-    const r=await fetch(`./release/${VERSION}/${name}?release=${VERSION}-calendar`,{cache:'no-store'});
-    if(!r.ok) throw new Error(`Release file ${name} failed to load (${r.status})`);
-    b64+=(await r.text()).trim();
-  }
-  const binary=atob(b64);
-  const zipped=new Uint8Array(binary.length);
-  for(let i=0;i<binary.length;i++) zipped[i]=binary.charCodeAt(i);
-  if(typeof DecompressionStream!=='function') throw new Error('This browser cannot open the verified COMPASS release. Please update the browser.');
-  const stream=new Blob([zipped]).stream().pipeThrough(new DecompressionStream('gzip'));
-  const bytes=new Uint8Array(await new Response(stream).arrayBuffer());
-  const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
-  const actual=Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('');
-  if(actual!==EXPECTED) throw new Error('COMPASS release integrity check failed. Refresh the page before continuing.');
-  const html=new TextDecoder().decode(bytes);
-  document.open();
-  document.write(html);
-  document.close();
-})().catch(err=>{
-  console.error(err);
-  const status=document.getElementById('status');
-  if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}
-});
+  for(let i=0;i<FILES.length;i++){const name=FILES[i];status.textContent=`Loading COMPASS ${i+1}/${FILES.length}…`;const r=await fetch(`./release/${VERSION}/${name}?release=${VERSION}-calendar-home-only`,{cache:'no-store'});if(!r.ok)throw new Error(`Release file ${name} failed to load (${r.status})`);b64+=(await r.text()).trim();}
+  const binary=atob(b64),zipped=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)zipped[i]=binary.charCodeAt(i);if(typeof DecompressionStream!=='function')throw new Error('This browser cannot open the verified COMPASS release. Please update the browser.');const stream=new Blob([zipped]).stream().pipeThrough(new DecompressionStream('gzip'));const bytes=new Uint8Array(await new Response(stream).arrayBuffer());
+  const hex=async value=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',value)),b=>b.toString(16).padStart(2,'0')).join('');
+  if(await hex(bytes)!==BASE_EXPECTED)throw new Error('COMPASS release integrity check failed. Refresh before continuing.');
+  let html=new TextDecoder().decode(bytes);
+  for(const [from,to,label] of PATCHES){const first=html.indexOf(from);if(first<0||html.indexOf(from,first+from.length)>=0)throw new Error(`COMPASS Home scope check failed: ${label}`);html=html.replace(from,to);}
+  const finalBytes=new TextEncoder().encode(html);if(await hex(finalBytes)!==FINAL_EXPECTED)throw new Error('COMPASS Home-only calendar verification failed. Refresh before continuing.');
+  document.open();document.write(html);document.close();
+})().catch(err=>{console.error(err);const status=document.getElementById('status');if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}});
 </script>
 </body>
 </html>
