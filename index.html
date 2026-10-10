@@ -17,19 +17,27 @@
 <body>
   <main class="card" role="status" aria-live="polite">
     <div class="brand">COMPASS</div>
-    <div class="status" id="status">Opening the reviewed COMPASS release…</div>
+    <div class="status" id="status">Opening the reviewed COMPASS calendar release…</div>
   </main>
 <script>
 (async()=>{
-  const VERSION='v20261010-1';
-  const EXPECTED='fa02d62a89e557ea13cc000d67db7f6c9faa50d9743a623c8667c3daae6ee9ea';
+  const VERSION='v20261010-3';
+  const EXPECTED='cf0bda37c623f1599ff73c1a751284946261fa3472b11abe7a4917afe9cd93b0';
+  const FILES=[
+    'part01.txt','part02.txt','part03.txt',
+    'part04a.txt','part04b.txt','part04c.txt',
+    'part05.txt','part06.txt','part07.txt',
+    'part08a.txt','part08b.txt','part08c.txt',
+    'part09a.txt','part09b.txt','part09c.txt',
+    'part10a.txt','part10b.txt'
+  ];
   const status=document.getElementById('status');
-  const parts=Array.from({length:8},(_,i)=>String(i+1).padStart(2,'0'));
   let b64='';
-  for(const n of parts){
-    status.textContent=`Loading COMPASS ${n}/08…`;
-    const r=await fetch(`./release/${VERSION}/part${n}.txt?release=${VERSION}`,{cache:'no-store'});
-    if(!r.ok) throw new Error(`Release part ${n} failed to load (${r.status})`);
+  for(let i=0;i<FILES.length;i++){
+    const name=FILES[i];
+    status.textContent=`Loading COMPASS ${i+1}/${FILES.length}…`;
+    const r=await fetch(`./release/${VERSION}/${name}?release=${VERSION}-calendar`,{cache:'no-store'});
+    if(!r.ok) throw new Error(`Release file ${name} failed to load (${r.status})`);
     b64+=(await r.text()).trim();
   }
   const binary=atob(b64);
