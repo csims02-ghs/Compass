@@ -1,0 +1,83 @@
+
+    (async function(){
+      const hash=window.location.hash||'';
+      const search=window.location.search||'';
+      const recovery=/type=(recovery|invite)/i.test(hash+search);
+      const authError=/error_description=/.test(hash+search);
+      if(authError){try{sessionStorage.setItem('compassAuthNotice','That email link is invalid or has expired. Request a new link below.')}catch(e){}try{history.replaceState(null,'',location.pathname)}catch(e){}}
+      if(recovery){
+        window.location.replace('./reset.html'+search+hash);
+        return;
+      }
+
+      try{
+        const purgeKey='compass-student-purge-20261009';
+        if(localStorage.getItem(purgeKey)!=='done'){
+          try{indexedDB.deleteDatabase('compass-offline-v1')}catch(e){}
+          if('caches' in window){
+            try{
+              const keys=await caches.keys();
+              await Promise.all(keys.filter(k=>k.startsWith('compass-shell-')).map(k=>caches.delete(k)));
+            }catch(e){}
+          }
+          localStorage.setItem(purgeKey,'done');
+        }
+
+        const response=await fetch('./COMPASS_WITH_OFFLINE_PROGRAM_LISTS.html?app=program-editor-20261009',{cache:'no-store'});
+        if(!response.ok) throw new Error('Unable to load COMPASS application');
+        let html=await response.text();
+        if(!html.includes('id="landing'+'Screen"')) throw new Error('Unable to load COMPASS application');
+        const patch=(label,from,to)=>{if(html.includes(from)){html=html.split(from).join(to);return}if(!html.includes(to))throw new Error(label+' was not found')};
+
+        patch('Caseload filter',
+          "let rows=[...state.caseloadRows];if(!isAdmin()){const mine=rows.filter(r=>r.provider_user_id===state.user.id);if(mine.length)rows=mine}",
+          "let rows=[...state.caseloadRows].filter(r=>r.provider_user_id===state.user.id);"
+        );
+
+        patch('Caseload list',
+          "state.caseloadStudents=list.length?list:(isAdmin()?[...state.students]:[]);",
+          "state.caseloadStudents=list;"
+        );
+
+        patch('Student picker',
+          "const students=state.caseloadStudents.length?state.caseloadStudents:state.students",
+          "const students=state.caseloadStudents"
+        );
+        if(html.includes('const students=state.caseloadStudents.length')) throw new Error('Student picker was not found');
+
+        const createStart=html.indexOf('function openCreateStudent(){');
+        const createEnd=html.indexOf('function openEditStudent(){',createStart);
+        if(createStart<0||createEnd<0) throw new Error('Create Student handler was not found');
+
+        const createStudentReplacement="function openCreateStudent(){const groups=state.schools.map(s=>'<optgroup label=\"'+esc(s.name)+'\">'+state.classrooms.filter(c=>c.school_id===s.id).map(c=>'<option value=\"'+c.id+'\">'+esc(c.name)+'</option>').join('')+'</optgroup>').join('');openModal('Add Student','<form id=\"createStudentForm\" class=\"form-stack\"><label>Student Display Name / Label<input id=\"newStudentLabel\" required></label><label>Student ID / Code<input id=\"newStudentCode\" required></label><label>Grade Level<input id=\"newStudentGrade\"></label><label>Classroom<select id=\"newStudentClassroom\" required><option value=\"\">Choose classroom…</option>'+groups+'</select></label><label>Enrollment Date<input id=\"newStudentEnrollment\" type=\"date\" value=\"'+todayISO()+'\"></label><button class=\"btn primary\" type=\"submit\">Create Student</button></form>',()=>{$('createStudentForm').addEventListener('submit',async e=>{e.preventDefault();const submit=e.submitter;if(submit){submit.disabled=true;submit.textContent='Creating…'}try{const {data:refreshData,error:refreshError}=await sb.auth.refreshSession();if(refreshError||!refreshData?.session?.access_token){toast('Your COMPASS sign-in session expired. Sign in again before adding a student.','error');return}state.user=refreshData.session.user;const row={display_label:$('newStudentLabel').value.trim(),student_code:$('newStudentCode').value.trim(),grade_level:$('newStudentGrade').value.trim()||null,classroom_id:$('newStudentClassroom').value,enrollment_date:$('newStudentEnrollment').value||null};const {data,error}=await sb.functions.invoke('compass-admin-create-student',{body:row,headers:{Authorization:'Bearer '+refreshData.session.access_token}});if(error||data?.error){let message=data?.error||error?.message||'Student creation failed';try{if(error?.context?.clone){const detail=await error.context.clone().json();message=detail?.error||detail?.message||message}}catch(_){}toast(message,'error');return}const student=data?.student;if(!student?.id){toast('Student creation returned no student record.','error');return}closeModal();toast('Student created.','success');await refreshReferences();openStudent(student.id)}finally{if(submit){submit.disabled=false;submit.textContent='Create Student'}}})})}\n  ";
+
+        html=html.slice(0,createStart)+createStudentReplacement+html.slice(createEnd);
+
+        const oldAssignedPrograms=`<article class="card panel"><div class="panel-head"><h2>Assigned Programs</h2><button class="btn primary small" data-action="assign-program" type="button">+ Assign Program</button></div><div class="table-scroll tall"><table><thead><tr><th>Program</th><th>Domain</th><th>IEP Goal</th><th>Status</th><th>Goal %</th><th>Order</th><th>Action</th></tr></thead><tbody id="studentProgramsBody"></tbody></table></div></article>`;
+        const newAssignedPrograms=`<article class="card panel assigned-programs-panel"><div class="panel-head assigned-programs-head"><h2>Assigned Programs</h2><div class="button-row program-admin-actions"><button class="btn small" data-action="edit-programs" type="button">Edit Programs</button><button class="btn primary small assign-program-compact" data-action="assign-program" type="button">+ Assign Program</button></div></div><div class="programs-table-wrap"><table class="programs-table"><thead><tr><th>Program</th><th>Domain</th><th>IEP Goal</th><th>Status</th><th>Goal %</th><th>Order</th><th>Action</th></tr></thead><tbody id="studentProgramsBody"></tbody></table></div></article>`;
+        if(!html.includes(oldAssignedPrograms)) throw new Error('Assigned Programs panel was not found');
+        html=html.replace(oldAssignedPrograms,newAssignedPrograms);
+
+        const compactCss=`
+<style id="compass-program-editor-css">
+.assign-program-compact{padding:7px 11px!important;font-size:13px!important;border-radius:9px!important}
+.program-admin-actions{gap:8px!important}
+.assigned-programs-head{align-items:center!important}
+.programs-table-wrap{width:100%;overflow-x:hidden}
+.programs-table{table-layout:fixed;width:100%}
+.programs-table th,.programs-table td{overflow:hidden;text-overflow:ellipsis}
+.programs-table th:nth-child(1),.programs-table td:nth-child(1){width:22%}
+.programs-table th:nth-child(2),.programs-table td:nth-child(2){width:18%}
+.programs-table th:nth-child(3),.programs-table td:nth-child(3){width:18%}
+.programs-table th:nth-child(4),.programs-table td:nth-child(4){width:15%}
+.programs-table th:nth-child(5),.programs-table td:nth-child(5){width:10%}
+.programs-table th:nth-child(6),.programs-table td:nth-child(6){width:7%}
+.programs-table th:nth-child(7),.programs-table td:nth-child(7){width:10%}
+.programs-table select,.programs-table input{max-width:100%;min-width:0}
+.assign-program-modal{width:min(540px,calc(100vw - 28px))!important}
+.assign-program-modal .modal-body{overflow-y:auto!important;overflow-x:hidden!important;padding:18px 20px!important}
+.assign-program-form{gap:10px!important}
+.assign-program-form label{gap:4px!important}
+.assign-program-form select,.assign-program-form input{width:100%!important;max-width:100%!important;min-width:0!important;padding:9px 11px!important;font-size:14px!important}
+.assign-program-form .two-col{grid-template-columns:1fr 1fr!important;gap:10px!important}
+.assign-program-submit{width:auto!important;justify-self:start!important;padding:8px 15px!important;font-size:13px!important;
