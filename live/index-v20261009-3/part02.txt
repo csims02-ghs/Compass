@@ -1,0 +1,108 @@
+!important;border-radius:9px!important}
+.edit-programs-modal{width:min(720px,calc(100vw - 28px))!important}
+.edit-programs-modal .modal-body{overflow-x:hidden!important}
+.program-edit-list{display:grid;gap:8px}
+.program-edit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff}
+.program-edit-row strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.program-edit-row small{display:block;color:var(--muted);margin-top:3px}
+.program-edit-actions{display:flex;gap:6px;align-items:center}
+.program-edit-actions .btn{padding:7px 9px!important;font-size:12px!important}
+.program-edit-actions .move-btn{min-width:34px}
+.program-edit-note{font-size:12px;color:var(--muted);margin-top:12px}
+@media(min-width:761px) and (max-width:1250px){
+  .programs-table th:nth-child(6),.programs-table td:nth-child(6){display:none}
+  .programs-table th:nth-child(1),.programs-table td:nth-child(1){width:24%}
+  .programs-table th:nth-child(2),.programs-table td:nth-child(2){width:17%}
+  .programs-table th:nth-child(3),.programs-table td:nth-child(3){width:17%}
+  .programs-table th:nth-child(4),.programs-table td:nth-child(4){width:19%}
+  .programs-table th:nth-child(5),.programs-table td:nth-child(5){width:12%}
+  .programs-table th:nth-child(7),.programs-table td:nth-child(7){width:11%}
+  .programs-table th,.programs-table td{padding-left:9px;padding-right:9px}
+  .programs-table select,.programs-table input{padding-left:8px;padding-right:6px;font-size:14px}
+}
+@media(max-width:760px){
+  .assign-program-form .two-col{grid-template-columns:1fr!important}
+  .program-edit-row{grid-template-columns:1fr}
+  .program-edit-actions{justify-content:flex-start}
+  .programs-table th:nth-child(2),.programs-table td:nth-child(2),
+  .programs-table th:nth-child(3),.programs-table td:nth-child(3),
+  .programs-table th:nth-child(6),.programs-table td:nth-child(6){display:none}
+  .programs-table th:nth-child(1),.programs-table td:nth-child(1){width:35%}
+  .programs-table th:nth-child(4),.programs-table td:nth-child(4){width:25%}
+  .programs-table th:nth-child(5),.programs-table td:nth-child(5){width:18%}
+  .programs-table th:nth-child(7),.programs-table td:nth-child(7){width:22%}
+}
+@media screen and (max-width:640px){
+  .programs-table thead{display:none}
+  .programs-table,.programs-table tbody{display:block;width:100%}
+  .programs-table tbody{margin-top:12px;border-top:1px solid var(--line)}
+  .programs-table tr{display:grid;grid-template-columns:minmax(0,1fr) 84px auto;column-gap:10px;row-gap:7px;align-items:end;padding:12px 2px;border-bottom:1px solid var(--line)}
+  .programs-table td{display:block;width:auto!important;padding:0;border:0;overflow:visible}
+  .programs-table td:nth-child(1){grid-column:1/-1}
+  .programs-table td:nth-child(4)::before,.programs-table td:nth-child(5)::before{display:block;font-size:11px;font-weight:800;color:var(--muted);margin-bottom:3px}
+  .programs-table td:nth-child(4)::before{content:"Status"}
+  .programs-table td:nth-child(5)::before{content:"Goal %"}
+  .programs-table select,.programs-table input{width:100%;height:40px}
+  .programs-table td:nth-child(4) select{max-width:240px}
+  .programs-table .btn{min-height:40px}
+}
+</style>`;
+        html=html.replace('</head>',compactCss+'</head>');
+
+        const assignStart=html.indexOf("function openAssignProgram(pre=''){");
+        const assignEnd=html.indexOf('function openLibraryAssign(){',assignStart);
+        if(assignStart<0||assignEnd<0) throw new Error('Assign Program handler was not found');
+
+        const assignAndEditReplacement=`function openAssignProgram(pre=''){
+    if(!state.currentStudent){toast('Open a student profile first.','error');return}
+    const assigned=new Set(state.studentPrograms.filter(sp=>['active','hold','mastered'].includes(sp.status)).map(sp=>sp.program_id));
+    const opts=state.programCatalog.filter(p=>p.active!==false&&!assigned.has(p.id)).map(p=>\`<option value="\${p.id}"\${p.id===pre?' selected':''}>\${esc(p.program_name)} · \${esc(programDomain(p))}</option>\`).join('');
+    openModal('Assign COMPASS Program',\`<form id="assignProgramForm" class="form-stack assign-program-form"><label>Program<select id="assignProgramId" required><option value="">Choose from \${state.programCatalog.length} programs…</option>\${opts}</select></label><div class="two-col"><label>Goal %<input id="assignProgramGoal" type="number" min="0" max="100" value="80"></label><label>Trials Per Session<input id="assignProgramTrials" type="number" min="1" max="100"></label></div><button class="btn primary assign-program-submit" type="submit">Assign Program</button></form>\`,()=>{
+      document.querySelector('.modal')?.classList.add('assign-program-modal');
+      $('assignProgramForm').addEventListener('submit',async e=>{
+        e.preventDefault();
+        const pid=$('assignProgramId').value;if(!pid)return;
+        const visible=state.studentPrograms.filter(x=>x.status!=='archived');
+        const max=Math.max(0,...visible.map(x=>Number(x.display_order||0)));
+        const row={student_id:state.currentStudent.id,program_id:pid,assigned_by:state.user.id,status:'active',goal_percentage:Number($('assignProgramGoal').value||80),display_order:max+1,trials_per_session:$('assignProgramTrials').value?Number($('assignProgramTrials').value):null};
+        const {error}=await sb.from('student_compass_programs').insert(row);
+        if(error){toast(error.message,'error');return}
+        closeModal();toast('COMPASS program assigned.');await loadStudentProfile()
+      })
+    })
+  }
+  function activeStudentProgramsOrdered(){
+    return [...state.studentPrograms].filter(sp=>sp.status!=='archived').sort((a,b)=>(Number(a.display_order||0)-Number(b.display_order||0))||String(a.id).localeCompare(String(b.id)))
+  }
+  async function persistProgramOrder(rows){
+    for(let i=0;i<rows.length;i++){
+      const {error}=await sb.from('student_compass_programs').update({display_order:i+1}).eq('id',rows[i].id);
+      if(error)throw error;
+      rows[i].display_order=i+1
+    }
+  }
+  async function moveAssignedProgram(id,direction){
+    const rows=activeStudentProgramsOrdered(),idx=rows.findIndex(x=>x.id===id),next=idx+direction;
+    if(idx<0||next<0||next>=rows.length)return;
+    [rows[idx],rows[next]]=[rows[next],rows[idx]];
+    try{
+      await persistProgramOrder(rows);
+      toast('Program order updated.','success');
+      closeModal();await loadStudentProfile();openEditPrograms()
+    }catch(error){toast(error.message||'Could not update program order.','error')}
+  }
+  async function removeAssignedProgram(id){
+    const sp=state.studentPrograms.find(x=>x.id===id),p=programById(sp?.program_id);
+    if(!sp)return;
+    if(!confirm('Remove '+(p?.program_name||'this program')+' from this student? Past session data will be preserved.'))return;
+    const {error}=await sb.from('student_compass_programs').update({status:'archived'}).eq('id',id);
+    if(error){toast(error.message,'error');return}
+    toast('Program removed from the student. Past data was preserved.','success');
+    closeModal();await loadStudentProfile();openEditPrograms()
+  }
+  function openEditPrograms(){
+    if(!state.currentStudent){toast('Open a student profile first.','error');return}
+    const rows=activeStudentProgramsOrdered();
+    const body=rows.map((sp,i)=>{
+      const p=programById(sp.program_id);
+      return \`<div class="program-edit-row"><div><strong>\${i+1}. \${esc(p?.program_name||'Program')}</strong><small>\${esc(programDomain(p))} · \${esc(roleName(sp.status))} · Goal \${Number(sp.goal_percentage||80)}%</small></div><div class="program-edit-actions"><button class="btn move-btn" type="button" data-move-assigned="\${sp.id}" data-move-dir="-1" \${i===0?'disabled':''} title="Move up">↑</button><button class="btn move-btn" type="button" data-move-assigned="\${sp.id}" data-move-dir="1" \${i===rows.length-1?'disabled':''} title="Move 
