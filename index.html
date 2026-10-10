@@ -2,27 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>COMPASS Student Support</title>
-  <meta name="description" content="COMPASS Student Support brings student profiles, programs, behavior data, goals and service tracking into one connected workspace for multidisciplinary student support teams.">
-  <meta name="theme-color" content="#10396c">
-  <style>body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f2f7fb;color:#10396c;display:grid;place-items:center;min-height:100vh}.loading{font-weight:800}.error{max-width:620px;padding:28px}</style>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1727">
+  <title>COMPASS</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f8fc;color:#10243a}
+    body{display:grid;place-items:center}
+    .card{max-width:560px;margin:24px;padding:28px 30px;border:1px solid #dbe5ef;border-radius:18px;background:#fff;box-shadow:0 12px 38px rgba(13,34,56,.08);text-align:center}
+    .brand{font-weight:800;letter-spacing:.05em;font-size:24px;margin-bottom:8px}
+    .status{font-size:14px;color:#5f7388;line-height:1.5}
+    .error{color:#9f1d20;font-weight:700}
+  </style>
 </head>
 <body>
-  <div class="loading">Opening COMPASS…</div>
-  <script>
-    (async()=>{
-      const parts=['01','02','03','04','05','06'];
-      let code='';
-      for(const n of parts){
-        const r=await fetch('./live/index-v20261009-3/part'+n+'.txt?v=20261009-3',{cache:'no-store'});
-        if(!r.ok)throw new Error('Unable to load COMPASS launcher');
-        code+=await r.text();
-      }
-      (0,eval)(code);
-    })().catch(err=>{
-      document.body.innerHTML='<div class="error"><h1>COMPASS could not open</h1><p>'+String(err.message||err)+'</p><button onclick="location.reload()">Retry</button></div>';
-    });
-  </script>
+  <main class="card" role="status" aria-live="polite">
+    <div class="brand">COMPASS</div>
+    <div class="status" id="status">Opening the reviewed COMPASS release…</div>
+  </main>
+<script>
+(async()=>{
+  const VERSION='v20261010-1';
+  const EXPECTED='fa02d62a89e557ea13cc000d67db7f6c9faa50d9743a623c8667c3daae6ee9ea';
+  const status=document.getElementById('status');
+  const parts=Array.from({length:8},(_,i)=>String(i+1).padStart(2,'0'));
+  let b64='';
+  for(const n of parts){
+    status.textContent=`Loading COMPASS ${n}/08…`;
+    const r=await fetch(`./release/${VERSION}/part${n}.txt?release=${VERSION}`,{cache:'no-store'});
+    if(!r.ok) throw new Error(`Release part ${n} failed to load (${r.status})`);
+    b64+=(await r.text()).trim();
+  }
+  const binary=atob(b64);
+  const zipped=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) zipped[i]=binary.charCodeAt(i);
+  if(typeof DecompressionStream!=='function') throw new Error('This browser cannot open the verified COMPASS release. Please update the browser.');
+  const stream=new Blob([zipped]).stream().pipeThrough(new DecompressionStream('gzip'));
+  const bytes=new Uint8Array(await new Response(stream).arrayBuffer());
+  const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
+  const actual=Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('');
+  if(actual!==EXPECTED) throw new Error('COMPASS release integrity check failed. Refresh the page before continuing.');
+  const html=new TextDecoder().decode(bytes);
+  document.open();
+  document.write(html);
+  document.close();
+})().catch(err=>{
+  console.error(err);
+  const status=document.getElementById('status');
+  if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}
+});
+</script>
 </body>
 </html>
