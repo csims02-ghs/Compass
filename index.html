@@ -31,7 +31,7 @@
   for(let i=0;i<FILES.length;i++){
     const name=FILES[i];
     status.textContent=`Loading COMPASS ${i+1}/${FILES.length}…`;
-    const r=await fetch(`./release/${VERSION}/${name}?release=${VERSION}-calendar-home-only-v3`,{cache:'no-store'});
+    const r=await fetch(`./release/${VERSION}/${name}?release=${VERSION}-calendar-home-only-v4`,{cache:'no-store'});
     if(!r.ok)throw new Error(`Release file ${name} failed to load (${r.status})`);
     b64+=(await r.text()).trim();
   }
@@ -49,13 +49,15 @@
     html=html.replace(from,to);
   }
   const scopeStyle='<style id="compass-home-only-calendar-scope">#page-home:not(.active) .home-schedule-card,#page-home:not(.active) .home-calendar-card,body:not(.compass-home-active) .home-schedule-card,body:not(.compass-home-active) .home-calendar-card{display:none!important}</style>';
+  const caseloadScript='<script id="compass-single-caseload-fix">(function(){const norm=e=>(e.textContent||\"\").replace(/\\s+/g,\" \" ).trim();function hideDuplicateCaseload(){const active=document.querySelector(\".page.active\");const nav=document.querySelector(\".nav button.active\");const route=((location.hash||\"\")+\" \"+(active?active.id:\"\")+\" \"+(nav&&nav.dataset?nav.dataset.page||\"\":\"\")).toLowerCase();if(!route.includes(\"caseload\"))return;const links=[...document.querySelectorAll(\"a,button\")].filter(el=>/^view all students\\b/i.test(norm(el)));for(const link of links){const ownerPage=link.closest(\".page\");if(ownerPage&&ownerPage.id===\"page-home\")continue;if(ownerPage&&active&&ownerPage!==active)continue;let node=link.parentElement;while(node&&node!==document.body&&node!==active){const headings=[...node.querySelectorAll(\"h1,h2,h3,h4\")];const hasTitle=headings.some(h=>norm(h).toUpperCase()===\"MY CASELOAD\");const openCount=[...node.querySelectorAll(\"a,button\")].filter(el=>/^open profile\\b/i.test(norm(el))).length;if(hasTitle&&openCount>0){node.setAttribute(\"data-compass-duplicate-caseload\",\"hidden\");node.style.setProperty(\"display\",\"none\",\"important\");return;}node=node.parentElement;}}}function queue(){requestAnimationFrame(hideDuplicateCaseload);setTimeout(hideDuplicateCaseload,80);}if(document.readyState===\"loading\")document.addEventListener(\"DOMContentLoaded\",queue,{once:true});else queue();addEventListener(\"hashchange\",queue);new MutationObserver(m=>{if(m.some(x=>x.type===\"attributes\"&&x.attributeName===\"class\"))queue();}).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:[\"class\"]});})();</scr'+'ipt>';
   const headClose=html.indexOf('</head>');
   if(headClose<0)throw new Error('COMPASS Home scope check failed: document head');
-  html=html.slice(0,headClose)+scopeStyle+html.slice(headClose);
+  html=html.slice(0,headClose)+scopeStyle+caseloadScript+html.slice(headClose);
   if(html.includes('id="page-calendar"'))throw new Error('COMPASS Home scope check failed: Calendar page still present');
   if(!html.includes('page.hidden=!active'))throw new Error('COMPASS Home scope check failed: inactive pages are not hidden');
   if(!html.includes("document.body.classList.toggle('compass-home-active',name==='home')"))throw new Error('COMPASS Home scope check failed: Home state');
   if(!html.includes('id="compass-home-only-calendar-scope"'))throw new Error('COMPASS Home scope check failed: Home-only calendar CSS');
+  if(!html.includes('id="compass-single-caseload-fix"'))throw new Error('COMPASS caseload check failed: single caseload rule');
   document.open();document.write(html);document.close();
 })().catch(err=>{console.error(err);const status=document.getElementById('status');if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}});
 </script>
