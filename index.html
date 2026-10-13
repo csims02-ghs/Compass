@@ -48,6 +48,56 @@
     if(first<0||html.indexOf(from,first+from.length)>=0)throw new Error(`COMPASS page-scope check failed: ${label}`);
     html=html.replace(from,to);
   }
+  // COMPASS IEP goal persistence v1
+  const profileLoadStart=html.indexOf('async function loadStudentProfile(){');
+  const profileLoadEnd=html.indexOf('async function loadTeam()',profileLoadStart);
+  if(profileLoadStart<0||profileLoadEnd<0)throw new Error('COMPASS IEP goal persistence check failed: profile loader not found');
+  const profileLoadReplacement=`let studentProfileLoadSeq=0;
+  async function loadStudentProfile(){
+    const s=state.currentStudent;if(!s)return;
+    const sid=s.id,seq=++studentProfileLoadSeq;
+    const priorPrograms=(Array.isArray(state.studentPrograms)?state.studentPrograms:[]).filter(x=>x.student_id===sid);
+    const priorGoals=(Array.isArray(state.goals)?state.goals:[]).filter(x=>x.student_id===sid);
+    const priorNotes=(Array.isArray(state.notes)?state.notes:[]).filter(x=>x.student_id===sid);
+    const priorDocs=(Array.isArray(state.documents)?state.documents:[]).filter(x=>x.student_id===sid);
+    const priorAssessments=(Array.isArray(state.assessments)?state.assessments:[]).filter(x=>x.student_id===sid);
+    const priorServices=(Array.isArray(state.services)?state.services:[]).filter(x=>x.student_id===sid);
+    const priorLogs=(Array.isArray(state.serviceLogs)?state.serviceLogs:[]).filter(x=>x.student_id===sid);
+    const grab=async fn=>{try{return await fn()}catch(error){return{data:null,error}}};
+    const take=(r,prior,label)=>{if(r&&r.error){console.warn('COMPASS profile reload failed: '+label,r.error);return prior}return Array.isArray(r?.data)?r.data:prior};
+    const [programRes,goalRes,noteRes,docRes,assessmentRes,serviceRes,logRes]=await Promise.all([
+      grab(()=>sb.from('student_compass_programs').select('*').eq('student_id',sid).order('display_order')),
+      grab(()=>sb.from('student_iep_goals').select('*').eq('student_id',sid).order('created_at',{ascending:false})),
+      grab(()=>sb.from('student_notes').select('*').eq('student_id',sid).order('note_date',{ascending:false}).order('created_at',{ascending:false})),
+      grab(()=>sb.from('student_documents').select('*').eq('student_id',sid).order('created_at',{ascending:false})),
+      grab(()=>sb.from('student_assessments').select('*').eq('student_id',sid).order('updated_at',{ascending:false})),
+      grab(()=>sb.from('student_service_requirements').select('*').eq('student_id',sid).eq('active',true).order('service_name')),
+      grab(()=>sb.from('service_delivery_logs').select('*').eq('student_id',sid).order('service_date',{ascending:false}).limit(100))
+    ]);
+    if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
+    const programs=take(programRes,priorPrograms,'programs'),goals=take(goalRes,priorGoals,'IEP goals'),notes=take(noteRes,priorNotes,'notes'),docs=take(docRes,priorDocs,'documents'),assessments=take(assessmentRes,priorAssessments,'assessments'),services=take(serviceRes,priorServices,'services'),logs=take(logRes,priorLogs,'service logs');
+    Object.assign(state,{studentPrograms:programs,goals,notes,documents:docs,assessments,services,serviceLogs:logs});
+    const ids=programs.map(x=>x.id),programIdSet=new Set(ids),priorSessions=(Array.isArray(state.sessions)?state.sessions:[]).filter(x=>programIdSet.has(x.student_compass_program_id));
+    const sessionRes=ids.length?await grab(()=>sb.from('compass_program_sessions').select('*').in('student_compass_program_id',ids).order('session_date').order('created_at')):{data:[],error:null};
+    if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
+    state.sessions=take(sessionRes,priorSessions,'sessions');
+    const gids=goals.map(x=>x.id),goalIdSet=new Set(gids),priorLinks=(Array.isArray(state.goalLinks)?state.goalLinks:[]).filter(x=>goalIdSet.has(x.goal_id));
+    const linkRes=gids.length?await grab(()=>sb.from('student_iep_goal_compass_programs').select('*').in('goal_id',gids)):{data:[],error:null};
+    if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
+    state.goalLinks=take(linkRes,priorLinks,'IEP goal links');
+    await loadTeam();
+    if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
+    renderStudentProfile();
+    await loadProgramLists();
+  }
+  `;
+  html=html.slice(0,profileLoadStart)+profileLoadReplacement+html.slice(profileLoadEnd);
+
+  const oldGoalSave=`let id=goal?.id;if(id){const {error}=await sb.from('student_iep_goals').update(payload).eq('id',id);if(error){toast(error.message,'error');return}const {error:de}=await sb.from('student_iep_goal_compass_programs').delete().eq('goal_id',id);if(de){toast(de.message,'error');return}}else{const {data,error}=await sb.from('student_iep_goals').insert(payload).select('id').single();if(error){toast(error.message,'error');return}id=data.id}const sel=qsa('input[name="goalProgram"]:checked',$('goalForm')).map(x=>x.value);if(sel.length){const {error}=await sb.from('student_iep_goal_compass_programs').insert(sel.map(sp=>({goal_id:id,student_compass_program_id:sp})));if(error){toast(error.message,'error');return}}closeModal();toast('IEP goal saved.');await loadStudentProfile();await loadGlobalData()`;
+  const newGoalSave=`let id=goal?.id,savedGoal=null;if(id){const {data,error}=await sb.from('student_iep_goals').update(payload).eq('id',id).select('*').single();if(error){toast(error.message,'error');return}savedGoal=data;const {error:de}=await sb.from('student_iep_goal_compass_programs').delete().eq('goal_id',id);if(de){toast(de.message,'error');return}}else{const {data,error}=await sb.from('student_iep_goals').insert(payload).select('*').single();if(error){toast(error.message,'error');return}savedGoal=data;id=data.id}const sel=qsa('input[name="goalProgram"]:checked',$('goalForm')).map(x=>x.value),linkRows=sel.map(sp=>({goal_id:id,student_compass_program_id:sp}));if(linkRows.length){const {error}=await sb.from('student_iep_goal_compass_programs').insert(linkRows);if(error){toast(error.message,'error');return}}closeModal();if(savedGoal&&state.currentStudent?.id===payload.student_id){state.goals=[savedGoal,...(Array.isArray(state.goals)?state.goals:[]).filter(g=>g.id!==id&&g.student_id===payload.student_id)].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));state.goalLinks=[...(Array.isArray(state.goalLinks)?state.goalLinks:[]).filter(l=>l.goal_id!==id),...linkRows];renderStudentProfile()}toast('IEP goal saved.');await loadStudentProfile();if(savedGoal&&state.currentStudent?.id===payload.student_id&&!state.goals.some(g=>g.id===id)){state.goals=[savedGoal,...state.goals.filter(g=>g.id!==id)];state.goalLinks=[...state.goalLinks.filter(l=>l.goal_id!==id),...linkRows];renderStudentProfile()}await loadGlobalData()`;
+  if(html.split(oldGoalSave).length!==2)throw new Error('COMPASS IEP goal persistence check failed: goal save handler not found exactly once');
+  html=html.replace(oldGoalSave,newGoalSave);
+
   const listFnStart=html.indexOf('function openCreateProgramList(list=null){');
   const listFnEnd=html.indexOf('async function archiveProgramList',listFnStart);
   if(listFnStart<0||listFnEnd<0)throw new Error('COMPASS program-list picker check failed: handler not found');
