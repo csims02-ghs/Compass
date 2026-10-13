@@ -6,18 +6,41 @@
 <meta name="theme-color" content="#17365d">
 <title>COMPASS Student Program Hub</title>
 <style>
-:root{--navy:#17365d;--blue:#1677ff;--bg:#eef4fa;--card:#fff;--line:#dbe6f2;--muted:#64748b;--green:#15803d}
-*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--navy)}
-body{overflow:hidden}.app{height:100dvh;display:grid;grid-template-columns:minmax(260px,330px) 1fr;min-width:0}
-aside{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;min-height:0}
-.brand{padding:18px 18px 14px;border-bottom:1px solid var(--line)}.brand h1{font-size:24px;margin:0}.brand .sub{color:var(--muted);font-size:13px;margin-top:4px}
+:root{--navy:#17365d;--blue:#1677ff;--bg:#eef4fa;--card:#fff;--line:#dbe6f2;--muted:#64748b;--green:#15803d;--danger:#b42318}
+*{box-sizing:border-box}
+html{margin:0;min-height:100%;background:var(--bg);scroll-behavior:smooth}
+body{margin:0;min-height:100dvh;height:auto;overflow-y:auto;overflow-x:hidden;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--navy)}
+.app{min-height:100dvh;height:auto;display:grid;grid-template-columns:minmax(270px,340px) minmax(0,1fr);align-items:start;min-width:0}
+aside{position:sticky;top:0;height:100dvh;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0;min-height:0;z-index:4}
+.brand{padding:18px 18px 14px;border-bottom:1px solid var(--line)}
+.brand h1{font-size:24px;margin:0}.brand .sub{color:var(--muted);font-size:13px;margin-top:4px}
 .student{margin:14px;border:1px solid var(--line);border-radius:12px;background:#f8fbff;padding:12px}.student strong{display:block;font-size:16px}.student small{display:block;color:var(--muted);margin-top:5px;line-height:1.35}
 .behaviors{margin-top:9px;display:flex;flex-wrap:wrap;gap:5px}.pill{font-size:11px;padding:4px 7px;border-radius:999px;background:#eaf3ff;border:1px solid #c8dcf0;color:#265880}
 .search-wrap{padding:0 14px 10px}.search{width:100%;padding:10px 11px;border:1px solid #cfddea;border-radius:9px;background:#f8fbff;color:var(--navy);font:inherit}
-.list{padding:0 10px 14px;overflow:auto;min-height:0}.program{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) 20px;align-items:center;gap:9px;padding:10px 9px;margin:0 0 6px;border:1px solid transparent;border-radius:10px;background:#fff;color:var(--navy);text-align:left;cursor:pointer}.program:hover{background:#f4f8fd;border-color:#d6e4f2}.program.active{background:#eaf4ff;border-color:#8fc0f4}.program .num{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:#eef4fa;color:#42627f;font-weight:800;font-size:12px}.program.active .num{background:#1677ff;color:#fff}.program strong{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.program small{display:block;color:var(--muted);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.program .arrow{font-size:22px;color:#6f8aa5}
-main{min-width:0;min-height:0;display:flex;flex-direction:column}.topbar{height:72px;flex:0 0 72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px}.title{min-width:0}.title h2{margin:0;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.title p{margin:3px 0 0;color:var(--muted);font-size:12px}.actions{display:flex;gap:8px;align-items:center}.btn{border:1px solid #bcd0e6;background:#fff;color:#145ea8;border-radius:9px;padding:10px 13px;font-weight:800;cursor:pointer}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}
-.runner-wrap{flex:1 1 auto;min-height:0;position:relative;background:#fff}.runner{width:100%;height:100%;border:0;background:#fff;display:block}.empty{height:100%;display:grid;place-items:center;text-align:center;padding:30px;color:var(--muted)}.empty strong{display:block;color:var(--navy);font-size:22px;margin-bottom:6px}.status{padding:9px 16px;background:#fff;border-top:1px solid var(--line);font-size:12px;color:var(--muted);min-height:34px}.status.ok{color:var(--green)}.status.error{color:#b42318;font-weight:700}
-@media(max-width:800px){body{overflow:auto}.app{height:auto;min-height:100dvh;grid-template-columns:1fr}aside{max-height:38dvh;border-right:0;border-bottom:1px solid var(--line)}main{height:62dvh;min-height:520px}.topbar{height:auto;min-height:72px;flex-wrap:wrap}.actions{width:100%;justify-content:flex-end}}
+.list{padding:0 10px 14px;overflow-y:auto;overflow-x:hidden;min-height:0;overscroll-behavior:contain;scrollbar-gutter:stable}
+.program{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) 20px;align-items:center;gap:9px;padding:10px 9px;margin:0 0 6px;border:1px solid transparent;border-radius:10px;background:#fff;color:var(--navy);text-align:left;cursor:pointer}.program:hover{background:#f4f8fd;border-color:#d6e4f2}.program.active{background:#eaf4ff;border-color:#8fc0f4}.program .num{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;background:#eef4fa;color:#42627f;font-weight:800;font-size:12px}.program.active .num{background:#1677ff;color:#fff}.program strong{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.program small{display:block;color:var(--muted);font-size:11px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.program .arrow{font-size:22px;color:#6f8aa5}
+main{min-width:0;min-height:100dvh;display:flex;flex-direction:column;background:var(--bg)}
+.topbar{position:sticky;top:0;z-index:3;min-height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;box-shadow:0 3px 14px rgba(23,54,93,.05)}
+.title{min-width:0}.title h2{margin:0;font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.title p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.btn{border:1px solid #bcd0e6;background:#fff;color:#145ea8;border-radius:9px;padding:10px 13px;font-weight:800;cursor:pointer}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}
+.runner-card{margin:16px;min-width:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(23,54,93,.05);overflow:visible}
+.runner-wrap{position:relative;min-height:calc(100dvh - 150px);height:calc(100dvh - 150px);background:#fff;border-radius:14px;overflow:hidden}
+.runner{width:100%;height:100%;min-height:0;border:0;background:#fff;display:block;overflow:auto}.empty{height:100%;min-height:560px;display:grid;place-items:center;text-align:center;padding:30px;color:var(--muted)}.empty strong{display:block;color:var(--navy);font-size:22px;margin-bottom:6px}
+.status{margin:0 16px 16px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--muted)}.status.ok{color:var(--green)}.status.error{color:var(--danger);font-weight:700}
+.bottom-nav{display:flex;justify-content:space-between;gap:10px;padding:12px 16px;border-top:1px solid var(--line);background:#fff}.bottom-nav .btn{min-width:150px}
+@media(max-width:900px){
+ body{overflow-y:auto}
+ .app{grid-template-columns:1fr;display:block}
+ aside{position:relative;top:auto;height:auto;max-height:none;border-right:0;border-bottom:1px solid var(--line)}
+ .list{max-height:36dvh}
+ main{min-height:auto}
+ .topbar{position:sticky;top:0;align-items:flex-start;flex-wrap:wrap}
+ .actions{width:100%}
+ .runner-card{margin:10px}
+ .runner-wrap{height:72dvh;min-height:560px}
+ .status{margin:0 10px 10px}
+}
+@media(max-width:620px){.actions .btn{flex:1 1 auto}.bottom-nav{position:sticky;bottom:0;z-index:2}.bottom-nav .btn{min-width:0;flex:1}.runner-wrap{height:70dvh;min-height:520px}}
 </style>
 </head>
 <body>
@@ -33,9 +56,12 @@ main{min-width:0;min-height:0;display:flex;flex-direction:column}.topbar{height:
       <div class="title"><h2 id="runnerTitle">Program Hub</h2><p id="runnerSubtitle">Choose a program from the left.</p></div>
       <div class="actions"><button id="prevBtn" class="btn" type="button" disabled>← Previous</button><button id="nextBtn" class="btn primary" type="button" disabled>Next Program →</button><button id="closeBtn" class="btn" type="button">Close Hub</button></div>
     </div>
-    <div class="runner-wrap">
-      <div id="empty" class="empty"><div><strong>Select a program</strong>Programs open here while the COMPASS website stays open in the other tab.</div></div>
-      <iframe id="runnerFrame" class="runner" title="COMPASS Program Runner" hidden></iframe>
+    <div class="runner-card">
+      <div class="runner-wrap">
+        <div id="empty" class="empty"><div><strong>Select a program</strong>Choose one of this student's assigned programs from the left. Each program keeps its own vertical scrollbar when needed.</div></div>
+        <iframe id="runnerFrame" class="runner" title="COMPASS Program Runner" scrolling="auto" hidden></iframe>
+      </div>
+      <div class="bottom-nav"><button id="bottomPrevBtn" class="btn" type="button" disabled>← Previous Program</button><button id="bottomNextBtn" class="btn primary" type="button" disabled>Next Program →</button></div>
     </div>
     <div id="status" class="status">Connecting to COMPASS…</div>
   </main>
@@ -50,12 +76,17 @@ main{min-width:0;min-height:0;display:flex;flex-direction:column}.topbar{height:
   const params=new URLSearchParams(location.search),studentId=params.get('student_id'),initialAssignment=params.get('assignment_id');
   const state={session:null,student:null,programs:[],index:-1,loading:false};
   const setStatus=(msg,type='')=>{$('status').textContent=msg;$('status').className='status '+type};
-  function closeHub(){try{window.close()}catch(_){}setTimeout(()=>{if(!window.closed)location.href='./'},150)}
+  function setNav(){const first=state.index<=0,last=state.index<0||state.index>=state.programs.length-1;['prevBtn','bottomPrevBtn'].forEach(id=>$(id).disabled=first);['nextBtn','bottomNextBtn'].forEach(id=>$(id).disabled=last)}
+  function closeHub(){try{if(window.opener&&!window.opener.closed){window.close();return}}catch(_){}history.length>1?history.back():location.assign('./')}
   function renderStudent(){const s=state.student||{};$('studentName').textContent=s.display_label||s.student_code||'Student Programs';$('studentMeta').textContent=[s.grade_level&&('Grade '+s.grade_level),s.student_code].filter(Boolean).join(' · ')||'Assigned COMPASS Programs';$('programCount').textContent=`${state.programs.length} active assigned program${state.programs.length===1?'':'s'}`;const p=[...(Array.isArray(s.selected_behaviors)?s.selected_behaviors:[])].slice(0,5);$('behaviorPills').innerHTML=p.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}
   function renderList(){const q=$('search').value.trim().toLowerCase();$('programList').innerHTML=state.programs.map((x,i)=>{const name=x.program?.program_name||'Program',domain=x.program?.program_config?.domain||x.program?.program_config?.category||x.program?.description||'';if(q&&!(`${name} ${domain}`.toLowerCase().includes(q)))return'';return `<button class="program${i===state.index?' active':''}" type="button" data-index="${i}"><span class="num">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(name)}</strong><small>${esc(domain)}</small></span><span class="arrow">›</span></button>`}).join('')||'<div style="padding:14px;color:#64748b">No matching programs.</div>'}
   async function runtimeHtml(sp){const u=`${SUPABASE_URL}/functions/v1/compass-student-program-runtime?assignment_id=${encodeURIComponent(sp.id)}&token=${encodeURIComponent(sp.view_token||'')}&staff_id=${encodeURIComponent(state.session.user.id)}`;const r=await fetch(u,{cache:'no-store'}),t=await r.text();if(!r.ok)throw new Error('Program could not load ('+r.status+')');return t}
-  async function openIndex(i){if(state.loading||i<0||i>=state.programs.length)return;state.loading=true;state.index=i;renderList();const sp=state.programs[i],name=sp.program?.program_name||'Program';$('runnerTitle').textContent=`${i+1} of ${state.programs.length}: ${name}`;$('runnerSubtitle').textContent='Student Program Hub · behavior tracking uses this student’s assigned behaviors';$('empty').hidden=true;$('runnerFrame').hidden=false;$('runnerFrame').srcdoc='<p style="font-family:Arial;padding:24px">Loading program…</p>';$('prevBtn').disabled=i<=0;$('nextBtn').disabled=i>=state.programs.length-1;setStatus('Loading '+name+'…');try{$('runnerFrame').srcdoc=await runtimeHtml(sp);setStatus(name+' ready.','ok')}catch(e){console.error(e);$('runnerFrame').srcdoc=`<div style="font-family:Arial;padding:30px;color:#b42318"><h2>Program could not open</h2><p>${esc(e.message||'Unknown error')}</p></div>`;setStatus(e.message||'Program could not open.','error')}finally{state.loading=false}}
-  $('programList').addEventListener('click',e=>{const b=e.target.closest('[data-index]');if(b)openIndex(Number(b.dataset.index))});$('search').addEventListener('input',renderList);$('prevBtn').addEventListener('click',()=>openIndex(state.index-1));$('nextBtn').addEventListener('click',()=>openIndex(state.index+1));$('closeBtn').addEventListener('click',closeHub);
+  async function openIndex(i){if(state.loading||i<0||i>=state.programs.length)return;state.loading=true;state.index=i;renderList();setNav();const sp=state.programs[i],name=sp.program?.program_name||'Program';$('runnerTitle').textContent=`${i+1} of ${state.programs.length}: ${name}`;$('runnerSubtitle').textContent='Student Program Hub · behavior tracking uses this student’s assigned behaviors';$('empty').hidden=true;$('runnerFrame').hidden=false;$('runnerFrame').setAttribute('scrolling','auto');$('runnerFrame').srcdoc='<p style="font-family:Arial;padding:24px">Loading program…</p>';setStatus('Loading '+name+'…');try{$('runnerFrame').srcdoc=await runtimeHtml(sp);setStatus(name+' ready.','ok');requestAnimationFrame(()=>{try{$('runnerFrame').contentWindow.scrollTo(0,0)}catch(_){}})}catch(e){console.error(e);$('runnerFrame').srcdoc=`<div style="font-family:Arial;padding:30px;color:#b42318"><h2>Program could not open</h2><p>${esc(e.message||'Unknown error')}</p></div>`;setStatus(e.message||'Program could not open.','error')}finally{state.loading=false;setNav()}}
+  $('programList').addEventListener('click',e=>{const b=e.target.closest('[data-index]');if(b)openIndex(Number(b.dataset.index))});
+  $('search').addEventListener('input',renderList);
+  ['prevBtn','bottomPrevBtn'].forEach(id=>$(id).addEventListener('click',()=>openIndex(state.index-1)));
+  ['nextBtn','bottomNextBtn'].forEach(id=>$(id).addEventListener('click',()=>openIndex(state.index+1)));
+  $('closeBtn').addEventListener('click',closeHub);
   window.addEventListener('message',e=>{if(e.source!==$('runnerFrame').contentWindow)return;if(e.data?.type==='compass-next-program')openIndex(state.index+1);if(e.data?.type==='compass-program-session-saved')setStatus('Program session saved to COMPASS.','ok')});
   if(!studentId){setStatus('No student was selected. Return to COMPASS and open the hub again.','error');return}
   const {data:{session}}=await sb.auth.getSession();if(!session?.user){setStatus('Your COMPASS sign-in is not available in this window. Sign in on the main COMPASS website, then reopen Run Programs.','error');return}state.session=session;
@@ -63,8 +94,8 @@ main{min-width:0;min-height:0;display:flex;flex-direction:column}.topbar{height:
   const {data:assigned,error:programError}=await sb.from('student_compass_programs').select('id,student_id,program_id,view_token,status,display_order,goal_percentage').eq('student_id',studentId).eq('status','active').order('display_order',{ascending:true});if(programError){setStatus(programError.message,'error');return}
   const ids=[...new Set((assigned||[]).map(x=>x.program_id).filter(Boolean))];let programs=[];if(ids.length){const {data,error}=await sb.from('compass_programming_programs').select('id,program_code,program_name,description,program_config,active').in('id',ids);if(error){setStatus(error.message,'error');return}programs=data||[]}
   const byId=new Map(programs.map(p=>[p.id,p]));state.programs=(assigned||[]).map(x=>({...x,program:byId.get(x.program_id)||null})).filter(x=>x.program).sort((a,b)=>(Number(a.display_order||0)-Number(b.display_order||0))||String(a.id).localeCompare(String(b.id)));
-  renderStudent();renderList();setStatus(state.programs.length?'Choose a program from the left.':'This student has no active assigned programs.',state.programs.length?'ok':'');
-  if(state.programs.length){const idx=Math.max(0,state.programs.findIndex(x=>x.id===initialAssignment));openIndex(idx)}
+  renderStudent();renderList();setNav();setStatus(state.programs.length?'Choose a program from the left.':'This student has no active assigned programs.',state.programs.length?'ok':'');
+  if(state.programs.length){const found=state.programs.findIndex(x=>x.id===initialAssignment),idx=found>=0?found:0;openIndex(idx)}
 })().catch(e=>{console.error(e);const s=document.getElementById('status');if(s){s.textContent=e.message||'Program Hub could not start.';s.className='status error'}});
 </script>
 </body>
