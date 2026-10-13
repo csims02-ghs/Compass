@@ -1,0 +1,32 @@
+name: inspect-release
+on:
+  push:
+    paths:
+      - '.github/workflows/inspect-release.yml'
+      - 'release/v20261010-3/**'
+  workflow_dispatch:
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild release
+        run: |
+          cat release/v20261010-3/part*.txt | tr -d '\n\r ' | base64 -d | gzip -dc > /tmp/release.html
+          wc -c /tmp/release.html
+      - name: Show IEP goal code
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/release.html').read_text(errors='replace')
+          needles=['student_iep_goals','Goals Snapshot','IEP Goal Achievement by Student Program','Connect IEP Goals','iepGoals','renderGoal','goalSnapshot','IEP Goal']
+          for n in needles:
+              print('\n===== NEEDLE:',n,'=====')
+              start=0; count=0
+              while True:
+                  i=s.find(n,start)
+                  if i<0 or count>=20: break
+                  print('\n--- match',count+1,'at',i,'---')
+                  print(s[max(0,i-1800):min(len(s),i+4200)])
+                  start=i+len(n); count+=1
+          PY
