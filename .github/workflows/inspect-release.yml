@@ -17,20 +17,19 @@ jobs:
             tr -d '\n\r ' < "$f" | base64 -d >> /tmp/release.gz
           done
           gzip -dc /tmp/release.gz > /tmp/release.html
-          wc -c /tmp/release.html
-      - name: Show IEP goal code
+      - name: Inspect goal reload paths
         run: |
           python3 - <<'PY'
           from pathlib import Path
           s=Path('/tmp/release.html').read_text(errors='replace')
-          needles=['student_iep_goals','Goals Snapshot','IEP Goal Achievement by Student Program','Connect IEP Goals','iepGoals','renderGoal','goalSnapshot','IEP Goal']
+          needles=['const safe=','function safe','async function safe','async function bootstrap','function bootstrap','async function refreshReferences','function refreshReferences','async function loadStudentProfile','loadStudentProfile()','openStudent(id)','state={','goals:[]','state.goals=']
           for n in needles:
               print('\n===== NEEDLE:',n,'=====')
               start=0; count=0
               while True:
                   i=s.find(n,start)
-                  if i<0 or count>=20: break
+                  if i<0 or count>=30: break
                   print('\n--- match',count+1,'at',i,'---')
-                  print(s[max(0,i-2200):min(len(s),i+5200)])
+                  print(s[max(0,i-2400):min(len(s),i+5200)])
                   start=i+len(n); count+=1
           PY
