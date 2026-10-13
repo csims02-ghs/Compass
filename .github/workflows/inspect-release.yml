@@ -12,7 +12,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Rebuild release
         run: |
-          cat release/v20261010-3/part*.txt | tr -d '\n\r ' | base64 -d | gzip -dc > /tmp/release.html
+          : > /tmp/release.gz
+          for f in release/v20261010-3/part01.txt release/v20261010-3/part02.txt release/v20261010-3/part03.txt release/v20261010-3/part04a.txt release/v20261010-3/part04b.txt release/v20261010-3/part04c.txt release/v20261010-3/part05.txt release/v20261010-3/part06.txt release/v20261010-3/part07.txt release/v20261010-3/part08a.txt release/v20261010-3/part08b.txt release/v20261010-3/part08c.txt release/v20261010-3/part09a.txt release/v20261010-3/part09b.txt release/v20261010-3/part09c.txt release/v20261010-3/part10a.txt release/v20261010-3/part10b.txt; do
+            tr -d '\n\r ' < "$f" | base64 -d >> /tmp/release.gz
+          done
+          gzip -dc /tmp/release.gz > /tmp/release.html
           wc -c /tmp/release.html
       - name: Show IEP goal code
         run: |
@@ -27,6 +31,6 @@ jobs:
                   i=s.find(n,start)
                   if i<0 or count>=20: break
                   print('\n--- match',count+1,'at',i,'---')
-                  print(s[max(0,i-1800):min(len(s),i+4200)])
+                  print(s[max(0,i-2200):min(len(s),i+5200)])
                   start=i+len(n); count+=1
           PY
