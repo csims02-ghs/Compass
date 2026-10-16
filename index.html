@@ -28,7 +28,7 @@
     let behavior=[];
     try{const r=await sb.from('student_behavior_data').select('data_date,count,behavior_name').eq('student_id',sid).order('data_date');if(!r.error&&Array.isArray(r.data))behavior=r.data}catch(error){console.warn('COMPASS behavior-rate chart data unavailable',error)}
     if(state.currentStudent?.id!==sid)return;
-    const goalNo=function(g){const m=String(g.title||g.goal_area||'').match(/goal\s*(\d+)/i);return m?Number(m[1]):999};
+    const goalNo=function(g){const m=String(g.title||g.goal_area||'').match(/goal\\s*(\\d+)/i);return m?Number(m[1]):999};
     const ordered=[...goals].sort(function(a,b){return goalNo(a)-goalNo(b)||String(a.title||'').localeCompare(String(b.title||''))});
     const entries=ordered.map(function(g){
       const linkedIds=links.filter(function(l){return l.goal_id===g.id}).map(function(l){return l.student_compass_program_id});
@@ -61,7 +61,7 @@
     const pctTicks=[0,25,50,75,100];
     const gridLines=pctTicks.map(function(v){const y=yPct(v);return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="'+grid+'"/><text x="'+(left-10)+'" y="'+(y+4)+'" text-anchor="end" fill="'+muted+'" font-size="12">'+v.toFixed(0)+'.00%</text>'}).join('');
     const rightTicks=[0,1,2,3,4].map(function(i){const v=rightMax*i/4,y=yBeh(v);const text=Math.abs(v-Math.round(v))<0.001?String(Math.round(v)):v.toFixed(1);return '<text x="'+(w-right+12)+'" y="'+(y+4)+'" text-anchor="start" fill="'+muted+'" font-size="12">'+text+'</text>'}).join('');
-    function wrapWords(text,max){const words=String(text||'').replace(/\s+/g,' ').trim().split(' '),lines=[];let line='';words.forEach(function(word){const next=line?line+' '+word:word;if(next.length>max&&line){lines.push(line);line=word}else line=next});if(line)lines.push(line);return lines.slice(0,4)}
+    function wrapWords(text,max){const words=String(text||'').replace(/\\s+/g,' ').trim().split(' '),lines=[];let line='';words.forEach(function(word){const next=line?line+' '+word:word;if(next.length>max&&line){lines.push(line);line=word}else line=next});if(line)lines.push(line);return lines.slice(0,4)}
     const bars=entries.map(function(e,i){
       const center=cx(i),barW=30,gap=4,targetY=yPct(e.target),targetH=plotBottom-targetY;
       const achieved=e.achieved==null?null:Math.max(0,Math.min(100,e.achieved)),achY=achieved==null?plotBottom:yPct(achieved),achH=achieved==null?0:plotBottom-achY;
