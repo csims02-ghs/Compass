@@ -11,74 +11,181 @@
   <main class="card" role="status" aria-live="polite"><div class="brand">COMPASS</div><div class="status" id="status">Opening COMPASS…</div></main>
 
 <script type="text/plain" id="compassGoalChartPatch">
-  // COMPASS IEP Goal Achievement combo chart v2 — bars + behavior-rate line.
+  // COMPASS student profile layout + IEP Goal Achievement by Student Program v3.
+  const profileEnhancementCss=`<style id="compassProfileGoalChartV3">
+    .compass-profile-four-card-row{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important;align-items:stretch!important;width:100%!important}
+    .compass-profile-four-card-row>*{min-width:0!important;width:auto!important;max-width:none!important;margin-left:0!important;margin-right:0!important}
+    .compass-profile-four-card-row .card,.compass-profile-four-card-row [class*="card"]{min-width:0!important;max-width:none!important}
+    .compass-goal-chart-card{grid-column:1/-1!important;width:100%!important;max-width:none!important;min-width:0!important}
+    #overviewChart{width:100%!important;max-width:none!important;min-height:500px!important;overflow:visible!important}
+    .compass-goal-chart-scroll{width:100%;overflow-x:auto;overflow-y:hidden;padding:2px 2px 14px;scrollbar-gutter:stable}
+    .compass-goal-chart-scroll svg{display:block;max-width:none!important}
+    .compass-goal-chart-note{font-size:12px;color:#637b98;text-align:center;margin:8px 0 0;line-height:1.45}
+    .compass-goal-chart-data{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px;color:#17365d}
+    .compass-goal-chart-data th,.compass-goal-chart-data td{border-top:1px solid #e2e9f2;padding:8px 10px;text-align:left;vertical-align:top;white-space:nowrap}
+    .compass-goal-chart-data th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:#637b98;background:#f7f9fc;position:sticky;top:0}
+    .compass-goal-chart-data td:first-child{white-space:normal;min-width:200px;font-weight:700}
+    .compass-goal-chart-table-wrap{max-height:290px;overflow:auto;border:1px solid #e2e9f2;border-radius:10px;margin-top:12px}
+    @media(max-width:1100px){.compass-profile-four-card-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+    @media(max-width:640px){.compass-profile-four-card-row{grid-template-columns:1fr!important}#overviewChart{min-height:440px!important}}
+  </style>`;
+  if(!html.includes('id="compassProfileGoalChartV3"'))html=html.replace('</head>',profileEnhancementCss+'</head>');
+
   const goalChartStart=html.indexOf('function renderGoalAchievement(){');
   const goalChartEnd=html.indexOf('function renderChart(el,sessions){',goalChartStart);
   if(goalChartStart<0||goalChartEnd<0)throw new Error('COMPASS IEP goal chart style check failed');
-  const goalChartReplacement=`async function renderGoalAchievement(){
+  const goalChartReplacement=`function compassProfileCardFromHeading(root,label){
+    const target=String(label||'').trim().toLowerCase();
+    const nodes=Array.from(root.querySelectorAll('h1,h2,h3,h4,h5,.card-title,.panel-title,.section-title,strong,b'));
+    const heading=nodes.find(function(node){return String(node.textContent||'').replace(/\\s+/g,' ').trim().toLowerCase()===target});
+    if(!heading)return null;
+    let node=heading;
+    while(node&&node!==root){
+      const cls=String(node.className||'');
+      if(/(^|\\s)(card|panel|tile|summary-card|overview-card|profile-card)(\\s|$)/i.test(cls)||/card|panel|tile/i.test(cls))return node;
+      node=node.parentElement;
+    }
+    return heading.parentElement;
+  }
+  function compassDirectChild(ancestor,node){
+    let cur=node;
+    while(cur&&cur.parentElement&&cur.parentElement!==ancestor)cur=cur.parentElement;
+    return cur&&cur.parentElement===ancestor?cur:null;
+  }
+  function compassFitProfileSummaryCards(){
+    const root=$('page-student-profile')||$('page-student')||$('studentProfile')||document;
+    const docsCard=compassProfileCardFromHeading(root,'Documents');
+    const goalCard=compassProfileCardFromHeading(root,'Goal Snapshot');
+    if(!docsCard||!goalCard||docsCard===goalCard)return;
+    let row=docsCard.parentElement,best=null;
+    while(row&&row!==root&&row!==document.body){
+      const docsUnit=compassDirectChild(row,docsCard);
+      const count=row.children?row.children.length:0;
+      if(docsUnit&&count>=3&&count<=5){best=row;break}
+      row=row.parentElement;
+    }
+    if(!best)best=docsCard.parentElement;
+    if(!best)return;
+    let goalUnit=goalCard;
+    const originalParent=goalCard.parentElement;
+    if(originalParent&&originalParent!==best&&originalParent.children.length===1&&originalParent!==root)goalUnit=originalParent;
+    if(!best.contains(goalCard))best.appendChild(goalUnit);
+    best.classList.add('compass-profile-four-card-row');
+    Array.from(best.children).slice(0,4).forEach(function(child){child.style.minWidth='0';child.style.maxWidth='none';child.style.width='auto'});
+  }
+  function compassExpandGoalChartCard(){
+    const el=$('overviewChart');if(!el)return;
+    let card=el.closest('.card,.panel,[class*=card],[class*=panel]');
+    if(card){card.classList.add('compass-goal-chart-card');card.style.maxWidth='none';card.style.width='100%';card.style.gridColumn='1 / -1'}
+  }
+  async function renderGoalAchievement(){
     const el=$('overviewChart'),label=$('overviewProgressLabel');if(!el||!label)return;
+    compassFitProfileSummaryCards();compassExpandGoalChartCard();
     const sid=state.currentStudent&&state.currentStudent.id;if(!sid)return;
     const goals=(Array.isArray(state.goals)?state.goals:[]).filter(function(g){return !g.student_id||g.student_id===sid}).filter(function(g){return g.status!=='discontinued'});
     const goalIds=new Set(goals.map(function(g){return g.id}));
     const links=(Array.isArray(state.goalLinks)?state.goalLinks:[]).filter(function(l){return goalIds.has(l.goal_id)});
-    const progs=Array.isArray(state.studentPrograms)?state.studentPrograms:[];
+    const progs=(Array.isArray(state.studentPrograms)?state.studentPrograms:[]).filter(function(p){return !p.student_id||p.student_id===sid});
     const sessions=Array.isArray(state.sessions)?state.sessions:[];
     if(!goals.length){label.textContent='No IEP goals entered';el.innerHTML='<div class="chart-empty">No IEP goals have been added for this student yet.</div>';return}
-    label.textContent='Loading IEP goal achievement…';
-    let behavior=[];
-    try{const r=await sb.from('student_behavior_data').select('data_date,count,behavior_name').eq('student_id',sid).order('data_date');if(!r.error&&Array.isArray(r.data))behavior=r.data}catch(error){console.warn('COMPASS behavior-rate chart data unavailable',error)}
-    if(state.currentStudent?.id!==sid)return;
-    const goalNo=function(g){const m=String(g.title||g.goal_area||'').match(/goal\\s*(\\d+)/i);return m?Number(m[1]):999};
-    const ordered=[...goals].sort(function(a,b){return goalNo(a)-goalNo(b)||String(a.title||'').localeCompare(String(b.title||''))});
-    const entries=ordered.map(function(g){
-      const linkedIds=links.filter(function(l){return l.goal_id===g.id}).map(function(l){return l.student_compass_program_id});
-      const linkedPrograms=linkedIds.map(function(id){return progs.find(function(p){return p.id===id})}).filter(Boolean);
-      const programNames=linkedPrograms.map(function(sp){const p=programById(sp.program_id);return p&&p.program_name?p.program_name:'Program'});
-      const gs=sessions.filter(function(s){return linkedIds.includes(s.student_compass_program_id)});
-      const vals=gs.map(function(s){return accuracy(s)}).filter(function(v){return v!=null&&Number.isFinite(Number(v))}).map(Number);
-      let achieved=vals.length?Math.round((vals.reduce(function(t,v){return t+v},0)/vals.length)*10)/10:null;
-      if(achieved==null&&g.current_percent!=null&&Number.isFinite(Number(g.current_percent)))achieved=Math.round(Number(g.current_percent)*10)/10;
-      const target=Number.isFinite(Number(g.target_percent))?Math.max(0,Math.min(100,Number(g.target_percent))):80;
-      const dates=[...new Set(gs.map(function(s){return String(s.session_date||s.ended_at||s.created_at||'').slice(0,10)}).filter(Boolean))];
-      const dayTotals=[];
-      dates.forEach(function(d){const rows=behavior.filter(function(b){return String(b.data_date||'').slice(0,10)===d});if(rows.length)dayTotals.push(rows.reduce(function(t,b){return t+Number(b.count||0)},0))});
-      const behaviorRate=dayTotals.length?Math.round((dayTotals.reduce(function(t,v){return t+v},0)/dayTotals.length)*100)/100:null;
-      return {goal:g,target:target,achieved:achieved,behaviorRate:behaviorRate,programNames:programNames,sessionCount:gs.length};
+    const linkedMap=new Map();
+    links.forEach(function(link){
+      const sp=progs.find(function(p){return p.id===link.student_compass_program_id});
+      const goal=goals.find(function(g){return g.id===link.goal_id});
+      if(!sp||!goal)return;
+      const cur=linkedMap.get(sp.id)||{sp:sp,goals:[]};
+      if(!cur.goals.some(function(g){return g.id===goal.id}))cur.goals.push(goal);
+      linkedMap.set(sp.id,cur);
     });
-    const achievedVals=entries.map(function(e){return e.achieved}).filter(function(v){return v!=null&&Number.isFinite(v)});
-    const avgAchieved=achievedVals.length?Math.round((achievedVals.reduce(function(t,v){return t+v},0)/achievedVals.length)*10)/10:null;
-    const withProgramData=entries.filter(function(e){return e.sessionCount>0}).length;
-    label.textContent=avgAchieved==null?'No program-session achievement data yet':('Average achieved '+avgAchieved+'% · '+withProgramData+' of '+entries.length+' goals with program data');
-    const blue='#4285F4',red='#EA4335',yellow='#F9AB00',grid='#dbe5ef',ink='#16324f',muted='#637b98';
+    if(!linkedMap.size){label.textContent='No programs linked to IEP goals';el.innerHTML='<div class="chart-empty">No programs are linked to this student’s IEP goals yet.</div>';return}
+    label.textContent='Loading IEP goal achievement and behavior rate…';
+    let metricRows=[];
+    try{
+      const r=await sb.from('student_program_goal_behavior_graph_view').select('goal_id,goal_title,goal_area,iep_target_percent,student_compass_program_id,program_name,program_goal_percent,data_date,session_count,trials_total,targets_correct,prompted_correct,incorrect,no_response,achieved_percent,achieved_with_prompt_percent,total_behaviors,behavior_rate_per_trial,behavior_rate_per_100_trials,behavior_counts').eq('student_id',sid).order('data_date',{ascending:true});
+      if(!r.error&&Array.isArray(r.data))metricRows=r.data;
+      else if(r&&r.error)console.warn('COMPASS graph metrics view unavailable; using loaded sessions',r.error);
+    }catch(error){console.warn('COMPASS graph metrics view unavailable; using loaded sessions',error)}
+    if(state.currentStudent&&state.currentStudent.id!==sid)return;
+    const goalNo=function(g){const m=String(g.title||'').match(/goal\\s*(\\d+)/i);return m?Number(m[1]):999};
+    const programEntries=Array.from(linkedMap.values()).sort(function(a,b){
+      const ao=Number(a.sp.display_order||999),bo=Number(b.sp.display_order||999);if(ao!==bo)return ao-bo;
+      const ap=programById(a.sp.program_id),bp=programById(b.sp.program_id);return String(ap&&ap.program_name||'').localeCompare(String(bp&&bp.program_name||''));
+    });
+    const entries=programEntries.map(function(item){
+      const sp=item.sp,p=programById(sp.program_id),programName=(p&&p.program_name)||'Program';
+      const linkedGoals=item.goals.slice().sort(function(a,b){return goalNo(a)-goalNo(b)});
+      let rows=metricRows.filter(function(r){return r.student_compass_program_id===sp.id});
+      const uniqueByDay=new Map();
+      rows.forEach(function(r){const key=String(r.data_date||'');if(!uniqueByDay.has(key))uniqueByDay.set(key,r)});
+      rows=Array.from(uniqueByDay.values());
+      let trials=0,correct=0,prompted=0,behaviors=0,sessionCount=0,behaviorBreakdown={};
+      if(rows.length){
+        rows.forEach(function(r){
+          trials+=Number(r.trials_total||0);correct+=Number(r.targets_correct||0);prompted+=Number(r.prompted_correct||0);behaviors+=Number(r.total_behaviors||0);sessionCount+=Number(r.session_count||0);
+          const bc=r.behavior_counts&&typeof r.behavior_counts==='object'?r.behavior_counts:{};
+          Object.keys(bc).forEach(function(name){behaviorBreakdown[name]=(behaviorBreakdown[name]||0)+Number(bc[name]||0)});
+        });
+      }else{
+        const ss=sessions.filter(function(s){return s.student_compass_program_id===sp.id});
+        ss.forEach(function(s){
+          trials+=Number(s.trials_total||0);correct+=Number(s.targets_correct||0);prompted+=Number(s.prompted_correct||0);behaviors+=Number(s.total_behaviors||0);sessionCount+=1;
+          const bc=s.behavior_counts&&typeof s.behavior_counts==='object'?s.behavior_counts:{};
+          Object.keys(bc).forEach(function(name){behaviorBreakdown[name]=(behaviorBreakdown[name]||0)+Number(bc[name]||0)});
+        });
+      }
+      const achieved=trials>0?Math.round((100*correct/trials)*10)/10:null;
+      const achievedWithPrompt=trials>0?Math.round((100*(correct+prompted)/trials)*10)/10:null;
+      const behaviorRate=trials>0?Math.round((behaviors/trials)*100)/100:null;
+      const behaviorRate100=trials>0?Math.round((100*behaviors/trials)*10)/10:null;
+      const target=Number.isFinite(Number(sp.goal_percentage))?Math.max(0,Math.min(100,Number(sp.goal_percentage))):Math.max.apply(null,linkedGoals.map(function(g){return Number(g.target_percent)||0}).concat([80]));
+      return {sp:sp,programName:programName,goals:linkedGoals,target:target,achieved:achieved,achievedWithPrompt:achievedWithPrompt,behaviorRate:behaviorRate,behaviorRate100:behaviorRate100,behaviorEvents:behaviors,behaviorBreakdown:behaviorBreakdown,trials:trials,sessionCount:sessionCount};
+    });
+    const dataEntries=entries.filter(function(e){return e.trials>0});
+    const totalTrials=dataEntries.reduce(function(t,e){return t+e.trials},0),totalCorrect=dataEntries.reduce(function(t,e){return t+(e.achieved==null?0:e.trials*e.achieved/100)},0),totalBehaviors=dataEntries.reduce(function(t,e){return t+e.behaviorEvents},0);
+    const overallAchieved=totalTrials?Math.round((100*totalCorrect/totalTrials)*10)/10:null;
+    const overallBehaviorRate=totalTrials?Math.round((totalBehaviors/totalTrials)*100)/100:null;
+    label.textContent=(overallAchieved==null?'No program-session achievement data yet':('Weighted achieved '+overallAchieved+'%'))+' · '+dataEntries.length+' of '+entries.length+' linked programs with data'+(overallBehaviorRate==null?'':(' · Behavior rate '+overallBehaviorRate+' / trial'));
+    const blue='#4285F4',red='#EA4335',yellow='#F4B400',grid='#dbe5ef',ink='#16324f',muted='#637b98';
     const behaviorVals=entries.map(function(e){return e.behaviorRate}).filter(function(v){return v!=null&&Number.isFinite(v)});
-    const rightMax=Math.max(5,behaviorVals.length?Math.ceil(Math.max.apply(null,behaviorVals)*1.25):5);
-    const groupW=145,left=62,right=62,top=56,plotBottom=295,plotH=215,bottomLabel=108;
-    const w=Math.max(920,left+right+entries.length*groupW),h=top+plotH+bottomLabel;
+    const maxBeh=behaviorVals.length?Math.max.apply(null,behaviorVals):0;
+    const rightMax=Math.max(1,Math.ceil((maxBeh*1.2)*4)/4);
+    const groupW=154,left=72,right=76,top=72,plotBottom=350,plotH=245,bottomLabel=125;
+    const w=Math.max(1320,left+right+entries.length*groupW),h=top+plotH+bottomLabel;
     const plotW=w-left-right;
     const yPct=function(v){return plotBottom-(plotH*(Math.max(0,Math.min(100,Number(v)||0))/100))};
     const yBeh=function(v){return plotBottom-(plotH*(Math.max(0,Math.min(rightMax,Number(v)||0))/rightMax))};
     const cx=function(i){return left+(i+0.5)*(plotW/entries.length)};
-    const pctTicks=[0,25,50,75,100];
-    const gridLines=pctTicks.map(function(v){const y=yPct(v);return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="'+grid+'"/><text x="'+(left-10)+'" y="'+(y+4)+'" text-anchor="end" fill="'+muted+'" font-size="12">'+v.toFixed(0)+'.00%</text>'}).join('');
-    const rightTicks=[0,1,2,3,4].map(function(i){const v=rightMax*i/4,y=yBeh(v);const text=Math.abs(v-Math.round(v))<0.001?String(Math.round(v)):v.toFixed(1);return '<text x="'+(w-right+12)+'" y="'+(y+4)+'" text-anchor="start" fill="'+muted+'" font-size="12">'+text+'</text>'}).join('');
+    const pctTicks=[0,20,40,60,80,100];
+    const gridLines=pctTicks.map(function(v){const y=yPct(v);return '<line x1="'+left+'" y1="'+y+'" x2="'+(w-right)+'" y2="'+y+'" stroke="'+grid+'"/><text x="'+(left-12)+'" y="'+(y+5)+'" text-anchor="end" fill="'+muted+'" font-size="14" font-weight="700">'+v+'%</text>'}).join('');
+    const rightTicks=[0,1,2,3,4].map(function(i){const v=rightMax*i/4,y=yBeh(v),txt=v===0?'0':v.toFixed(v<1?2:1);return '<text x="'+(w-right+12)+'" y="'+(y+5)+'" fill="'+muted+'" font-size="14" font-weight="700">'+txt+'</text>'}).join('');
     function wrapWords(text,max){const words=String(text||'').replace(/\\s+/g,' ').trim().split(' '),lines=[];let line='';words.forEach(function(word){const next=line?line+' '+word:word;if(next.length>max&&line){lines.push(line);line=word}else line=next});if(line)lines.push(line);return lines.slice(0,4)}
     const bars=entries.map(function(e,i){
-      const center=cx(i),barW=30,gap=4,targetY=yPct(e.target),targetH=plotBottom-targetY;
+      const center=cx(i),barW=34,gap=6,targetY=yPct(e.target),targetH=plotBottom-targetY;
       const achieved=e.achieved==null?null:Math.max(0,Math.min(100,e.achieved)),achY=achieved==null?plotBottom:yPct(achieved),achH=achieved==null?0:plotBottom-achY;
-      const title=esc((e.goal.title||e.goal.goal_area||'IEP Goal')+' | Programs: '+(e.programNames.length?e.programNames.join(', '):'No linked program')+' | Goal: '+e.target+'% | Achieved: '+(achieved==null?'No data':achieved+'%')+' | Behavior rate: '+(e.behaviorRate==null?'No data':e.behaviorRate));
       const blueX=center-barW-gap/2,redX=center+gap/2;
-      const blueLabel='<text x="'+(blueX+barW/2)+'" y="'+(plotBottom-6)+'" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">'+e.target.toFixed(2)+'%</text>';
-      const redLabel=achieved==null?'':'<text x="'+(redX+barW/2)+'" y="'+Math.min(plotBottom-6,achY+14)+'" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">'+achieved.toFixed(2)+'%</text>';
-      const lines=wrapWords(e.goal.title||e.goal.goal_area||'IEP Goal',22),labelSvg=lines.map(function(line,j){return '<tspan x="'+center+'" dy="'+(j===0?0:13)+'">'+esc(line)+'</tspan>'}).join('');
-      const programLine=e.programNames.length?('<tspan x="'+center+'" dy="14" fill="#7a8ea6" font-size="10">'+esc(e.programNames.length===1?e.programNames[0]:(e.programNames.length+' linked programs'))+'</tspan>'):'<tspan x="'+center+'" dy="14" fill="#9b6a00" font-size="10">No linked program</tspan>';
-      return '<g><title>'+title+'</title><rect x="'+blueX+'" y="'+targetY+'" width="'+barW+'" height="'+targetH+'" rx="1" fill="'+blue+'"/>'+(achieved==null?'':'<rect x="'+redX+'" y="'+achY+'" width="'+barW+'" height="'+achH+'" rx="1" fill="'+red+'"/>')+blueLabel+redLabel+'<text x="'+center+'" y="'+(plotBottom+20)+'" text-anchor="middle" fill="'+ink+'" font-size="11">'+labelSvg+programLine+'</text></g>';
+      const goalNums=e.goals.map(function(g){return goalNo(g)}).filter(function(n){return n!==999});
+      const goalText=goalNums.length?('Goal'+(goalNums.length>1?'s ':' ')+goalNums.join(', ')):'Linked IEP goal';
+      const behaviorDetail=Object.keys(e.behaviorBreakdown).length?Object.keys(e.behaviorBreakdown).sort().map(function(name){return name+': '+e.behaviorBreakdown[name]}).join(', '):'No behavior events';
+      const title=esc(e.programName+' | '+goalText+' | Goal rate: '+e.target+'% | Achieved: '+(achieved==null?'No data':achieved+'%')+' | Prompt-inclusive: '+(e.achievedWithPrompt==null?'No data':e.achievedWithPrompt+'%')+' | Behavior: '+e.behaviorEvents+' events | Rate: '+(e.behaviorRate==null?'No data':e.behaviorRate+' per trial')+' | '+behaviorDetail);
+      const targetLabelY=Math.max(top-8,targetY-8),achLabelY=achieved==null?0:Math.max(top-8,achY-8);
+      const blueLabel='<text x="'+(blueX+barW/2)+'" y="'+targetLabelY+'" text-anchor="middle" fill="'+blue+'" font-size="13" font-weight="800" style="paint-order:stroke;stroke:#fff;stroke-width:4px">'+e.target.toFixed(0)+'%</text>';
+      const redLabel=achieved==null?'':'<text x="'+(redX+barW/2)+'" y="'+achLabelY+'" text-anchor="middle" fill="'+red+'" font-size="13" font-weight="800" style="paint-order:stroke;stroke:#fff;stroke-width:4px">'+achieved.toFixed(1)+'%</text>';
+      const lines=wrapWords(e.programName,20),labelSvg=lines.map(function(line,j){return '<tspan x="'+center+'" dy="'+(j===0?0:14)+'">'+esc(line)+'</tspan>'}).join('');
+      return '<g><title>'+title+'</title><rect x="'+blueX+'" y="'+targetY+'" width="'+barW+'" height="'+targetH+'" rx="3" fill="'+blue+'"/>'+(achieved==null?'':'<rect x="'+redX+'" y="'+achY+'" width="'+barW+'" height="'+achH+'" rx="3" fill="'+red+'"/>')+blueLabel+redLabel+'<text x="'+center+'" y="'+(plotBottom+22)+'" text-anchor="middle" fill="'+ink+'" font-size="12" font-weight="700">'+labelSvg+'<tspan x="'+center+'" dy="15" fill="'+muted+'" font-size="11" font-weight="600">'+esc(goalText)+'</tspan></text></g>';
     }).join('');
-    const behaviorPoints=entries.map(function(e,i){return e.behaviorRate==null?null:{x:cx(i),y:yBeh(e.behaviorRate),v:e.behaviorRate}}).filter(Boolean);
+    const behaviorPoints=entries.map(function(e,i){return e.behaviorRate==null?null:{x:cx(i),y:yBeh(e.behaviorRate),v:e.behaviorRate,events:e.behaviorEvents}}).filter(Boolean);
     const behaviorPath=behaviorPoints.length>1?'<polyline points="'+behaviorPoints.map(function(p){return p.x+','+p.y}).join(' ')+'" fill="none" stroke="'+yellow+'" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>':'';
-    const behaviorDots=behaviorPoints.map(function(p){return '<g><circle cx="'+p.x+'" cy="'+p.y+'" r="5" fill="'+yellow+'"/><text x="'+p.x+'" y="'+(p.y-9)+'" text-anchor="middle" fill="'+ink+'" font-size="11" font-weight="700" style="paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round">'+p.v.toFixed(2)+'</text></g>'}).join('');
-    const legend='<div style="display:flex;justify-content:center;gap:18px;flex-wrap:wrap;align-items:center;margin:2px 0 10px;font-size:13px;color:'+ink+'"><span style="display:inline-flex;align-items:center;gap:6px"><i style="display:inline-block;width:11px;height:11px;background:'+blue+';border-radius:1px"></i>Goal Rate</span><span style="display:inline-flex;align-items:center;gap:6px"><i style="display:inline-block;width:11px;height:11px;background:'+red+';border-radius:1px"></i>Achieved Rate</span><span style="display:inline-flex;align-items:center;gap:6px"><i style="display:inline-block;width:18px;height:4px;background:'+yellow+';border-radius:2px"></i>Behavior Rate</span></div>';
-    const noBehavior=behaviorPoints.length?'':'<div style="text-align:center;color:#7a8ea6;font-size:12px;margin-top:4px">Behavior Rate appears when behavior data exists on dates the linked programs were run.</div>';
-    el.innerHTML='<div style="width:100%"><div style="text-align:center;font-weight:700;font-size:16px;color:'+ink+';margin-bottom:7px">IEP Goal Achievement by Student Program</div>'+legend+'<div style="width:100%;overflow-x:auto;overflow-y:hidden;padding-bottom:4px"><svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" role="img" aria-label="IEP Goal Achievement by Student Program">'+gridLines+rightTicks+'<line x1="'+left+'" y1="'+plotBottom+'" x2="'+(w-right)+'" y2="'+plotBottom+'" stroke="#7a8ea6"/><text x="18" y="'+(top+plotH/2)+'" text-anchor="middle" fill="'+ink+'" font-size="12" transform="rotate(-90 18 '+(top+plotH/2)+')">Goal Rate</text><text x="'+(w-15)+'" y="'+(top+plotH/2)+'" text-anchor="middle" fill="'+ink+'" font-size="12" transform="rotate(-90 '+(w-15)+' '+(top+plotH/2)+')">Behavior Rate / Trials</text>'+bars+behaviorPath+behaviorDots+'<text x="'+(w/2)+'" y="'+(h-8)+'" text-anchor="middle" fill="'+ink+'" font-size="12">IEP Goals</text></svg></div>'+noBehavior+'</div>';
+    const behaviorDots=behaviorPoints.map(function(p){const txt=p.v.toFixed(2);return '<g><circle cx="'+p.x+'" cy="'+p.y+'" r="6" fill="'+yellow+'" stroke="#7a5a00" stroke-width="1.5"/><rect x="'+(p.x-22)+'" y="'+(p.y-29)+'" width="44" height="18" rx="5" fill="#fff" stroke="#e3c35a"/><text x="'+p.x+'" y="'+(p.y-16)+'" text-anchor="middle" fill="'+ink+'" font-size="12" font-weight="800">'+txt+'</text></g>'}).join('');
+    const legend='<div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;align-items:center;margin:4px 0 12px;font-size:14px;font-weight:700;color:'+ink+'"><span style="display:inline-flex;align-items:center;gap:7px"><i style="display:inline-block;width:13px;height:13px;background:'+blue+';border-radius:2px"></i>Program Goal Rate</span><span style="display:inline-flex;align-items:center;gap:7px"><i style="display:inline-block;width:13px;height:13px;background:'+red+';border-radius:2px"></i>Achieved Rate</span><span style="display:inline-flex;align-items:center;gap:7px"><i style="display:inline-block;width:24px;height:5px;background:'+yellow+';border-radius:3px"></i>Behavior Rate (events / trial)</span></div>';
+    const noBehavior=behaviorPoints.length?'':'<div class="compass-goal-chart-note">No behavior-rate points are available yet for these linked program sessions.</div>';
+    const tableRows=entries.map(function(e){
+      const goalNums=e.goals.map(function(g){return goalNo(g)}).filter(function(n){return n!==999});
+      const detail=Object.keys(e.behaviorBreakdown).length?Object.keys(e.behaviorBreakdown).sort().map(function(name){return esc(name)+' '+e.behaviorBreakdown[name]}).join(' · '):'—';
+      return '<tr><td>'+esc(e.programName)+'<div style="font-weight:400;color:'+muted+';margin-top:2px">'+(goalNums.length?('IEP Goal'+(goalNums.length>1?'s ':' ')+goalNums.join(', ')):'IEP-linked')+'</div></td><td>'+e.target.toFixed(0)+'%</td><td>'+(e.achieved==null?'—':e.achieved.toFixed(1)+'%')+'</td><td>'+(e.behaviorRate==null?'—':e.behaviorRate.toFixed(2))+'</td><td>'+e.behaviorEvents+'</td><td>'+detail+'</td><td>'+e.trials+'</td></tr>';
+    }).join('');
+    const dataTable='<div class="compass-goal-chart-table-wrap"><table class="compass-goal-chart-data"><thead><tr><th>Student Program / IEP Goal</th><th>Goal</th><th>Achieved</th><th>Behavior Rate / Trial</th><th>Behavior Events</th><th>Behavior Breakdown</th><th>Trials</th></tr></thead><tbody>'+tableRows+'</tbody></table></div>';
+    el.innerHTML='<div style="width:100%;max-width:none"><div style="text-align:center;font-weight:800;font-size:20px;color:'+ink+';margin-bottom:8px">IEP Goal Achievement by Student Program</div>'+legend+'<div class="compass-goal-chart-scroll"><svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" role="img" aria-label="IEP Goal Achievement by Student Program with behavior rate">'+gridLines+rightTicks+'<line x1="'+left+'" y1="'+plotBottom+'" x2="'+(w-right)+'" y2="'+plotBottom+'" stroke="#7a8ea6"/><text x="22" y="'+(top+plotH/2)+'" text-anchor="middle" fill="'+ink+'" font-size="14" font-weight="700" transform="rotate(-90 22 '+(top+plotH/2)+')">Goal / Achievement %</text><text x="'+(w-20)+'" y="'+(top+plotH/2)+'" text-anchor="middle" fill="'+ink+'" font-size="14" font-weight="700" transform="rotate(-90 '+(w-20)+' '+(top+plotH/2)+')">Behavior Rate (events / trial)</text>'+bars+behaviorPath+behaviorDots+'<text x="'+(w/2)+'" y="'+(h-8)+'" text-anchor="middle" fill="'+ink+'" font-size="13" font-weight="700">Linked Student Programs</text></svg></div><div class="compass-goal-chart-note">Behavior Rate = total behavior events recorded during the program ÷ total program trials. Hover a bar for linked IEP goals and behavior details.</div>'+noBehavior+dataTable+'</div>';
+    setTimeout(function(){compassFitProfileSummaryCards();compassExpandGoalChartCard()},0);
   }
   `;
   html=html.slice(0,goalChartStart)+goalChartReplacement+html.slice(goalChartEnd);
@@ -88,7 +195,7 @@
 (async()=>{
   const status=document.getElementById('status');
   const patch=document.getElementById('compassGoalChartPatch').textContent;
-  const response=await fetch('./index-base-20261016.html?chart=v2',{cache:'no-store'});
+  const response=await fetch('./index-base-20261016.html?chart=v3',{cache:'no-store'});
   if(!response.ok)throw new Error('COMPASS base loader could not be opened ('+response.status+').');
   let source=await response.text();
   const marker='  document.open();document.write(html);document.close();';
