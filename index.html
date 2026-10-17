@@ -9,54 +9,46 @@
 </head>
 <body>
   <main class="card" role="status" aria-live="polite"><div class="brand">COMPASS</div><div class="status" id="status">Opening COMPASS…</div></main>
-
-<script type="text/plain" id="compassTabLayoutPatch">
-  // COMPASS profile tab layout v6: single active tab, Graphs and Charts after Behavior, 12-wide / 6x2 responsive grid.
-  const profileTabCss=`<style id="compassProfileTabsV6">
-    .compass-profile-tabs-v6{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;align-items:stretch!important;width:100%!important;max-width:none!important;gap:0!important;overflow:visible!important}
-    .compass-profile-tabs-v6>button,.compass-profile-tabs-v6>[role="tab"]{min-width:0!important;width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;white-space:normal!important;line-height:1.15!important;padding-left:8px!important;padding-right:8px!important}
-    @media(max-width:1500px){.compass-profile-tabs-v6{grid-template-columns:repeat(6,minmax(0,1fr))!important}.compass-profile-tabs-v6>button,.compass-profile-tabs-v6>[role="tab"]{min-height:54px!important;padding:10px 6px!important;font-size:13px!important}}
-  </style>`;
-  if(!html.includes('id="compassProfileTabsV6"'))html=html.replace('</head>',profileTabCss+'</head>');
-
-  const ensureMarker='  function compassEnsureGraphsChartsTab(){';
-  if(!html.includes(ensureMarker))throw new Error('COMPASS profile tab layout check failed: tab function not found');
-  const layoutFn=`  function compassLayoutProfileTabs(root,overviewButton,graphsTab){
-    if(!overviewButton||!overviewButton.parentElement)return;
-    const nav=overviewButton.parentElement;
-    nav.classList.add('compass-profile-tabs-v6');
-    const order=['Overview','IEP & Services','Programs','Goals','Behavior','Graphs and Charts','Observation & Session Notes','Assessments','Progress','Documents','Team','History'];
-    const direct=Array.from(nav.children).filter(function(el){return el.matches&&el.matches('button,[role="tab"]')});
-    const norm=function(v){return String(v||'').replace(/\\s+/g,' ').trim().toLowerCase()};
-    order.forEach(function(label){const key=norm(label),btn=direct.find(function(b){return norm(b.textContent)===key})||(graphsTab&&norm(graphsTab.textContent)===key?graphsTab:null);if(btn&&btn.parentElement===nav)nav.appendChild(btn)});
-  }
-`;
-  html=html.replace(ensureMarker,layoutFn+ensureMarker);
-
-  const createNeedle="if(overviewButton){tab=overviewButton.cloneNode(true);Array.from(tab.attributes).forEach(function(a){if(a.name==='id'||a.name.indexOf('data-')===0||a.name==='aria-controls')tab.removeAttribute(a.name)});tab.textContent='Graphs and Charts';tab.dataset.compassGraphsTab='1';tab.id='compassGraphsChartsTab';tab.setAttribute('aria-selected','false');overviewButton.insertAdjacentElement('afterend',tab)}";
-  const createReplacement="if(overviewButton){tab=overviewButton.cloneNode(true);Array.from(tab.attributes).forEach(function(a){if(a.name==='id'||a.name.indexOf('data-')===0||a.name==='aria-controls')tab.removeAttribute(a.name)});tab.textContent='Graphs and Charts';tab.dataset.compassGraphsTab='1';tab.id='compassGraphsChartsTab';tab.setAttribute('aria-selected','false');tab.classList.remove('active','selected');const behaviorButton=buttons.find(function(b){return String(b.textContent||'').replace(/\\s+/g,' ').trim().toLowerCase()==='behavior'});if(behaviorButton&&behaviorButton.parentElement===overviewButton.parentElement)behaviorButton.insertAdjacentElement('afterend',tab);else overviewButton.insertAdjacentElement('afterend',tab)}";
-  if(!html.includes(createNeedle))throw new Error('COMPASS profile tab layout check failed: Graphs and Charts insertion not found');
-  html=html.replace(createNeedle,createReplacement);
-
-  const returnNeedle='    return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};';
-  const returnReplacement=`    if(overviewButton&&overviewButton.classList.contains('active')&&tab){tab.classList.remove('active','selected');tab.setAttribute('aria-selected','false');if(pane){pane.hidden=true;pane.style.setProperty('display','none','important')}}
-    compassLayoutProfileTabs(root,overviewButton,tab);
-    return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};`;
-  if(!html.includes(returnNeedle))throw new Error('COMPASS profile tab layout check failed: tab return not found');
-  html=html.replace(returnNeedle,returnReplacement);
-</script>
-
 <script>
 (async()=>{
   const status=document.getElementById('status');
-  const patch=document.getElementById('compassTabLayoutPatch').textContent;
-  const response=await fetch('./index-profile-charts-v5-20261017.html?tabs=v6',{cache:'no-store'});
+  const response=await fetch('./index-profile-charts-v5-20261017.html?tabs=v7',{cache:'no-store'});
   if(!response.ok)throw new Error('COMPASS profile source could not be opened ('+response.status+').');
   let source=await response.text();
-  const start=source.indexOf('<script type="text/plain" id="compassGoalChartPatch">');
-  const close=start<0?-1:source.indexOf('</script>',start);
-  if(start<0||close<0)throw new Error('COMPASS tab patch could not find the profile chart patch.');
-  source=source.slice(0,close)+patch+'\n'+source.slice(close);
+
+  const mediaNeedle="    @media(max-width:1100px){.compass-profile-four-card-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}";
+  const tabCss=`    .compass-profile-tabs-v7{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;align-items:stretch!important;width:100%!important;max-width:none!important;gap:0!important;overflow:visible!important}
+    .compass-profile-tabs-v7>button,.compass-profile-tabs-v7>[role="tab"]{min-width:0!important;width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;white-space:normal!important;line-height:1.15!important;padding-left:8px!important;padding-right:8px!important}
+    @media(max-width:1500px){.compass-profile-tabs-v7{grid-template-columns:repeat(6,minmax(0,1fr))!important}.compass-profile-tabs-v7>button,.compass-profile-tabs-v7>[role="tab"]{min-height:54px!important;padding:10px 6px!important;font-size:13px!important}}
+`;
+  if(source.includes(mediaNeedle))source=source.replace(mediaNeedle,tabCss+mediaNeedle);else console.warn('COMPASS tab CSS target not found; opening base profile layout.');
+
+  const ensureMarker='  function compassEnsureGraphsChartsTab(){';
+  const layoutFn=`  function compassLayoutProfileTabs(root,overviewButton){
+    if(!overviewButton||!overviewButton.parentElement)return;
+    const nav=overviewButton.parentElement;
+    nav.classList.add('compass-profile-tabs-v7');
+    const order=['Overview','IEP & Services','Programs','Goals','Behavior','Graphs and Charts','Progress','Assessments','Observation & Session Notes','Documents','Team','History'];
+    const norm=function(v){return String(v||'').trim().toLowerCase()};
+    order.forEach(function(label){
+      const key=norm(label);
+      const btn=Array.from(nav.children).find(function(el){return el.matches&&el.matches('button,[role="tab"]')&&norm(el.textContent)===key});
+      if(btn)nav.appendChild(btn);
+    });
+  }
+`;
+  if(source.includes(ensureMarker))source=source.replace(ensureMarker,layoutFn+ensureMarker);else console.warn('COMPASS tab layout function target not found.');
+
+  const createNeedle="if(overviewButton){tab=overviewButton.cloneNode(true);Array.from(tab.attributes).forEach(function(a){if(a.name==='id'||a.name.indexOf('data-')===0||a.name==='aria-controls')tab.removeAttribute(a.name)});tab.textContent='Graphs and Charts';tab.dataset.compassGraphsTab='1';tab.id='compassGraphsChartsTab';tab.setAttribute('aria-selected','false');overviewButton.insertAdjacentElement('afterend',tab)}";
+  const createReplacement="if(overviewButton){tab=overviewButton.cloneNode(true);Array.from(tab.attributes).forEach(function(a){if(a.name==='id'||a.name.indexOf('data-')===0||a.name==='aria-controls')tab.removeAttribute(a.name)});tab.textContent='Graphs and Charts';tab.dataset.compassGraphsTab='1';tab.id='compassGraphsChartsTab';tab.setAttribute('aria-selected','false');tab.classList.remove('active','selected');const behaviorButton=buttons.find(function(b){return String(b.textContent||'').trim().toLowerCase()==='behavior'});if(behaviorButton&&behaviorButton.parentElement===overviewButton.parentElement)behaviorButton.insertAdjacentElement('afterend',tab);else overviewButton.insertAdjacentElement('afterend',tab)}";
+  if(source.includes(createNeedle))source=source.replace(createNeedle,createReplacement);else console.warn('COMPASS Graphs and Charts insertion target not found.');
+
+  const returnNeedle='    return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};';
+  const returnReplacement=`    if(tab){tab.classList.remove('selected');if(overviewButton&&overviewButton.classList.contains('active')){tab.classList.remove('active');tab.setAttribute('aria-selected','false');if(pane){pane.hidden=true;pane.style.setProperty('display','none','important')}}}
+    compassLayoutProfileTabs(root,overviewButton);
+    return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};`;
+  if(source.includes(returnNeedle))source=source.replace(returnNeedle,returnReplacement);else console.warn('COMPASS tab finalizer target not found.');
+
   document.open();document.write(source);document.close();
 })().catch(err=>{console.error(err);const status=document.getElementById('status');if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}});
 </script>
