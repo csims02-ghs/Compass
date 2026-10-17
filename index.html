@@ -49,14 +49,6 @@
     return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};`;
   if(source.includes(returnNeedle))source=source.replace(returnNeedle,returnReplacement);else console.warn('COMPASS tab finalizer target not found.');
 
-  const finalHandoff='  document.open();document.write(html);document.close();';
-  const progressHandoff=`  if(!html.includes('progress-trend.js?v=20261017-1')){
-    const progressScript='<scr'+'ipt src="./progress-trend.js?v=20261017-1"><'+'/scr'+'ipt>';
-    html=html.replace('</body>',progressScript+'</body>');
-  }
-  document.open();document.write(html);document.close();`;
-  if(source.includes(finalHandoff))source=source.replace(finalHandoff,progressHandoff);else console.warn('COMPASS Progress graph handoff target not found; opening without the optional Progress enhancement.');
-
   document.open();document.write(source);document.close();
 })().catch(err=>{console.error(err);const status=document.getElementById('status');if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}});
 </script>
