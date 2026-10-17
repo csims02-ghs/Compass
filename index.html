@@ -12,7 +12,7 @@
 <script>
 (async()=>{
   const status=document.getElementById('status');
-  const response=await fetch('./index-profile-charts-v5-20261017.html?tabs=v8',{cache:'no-store'});
+  const response=await fetch('./index-profile-charts-v5-20261017.html?tabs=v7',{cache:'no-store'});
   if(!response.ok)throw new Error('COMPASS profile source could not be opened ('+response.status+').');
   let source=await response.text();
 
@@ -48,13 +48,6 @@
     compassLayoutProfileTabs(root,overviewButton);
     return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};`;
   if(source.includes(returnNeedle))source=source.replace(returnNeedle,returnReplacement);else console.warn('COMPASS tab finalizer target not found.');
-
-  const chartPatchStart=source.indexOf('<script type="text/plain" id="compassGoalChartPatch">');
-  const chartPatchClose=chartPatchStart<0?-1:source.indexOf('</script>',chartPatchStart);
-  if(chartPatchStart>=0&&chartPatchClose>chartPatchStart){
-    const programHook="\n  if(!html.includes('program-progress.js'))html=html.replace('</body>','<script src=\"./program-progress.js?v=20261017-1\"><'+'/script></body>');\n";
-    source=source.slice(0,chartPatchClose)+programHook+source.slice(chartPatchClose);
-  }else console.warn('COMPASS program progress hook target not found; keeping current graph.');
 
   document.open();document.write(source);document.close();
 })().catch(err=>{console.error(err);const status=document.getElementById('status');if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}});
