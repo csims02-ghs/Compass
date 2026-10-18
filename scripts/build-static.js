@@ -41,7 +41,7 @@ async function layer(source,label){
   return output;
 }
 async function main(){
-  let source=read('index.html');
+  let source=read('scripts/index-loader-source.html');
   source=await layer(source,'index');
   source=await layer(source,'charts');
   source=await layer(source,'base');
