@@ -46,7 +46,33 @@ return {days:days&&days>0?Math.floor(days):null,probes:trials&&trials>0?Math.flo
 }
 function events(){
 const allowed=new Set(programs().map(p=>p.id));
-return (Array.isArray(snap&&snap.sessions)?snap.sessions:[]).filter(s=>allowed.has(s.student_compass_program_id)).map(s=>{
+const detail=(Array.isArray(snap&&snap.trialEvents)?snap.trialEvents:[]),bySession=new Map();
+for(const row of detail){if(!bySession.has(row.session_id))bySession.set(row.session_id,[]);bySession.get(row.session_id).push(row)}
+return (Array.isArray(snap&&snap.sessions)?snap.sessions:[]).filter(s=>allowed.has(s.student_compass_program_id)).flatMap(s=>{
+const raw=bySession.get(s.id)||[],targets=raw.filter(ev=>ev.trial_type==='T'),total=Number(s.trials_total||0);
+const targetCorrect=targets.filter(ev=>ev.result==='independent_correct').length,
+ promptedCorrect=targets.filter(ev=>ev.result==='prompted').length,
+ incorrect=targets.filter(ev=>ev.result==='incorrect').length,
+ noResponse=targets.filter(ev=>ev.result==='no_response').length;
+const verified=total>0&&targets.length===total&&
+ targetCorrect===Number(s.targets_correct||0)&&promptedCorrect===Number(s.prompted_correct||0)&&
+ incorrect===Number(s.incorrect||0)&&noResponse===Number(s.no_response||0);
+if(verified){
+ const source=s.source_record||{},phase=String(source.phase||source.session_type||source.scoring_phase||'').toLowerCase();
+ let firstTarget=true;
+ return raw.map(ev=>{
+   const maintenance=ev.trial_type==='D';
+   const first=!maintenance&&firstTarget;if(first)firstTarget=false;
+   const name=String(ev.target_name||s.target_name||'Unspecified target').trim();
+   const key=String(ev.target_key||s.target_key||name).trim();
+   return {date:dt(ev.occurred_at||s.session_date),program:s.student_compass_program_id,key,name,
+     benchmark:ev.benchmark_key||source.benchmark||source.benchmark_name||null,
+     valid:true,trial:1,correct:ev.result==='independent_correct'?1:0,prompt:ev.result==='prompted'?1:0,
+     beh:first?Number(s.total_behaviors||0):0,raw:s,
+     probe:/probe|baseline/.test(phase),maintenance:maintenance||/maintenance|distractor/.test(phase),
+     hasBehavior:!maintenance};
+ });
+}
 const t=n(s.trials_total),correct=n(s.targets_correct),prompt=n(s.prompted_correct),beh=n(s.total_behaviors),src=s.source_record||{};
 const valid=t!=null&&t>0&&correct!=null&&correct>=0&&correct<=t&&(prompt==null||correct+prompt<=t);
 const named=String(s.target_name||src.target_name||"").trim(),key=String(s.target_key||src.target_key||s.target_id||named||"").trim();
