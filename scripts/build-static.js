@@ -59,6 +59,8 @@ async function main(){
   if(!source.toLowerCase().includes('login')&&!source.includes('signInWithPassword'))throw Error('Authentication not present');
   const css=['<style id="compass-static-layout-foundation">',
     'html,body{margin:0;max-width:100%;overflow-x:clip}',
+    'body{display:block!important;width:100%;min-width:0}',
+    '#landingScreen{width:100%;max-width:100%;margin:0}',
     '*,*::before,*::after{box-sizing:border-box}',
     '#sidebar{max-height:100dvh;overflow-y:auto;overscroll-behavior:contain}',
     '#page-home,#page-students,#page-student-profile,.page{min-width:0;max-width:100%}',
