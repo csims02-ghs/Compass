@@ -147,7 +147,7 @@ return [...found,...phasePreview.filter(x=>x.program===picks.program)].filter(x=
 }
 function graph(){
 let g=aggregate(),r=range(),phase=phases();
-const W=g.length<=24?1200:Math.max(1200,g.length*52+160),L=80,R=70,T=120,H=300,B=120,base=T+H,width=W-L-R,hh=T+H+B;
+const W=g.length<=24?1200:Math.max(1200,g.length*52+160),L=80,R=70,T=Math.max(140,90+phase.length*24),H=300,B=120,base=T+H,width=W-L-R,hh=T+H+B;
 const mx=Math.max(1,...g.map(x=>x.behavior||0));const ymax=Math.max(1,Math.ceil(mx*4)/4);
 const x=i=>L+(g.length===1?width/2:g.length?width*i/(g.length-1):width/2);
 const y=v=>base-H*Math.max(0,Math.min(100,v||0))/100,by=v=>base-H*Math.max(0,Math.min(ymax,v||0))/ymax;
