@@ -14,7 +14,16 @@ const { chromium }=require('playwright');
    assert.equal(await app.isVisible(),false,'App must not be shown before authentication');
    assert.equal(await page.locator('style#review-only').count(),0,'No review-only CSS allowed');
    assert.equal(await page.locator('#loginForm').count(),1,'Login form exists');
-   await page.locator('[data-show-login]').first().click();
+   const before=await page.evaluate(()=>{
+     const box=e=>{const r=e.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),right:Math.round(r.right)}};
+     return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,
+       landing:box(document.querySelector('#landingScreen')),public:box(document.querySelector('.public-site')),
+       app:box(document.querySelector('#app')),loginButtons:[...document.querySelectorAll('[data-show-login]')].map(el=>({text:el.textContent.trim(),rect:box(el)}))};
+   });
+   console.log('UI_BEFORE_LOGIN '+JSON.stringify(before));
+   const valid=before.loginButtons.findIndex(x=>x.rect.x>=0&&x.rect.right<=width&&x.rect.y>=0&&x.rect.y<950);
+   assert(valid>=0,'At least one sign-in button must be inside the viewport');
+   await page.locator('[data-show-login]').nth(valid).click({timeout:6000});
    await page.waitForTimeout(200);
    assert.equal(await login.isVisible(),true,'Sign-in button must display login form');
    assert.equal(await landing.isVisible(),false,'Public landing must hide on sign-in');
