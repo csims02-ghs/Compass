@@ -49,6 +49,13 @@
     return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};`;
   if(source.includes(returnNeedle))source=source.replace(returnNeedle,returnReplacement);else console.warn('COMPASS tab finalizer target not found.');
 
+  // Optional Progress UI bridge: checked before patching; never blocks COMPASS startup.
+  const cprNeedle="    if(!goals.length){label.textContent='No IEP goals entered';";
+  if(source.includes(cprNeedle)){
+    const cprCode="    try {\n      window.__compassProgressSnapshot={studentId:sid,programs:progs.map(function(x){return {assignment:x,definition:programById(x.program_id)||null}}),sessions:sessions.slice(),goals:goals.slice()};\n      if(!window.__compassProgressModuleRequested){\n        window.__compassProgressModuleRequested=true;\n        const moduleScript=document.createElement('script');\n        moduleScript.src='./progress-profile-live-v1.js?v=1';\n        moduleScript.onerror=function(){console.warn('COMPASS optional Progress UI could not load; original student profile remains usable.');};\n        document.body.appendChild(moduleScript);\n      }\n      window.dispatchEvent(new Event('compass-progress-data'));\n    } catch(progressError) { console.warn('COMPASS optional progress view unavailable',progressError); }\n";
+    source=source.replace(cprNeedle,cprCode+cprNeedle);
+  }else console.warn('COMPASS Progress bridge not installed: expected chart anchor absent; loading unchanged profile.');
+
   document.open();document.write(source);document.close();
 })().catch(err=>{console.error(err);const status=document.getElementById('status');if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}});
 </script>
