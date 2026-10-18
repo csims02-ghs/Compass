@@ -133,10 +133,16 @@ return {key:g.key,label:g.label,runs:g.items.length,ach:trial?100*correct/trial:
 function phases(){
 if(picks.program==="all")return[];
 let es=events().filter(e=>e.program===picks.program&&e.valid&&!e.maintenance),found=[],prev=null;
-for(const e of es){if(prev){
- if(e.benchmark&&prev.benchmark&&e.benchmark!==prev.benchmark)found.push({date:e.date,type:"New Benchmark",text:"Benchmark: "+e.benchmark});
- if(e.key&&prev.key&&e.key!==prev.key)found.push({date:e.date,type:"New Target",text:"Target: "+e.name});
-}prev=e}
+const observedTargets=new Set(),observedBenchmarks=new Set();
+for(const e of es){
+ if(prev){
+  if(e.benchmark&&prev.benchmark&&e.benchmark!==prev.benchmark&&!observedBenchmarks.has(e.benchmark))found.push({date:e.date,type:"New Benchmark",text:"Benchmark: "+e.benchmark});
+  if(e.key&&prev.key&&e.key!==prev.key&&!observedTargets.has(e.key))found.push({date:e.date,type:"New Target",text:"Target: "+e.name});
+ }
+ if(e.key)observedTargets.add(e.key);
+ if(e.benchmark)observedBenchmarks.add(e.benchmark);
+ prev=e
+}
 return [...found,...phasePreview.filter(x=>x.program===picks.program)].filter(x=>x.date>=range().from&&x.date<=range().to);
 }
 function graph(){
@@ -171,7 +177,7 @@ svg+='<text x="'+xx+'" y="'+(base+25)+'" transform="rotate(-55 '+xx+' '+(base+25
 });svg+='</svg>';
 sel("chart").innerHTML='<div class="cpr-graph-title">Achieved and Goal</div><div class="cpr-legend"><span><i class="cpr-line" style="background:#4285f4"></i>Achieved</span><span><i class="cpr-line" style="background:#ea4335"></i>Goal</span><span><i class="cpr-line" style="background:#f4b400"></i>Behavior Rate</span><span><i class="cpr-line" style="background:#7c3aed;width:3px;height:17px"></i>Phase Line</span></div><div class="cpr-scroll">'+svg+'</div><div class="cpr-muted" style="text-align:center">Behavior Rate = recorded behavior events ÷ trials; missing observations do not count as zero.</div>';
 let trials=g.reduce((t,x)=>t+x.trial,0),correct=g.reduce((t,x)=>t+x.correct,0),bf=g.filter(x=>x.behavior!=null),btrial=bf.reduce((t,x)=>t+x.trial,0),btotal=bf.reduce((t,x)=>t+x.behaviorEvents,0);
-sel("stats").innerHTML=[["Achieved",trials?(correct*100/trials).toFixed(1)+"%":"—"],["Goal",g.some(x=>x.goal!=null)?g.filter(x=>x.goal!=null).reduce((t,x)=>t+x.goal,0)/g.filter(x=>x.goal!=null).length+"%":"—"],["Behavior rate",btrial?(btotal/btrial).toFixed(2):"—"],["Recorded program runs",g.reduce((t,x)=>t+x.runs,0)]].map(z=>'<div class="cpr-stat"><strong>'+E(z[1])+'</strong><small>'+E(z[0])+'</small></div>').join("");
+sel("stats").innerHTML=[["Achieved",trials?(correct*100/trials).toFixed(1)+"%":"—"],["Goal",g.some(x=>x.goal!=null)?(g.filter(x=>x.goal!=null).reduce((t,x)=>t+x.goal,0)/g.filter(x=>x.goal!=null).length).toFixed(1)+"%":"—"],["Behavior rate",btrial?(btotal/btrial).toFixed(2):"—"],["Recorded program runs",g.reduce((t,x)=>t+x.runs,0)]].map(z=>'<div class="cpr-stat"><strong>'+E(z[1])+'</strong><small>'+E(z[0])+'</small></div>').join("");
 sel("history").innerHTML=phase.length?phase.map(z=>'<tr><td>'+E(shortDate(z.date))+'</td><td>'+E(z.type)+'</td><td>'+E(z.text)+'</td><td>'+E(z.preview?"Preview only · not saved":"Detected from sessions")+'</td></tr>').join(""):'<tr><td colspan="4">No recorded phase changes in this date range.</td></tr>';
 }
 function calculateTargets(p){
