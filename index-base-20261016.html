@@ -161,9 +161,6 @@
   if(!html.includes('openStudentProgramHub'))throw new Error('COMPASS Program Hub check failed: launcher missing');
   if(!html.includes('id="runStudentProgramsBtn"'))throw new Error('COMPASS Program Hub check failed: Run Programs button missing');
   if(!html.includes("e.data?.type==='compass-next-program'"))throw new Error('COMPASS Next Program bridge check failed: listener missing');
-  // Approved Compass Programs availability UI. Access permissions are enforced in Supabase.
-  const holdUi='<scr'+'ipt src="./program-status-admin.js?v=20261018-b" defer></scr'+'ipt>';
-  if(!html.includes('program-status-admin.js'))html=html.replace('</body>',holdUi+'</body>');
   document.open();document.write(html);document.close();
 })().catch(err=>{console.error(err);const status=document.getElementById('status');if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}});
 </script>
