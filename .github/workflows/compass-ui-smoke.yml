@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/compass-ui-smoke.yml'
       - 'scripts/smoke-ui.cjs'
+      - 'index.html'
 permissions:
   contents: read
 jobs:
