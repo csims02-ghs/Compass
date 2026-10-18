@@ -1,0 +1,35 @@
+name: COMPASS login and layout smoke
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/compass-ui-smoke.yml'
+      - 'scripts/smoke-ui.cjs'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Browser dependency
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          google-chrome --version
+      - name: Exercise published HTML and login form
+        run: |
+          python3 -m http.server 8099 --bind 127.0.0.1 >/tmp/compass-http.log 2>&1 &
+          sleep 2
+          node scripts/smoke-ui.cjs
+      - name: Attach screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compass-ui-smoke
+          path: compass-smoke-*.png
+          if-no-files-found: ignore
