@@ -82,6 +82,21 @@
     const sessionRes=ids.length?await grab(()=>sb.from('compass_program_sessions').select('*').in('student_compass_program_id',ids).order('session_date').order('created_at')):{data:[],error:null};
     if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
     state.sessions=take(sessionRes,priorSessions,'sessions');
+    const priorTrialEvents=(Array.isArray(state.trialEvents)?state.trialEvents:[]).filter(x=>programIdSet.has(x.student_compass_program_id));
+    async function loadTrialEvents(){
+      if(!ids.length)return{data:[],error:null};
+      const items=[];for(let offset=0;offset<20000;offset+=1000){
+        const result=await grab(()=>sb.from('compass_trial_events')
+          .select('session_id,student_compass_program_id,trial_number,trial_type,target_key,target_name,benchmark_key,goal_id,result,prompt_level,behavior_counts,occurred_at')
+          .in('student_compass_program_id',ids).order('occurred_at').range(offset,offset+999));
+        if(result.error)return result;
+        items.push(...(result.data||[]));if(!result.data||result.data.length<1000)break;
+      }
+      return{data:items,error:null};
+    }
+    const trialRes=await loadTrialEvents();
+    if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
+    state.trialEvents=take(trialRes,priorTrialEvents,'individual trial events');
     const gids=goals.map(x=>x.id),goalIdSet=new Set(gids),priorLinks=(Array.isArray(state.goalLinks)?state.goalLinks:[]).filter(x=>goalIdSet.has(x.goal_id));
     const linkRes=gids.length?await grab(()=>sb.from('student_iep_goal_compass_programs').select('*').in('goal_id',gids)):{data:[],error:null};
     if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
