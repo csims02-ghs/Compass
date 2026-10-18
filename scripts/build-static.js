@@ -45,6 +45,13 @@ async function main(){
   source=await layer(source,'index');
   source=await layer(source,'charts');
   source=await layer(source,'base');
+  // The former prototype CSS bypassed login and made Home render over the public page.
+  // Never ship review-only visibility overrides in COMPASS production.
+  const review=/<style\s+id=["']review-only["'][^>]*>[\s\S]*?<\/style>/gi;
+  const reviewMatches=[...source.matchAll(review)];
+  if(reviewMatches.length!==1)throw Error('Expected exactly one unsafe review-only stylesheet: '+reviewMatches.length);
+  source=source.replace(review,'');
+  if(source.includes('#app.hidden{display:block!important}'))throw Error('Unsafe app visibility override remains');
   const must=['id="sidebar"','page-home','loadStudentProfile','student_iep_goals','compass_program_sessions'];
   const missing=must.filter(v=>!source.includes(v));
   if(missing.length)throw Error('Missing app features: '+missing.join(', '));
