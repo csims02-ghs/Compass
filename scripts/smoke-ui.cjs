@@ -17,7 +17,7 @@ const { chromium }=require('playwright');
    const before=await page.evaluate(()=>{
      const box=e=>{const r=e.getBoundingClientRect();return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),right:Math.round(r.right)}};
      return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,bodyWidth:document.body.scrollWidth,
-       landing:box(document.querySelector('#landingScreen')),public:box(document.querySelector('.public-site')),
+       html:box(document.documentElement),body:box(document.body),bodyStyle:{display:getComputedStyle(document.body).display,position:getComputedStyle(document.body).position,width:getComputedStyle(document.body).width,justify:getComputedStyle(document.body).justifyContent},landing:box(document.querySelector('#landingScreen')),landingStyle:{display:getComputedStyle(document.querySelector('#landingScreen')).display,width:getComputedStyle(document.querySelector('#landingScreen')).width,position:getComputedStyle(document.querySelector('#landingScreen')).position},public:box(document.querySelector('.public-site')),
        app:box(document.querySelector('#app')),loginButtons:[...document.querySelectorAll('[data-show-login]')].map(el=>({text:el.textContent.trim(),rect:box(el)}))};
    });
    console.log('UI_BEFORE_LOGIN '+JSON.stringify(before));
