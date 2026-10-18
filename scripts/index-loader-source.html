@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1727">
+  <title>COMPASS</title>
+  <style>html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:#f5f8fc;color:#10243a}body{display:grid;place-items:center}.card{max-width:560px;margin:24px;padding:28px 30px;border:1px solid #dbe5ef;border-radius:18px;background:#fff;box-shadow:0 12px 38px rgba(13,34,56,.08);text-align:center}.brand{font-weight:800;letter-spacing:.05em;font-size:24px;margin-bottom:8px}.status{font-size:14px;color:#5f7388;line-height:1.5}.error{color:#9f1d20;font-weight:700}</style>
+</head>
+<body>
+  <main class="card" role="status" aria-live="polite"><div class="brand">COMPASS</div><div class="status" id="status">Opening COMPASS…</div></main>
+<script>
+(async()=>{
+  const status=document.getElementById('status');
+  const response=await fetch('./index-profile-charts-v5-20261017.html?tabs=v7',{cache:'no-store'});
+  if(!response.ok)throw new Error('COMPASS profile source could not be opened ('+response.status+').');
+  let source=await response.text();
+
+  const mediaNeedle="    @media(max-width:1100px){.compass-profile-four-card-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}}";
+  const tabCss=`    .compass-profile-tabs-v7{display:grid!important;grid-template-columns:repeat(12,minmax(0,1fr))!important;align-items:stretch!important;width:100%!important;max-width:none!important;gap:0!important;overflow:visible!important}
+    .compass-profile-tabs-v7>button,.compass-profile-tabs-v7>[role="tab"]{min-width:0!important;width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;white-space:normal!important;line-height:1.15!important;padding-left:8px!important;padding-right:8px!important}
+    @media(max-width:1500px){.compass-profile-tabs-v7{grid-template-columns:repeat(6,minmax(0,1fr))!important}.compass-profile-tabs-v7>button,.compass-profile-tabs-v7>[role="tab"]{min-height:54px!important;padding:10px 6px!important;font-size:13px!important}}
+`;
+  if(source.includes(mediaNeedle))source=source.replace(mediaNeedle,tabCss+mediaNeedle);else console.warn('COMPASS tab CSS target not found; opening base profile layout.');
+
+  const ensureMarker='  function compassEnsureGraphsChartsTab(){';
+  const layoutFn=`  function compassLayoutProfileTabs(root,overviewButton){
+    if(!overviewButton||!overviewButton.parentElement)return;
+    const nav=overviewButton.parentElement;
+    nav.classList.add('compass-profile-tabs-v7');
+    const order=['Overview','IEP & Services','Programs','Goals','Behavior','Graphs and Charts','Progress','Assessments','Observation & Session Notes','Documents','Team','History'];
+    const norm=function(v){return String(v||'').trim().toLowerCase()};
+    order.forEach(function(label){
+      const key=norm(label);
+      const btn=Array.from(nav.children).find(function(el){return el.matches&&el.matches('button,[role="tab"]')&&norm(el.textContent)===key});
+      if(btn)nav.appendChild(btn);
+    });
+  }
+`;
+  if(source.includes(ensureMarker))source=source.replace(ensureMarker,layoutFn+ensureMarker);else console.warn('COMPASS tab layout function target not found.');
+
+  const createNeedle="if(overviewButton){tab=overviewButton.cloneNode(true);Array.from(tab.attributes).forEach(function(a){if(a.name==='id'||a.name.indexOf('data-')===0||a.name==='aria-controls')tab.removeAttribute(a.name)});tab.textContent='Graphs and Charts';tab.dataset.compassGraphsTab='1';tab.id='compassGraphsChartsTab';tab.setAttribute('aria-selected','false');overviewButton.insertAdjacentElement('afterend',tab)}";
+  const createReplacement="if(overviewButton){tab=overviewButton.cloneNode(true);Array.from(tab.attributes).forEach(function(a){if(a.name==='id'||a.name.indexOf('data-')===0||a.name==='aria-controls')tab.removeAttribute(a.name)});tab.textContent='Graphs and Charts';tab.dataset.compassGraphsTab='1';tab.id='compassGraphsChartsTab';tab.setAttribute('aria-selected','false');tab.classList.remove('active','selected');const behaviorButton=buttons.find(function(b){return String(b.textContent||'').trim().toLowerCase()==='behavior'});if(behaviorButton&&behaviorButton.parentElement===overviewButton.parentElement)behaviorButton.insertAdjacentElement('afterend',tab);else overviewButton.insertAdjacentElement('afterend',tab)}";
+  if(source.includes(createNeedle))source=source.replace(createNeedle,createReplacement);else console.warn('COMPASS Graphs and Charts insertion target not found.');
+
+  const returnNeedle='    return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};';
+  const returnReplacement=`    if(tab){tab.classList.remove('selected');if(overviewButton&&overviewButton.classList.contains('active')){tab.classList.remove('active');tab.setAttribute('aria-selected','false');if(pane){pane.hidden=true;pane.style.setProperty('display','none','important')}}}
+    compassLayoutProfileTabs(root,overviewButton);
+    return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};`;
+  if(source.includes(returnNeedle))source=source.replace(returnNeedle,returnReplacement);else console.warn('COMPASS tab finalizer target not found.');
+
+  // Optional Progress UI bridge: checked before patching; never blocks COMPASS startup.
+  const cprNeedle="    if(!goals.length){label.textContent='No IEP goals entered';";
+  if(source.includes(cprNeedle)){
+    const cprCode="    try {\n      window.__compassProgressSnapshot={studentId:sid,programs:progs.map(function(x){return {assignment:x,definition:programById(x.program_id)||null}}),sessions:sessions.slice(),goals:goals.slice(),goalLinks:(Array.isArray(state.goalLinks)?state.goalLinks:[]).slice(),trialEvents:(Array.isArray(state.trialEvents)?state.trialEvents:[]).filter(function(ev){return progs.some(function(p){return p.id===ev.student_compass_program_id})})};\n      if(!window.__compassProgressModuleRequested){\n        window.__compassProgressModuleRequested=true;\n        const moduleScript=document.createElement('script');\n        moduleScript.src='./progress-profile-live-v1.js?v=2';\n        moduleScript.onerror=function(){console.warn('COMPASS optional Progress UI could not load; original student profile remains usable.');};\n        document.body.appendChild(moduleScript);\n      }\n      window.dispatchEvent(new Event('compass-progress-data'));\n    } catch(progressError) { console.warn('COMPASS optional progress view unavailable',progressError); }\n";
+    source=source.replace(cprNeedle,cprCode+cprNeedle);
+  }else console.warn('COMPASS Progress bridge not installed: expected chart anchor absent; loading unchanged profile.');
+
+  document.open();document.write(source);document.close();
+})().catch(err=>{console.error(err);const status=document.getElementById('status');if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}});
+</script>
+</body>
+</html>
