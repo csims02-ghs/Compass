@@ -184,7 +184,7 @@
     if(mismatch)console.warn('COMPASS Programs status enhancer skipped for this release (anchor not unique).',mismatch[0].slice(0,90));
     else for(const [needle,value] of compassHoldSteps)html=html.replace(needle,value);
   }catch(holdError){console.warn('COMPASS Programs status enhancer disabled safely',holdError);}
-  if(html.includes('</body>')&&!html.includes('assigned-program-iep-links.js'))html=html.replace('</body>','<script src="./assigned-program-iep-links.js?v=1"></script></body>');
+  if(html.includes('</body>')&&!html.includes('assigned-program-iep-links.js'))html=html.replace('</body>','<script src="./assigned-program-iep-links.js?v=1"></scr'+'ipt></body>');
   document.open();document.write(html);document.close();
 })().catch(err=>{console.error(err);const status=document.getElementById('status');if(status){status.className='status error';status.textContent=err&&err.message?err.message:'COMPASS could not be opened safely. Refresh and try again.';}});
 </script>
