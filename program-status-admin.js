@@ -27,12 +27,14 @@ function updateCount(){
  const active=programs.filter(p=>statusOf(p)==="active").length;
  const header=[...document.querySelectorAll("h1,h2")].find(n=>norm(n.textContent)==="compass programs");
  const desc=header?.parentElement?.querySelector("p,small");
- if(desc&&/active compass|instructional programs/i.test(desc.textContent||""))
-   desc.textContent=active+" active COMPASS instructional programs connected to the shared programming runners.";
+ if(desc&&/active compass|instructional programs/i.test(desc.textContent||"")){
+   const next=active+" active COMPASS instructional programs connected to the shared programming runners.";
+   if(desc.textContent!==next)desc.textContent=next;
+ }
  const labels=[...document.querySelectorAll("small,label,strong,span,h3,h4")];
  const metric=labels.find(n=>norm(n.textContent)==="active programs");
  const target=metric?.parentElement?.querySelector("strong,b,.value,[data-count]");
- if(target&&/^[\d,]+$/.test((target.textContent||"").trim()))target.textContent=String(active);
+ if(target&&/^[\d,]+$/.test((target.textContent||"").trim())&&target.textContent!==String(active))target.textContent=String(active);
 }
 function resolveName(row){
  const first=row.cells?.[0];if(!first)return null;
