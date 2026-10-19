@@ -13,17 +13,17 @@
 (()=>{
 const $=id=>document.getElementById(id);
 const pieces=new URLSearchParams(location.hash.replace(/^#/,''));
-const eligible=pieces.get('type')==='invite' && (pieces.has('access_token')||pieces.has('token_hash')||pieces.has('code'));
+const expectedToken=pieces.get('access_token');const eligible=pieces.get('type')==='invite' && !!expectedToken;
 const sb=window.supabase.createClient('https://ykkexfsbnnxgncnyaksr.supabase.co','sb_publishable_3qkWcBut_bVwI6mlhOQOzA_50z_46cY',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 let accepted=false;
 function show(name){for(const id of ['waiting','invalid','password','complete'])$(id).classList.toggle('hidden',name!==id)}
 async function check(){
  if(!eligible){show('invalid');return}
  const {data,error}=await sb.auth.getSession();
- if(error||!data.session?.user){show('invalid');return}
+ if(error||!data.session?.user||data.session.access_token!==expectedToken){show('invalid');return}
  accepted=true;show('password');history.replaceState({},'',location.pathname);
 }
-sb.auth.onAuthStateChange((ev,session)=>{if(eligible && (ev==='SIGNED_IN'||ev==='INITIAL_SESSION')&&session?.user){accepted=true;show('password');history.replaceState({},'',location.pathname)}});
+sb.auth.onAuthStateChange((ev,session)=>{if(eligible && (ev==='SIGNED_IN'||ev==='INITIAL_SESSION')&&session?.user&&session.access_token===expectedToken){accepted=true;show('password');history.replaceState({},'',location.pathname)}});
 $('form').addEventListener('submit',async e=>{
  e.preventDefault();const p=$('newPassword').value,c=$('confirmPassword').value,m=$('message'),btn=$('submit');
  m.className='notice';m.textContent='';
