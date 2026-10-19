@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/build-static-compass.yml'
       - 'scripts/build-static.js'
+      - 'scripts/student-edit-programs-source.js.txt'
+      - 'scripts/student-edit-programs.css'
       - 'scripts/index-loader-source.html'
       - 'index-base-20261016.html'
       - 'index-profile-charts-v5-20261017.html'
