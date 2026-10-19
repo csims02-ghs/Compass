@@ -68,6 +68,18 @@ async function main(){
     '@media(max-width:860px){#sidebar{max-height:100dvh}}',
     '</style>'].join('\n');
   if(!source.includes('compass-static-layout-foundation'))source=source.replace(/<\/head>/i,css+'\n</head>');
+  // Append the goal-display module to the finished document, never inside a JS string.
+  const docEnd=source.toLowerCase().lastIndexOf('</body>');
+  if(docEnd<0)throw Error('Final COMPASS HTML has no closing body');
+  const linkedModule='<script src="./assigned-program-iep-links.js?v=1"></scr'+'ipt>\n';
+  source=source.slice(0,docEnd)+linkedModule+source.slice(docEnd);
+  // The browser treats every literal </script> as an end tag, including strings.
+  // Parse all inline blocks now; refuse to publish syntactically broken login/runner code.
+  const scripts=[...source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
+    .filter(m=>!(/\bsrc\s*=/.test(m[1])||/text\/plain/.test(m[1])));
+  if(scripts.length<3)throw Error('Expected Supabase, config, and COMPASS application scripts; found '+scripts.length);
+  scripts.forEach((m,i)=>{try{new vm.Script(m[2],{filename:'compass-inline-'+i+'.js'})}
+    catch(err){throw Error('COMPASS JavaScript syntax failure, block '+i+': '+err.message)}});
   fs.writeFileSync(path.join(root,'index.html'),source,'utf8');
   console.log('COMPASS static build complete:',source.length,'characters');
 }
