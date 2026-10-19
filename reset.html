@@ -2,82 +2,206 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <title>Reset COMPASS Password</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10396c">
+  <meta name="referrer" content="no-referrer">
+  <title>Reset Password | COMPASS</title>
   <style>
-    :root{--nav:#10396c;--blue:#2366d5;--bg:#f2f7fb;--card:#fff;--line:#d3dfeb;--text:#0e3159;--muted:#637b98;--green:#147047;--red:#a52d37}
-    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(135deg,#0e3769,#225b9e);color:var(--text);min-height:100vh;display:grid;place-items:center;padding:22px}.card{width:min(480px,100%);background:#fff;border-radius:22px;padding:34px;box-shadow:0 30px 80px rgba(0,0,0,.25)}.brand{font-size:36px;font-weight:900;letter-spacing:-1px}.sub{color:var(--blue);font-weight:800;margin-top:3px}h1{font-size:29px;margin:26px 0 8px}.muted{color:var(--muted);line-height:1.45}.stack{display:grid;gap:14px;margin-top:20px}label{display:grid;gap:6px;font-weight:750;font-size:14px}input{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 14px;font:inherit;outline:none}input:focus{border-color:#7ca9ec;box-shadow:0 0 0 3px rgba(35,102,213,.10)}button,.button{border:1px solid var(--line);background:white;color:var(--text);padding:13px 18px;border-radius:12px;font-weight:850;font:inherit;cursor:pointer;text-align:center;text-decoration:none}.primary{background:var(--blue);border-color:var(--blue);color:#fff}.wide{width:100%}.hidden{display:none!important}.message{margin-top:15px;min-height:22px;font-size:14px}.message.error{color:var(--red)}.message.success{color:var(--green)}.notice{margin-top:18px;padding:13px;border-radius:12px;background:#eef5ff;border:1px solid #cfe0f5;color:#365c86;font-size:13px;line-height:1.45}.success-box{text-align:center}.success-icon{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:#e7f6ed;color:var(--green);font-size:30px;margin:16px auto}
+    :root{--nav:#10396c;--blue:#2366d5;--bg:#f2f7fb;--line:#d3dfeb;--text:#0e3159;--muted:#607893;--green:#147047;--red:#a52d37}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;min-height:100dvh;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(140deg,#0e3769,#225b9e);color:var(--text);display:grid;place-items:center;padding:20px}
+    .card{width:min(480px,100%);border-radius:22px;background:#fff;padding:32px;box-shadow:0 24px 65px rgba(0,0,0,.21)}
+    .brand{font-size:35px;letter-spacing:-1.5px;font-weight:900}.sub{color:var(--blue);font-weight:800;font-size:14px}
+    h1{font-size:26px;line-height:1.18;margin:27px 0 9px;letter-spacing:-.5px}.muted{color:var(--muted);font-size:14px;line-height:1.6}
+    .stack{display:grid;gap:15px;margin-top:20px}label{display:grid;gap:7px;font-size:14px;font-weight:750}
+    input{width:100%;min-height:47px;font:inherit;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text)}
+    input:focus-visible{outline:3px solid #c8dfff;outline-offset:1px;border-color:var(--blue)}
+    button,.button{display:inline-flex;align-items:center;justify-content:center;min-height:45px;padding:11px 16px;border:1px solid var(--line);border-radius:11px;text-align:center;text-decoration:none;color:var(--text);background:#fff;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+    button:disabled{opacity:.6;cursor:wait}.primary{color:#fff;background:var(--blue);border-color:var(--blue)}.wide{width:100%}.hidden{display:none!important}
+    .message{font-size:14px;line-height:1.5;margin-top:15px;min-height:18px}.message.error{color:var(--red)}.message.success{color:var(--green)}
+    .tip{border:1px solid #dae6f6;border-radius:10px;background:#f2f7fe;color:#416080;margin-top:17px;padding:12px 13px;font-size:13px;line-height:1.5}
+    .foot{text-align:center;margin-top:22px}.foot a{font-size:14px;font-weight:750;color:var(--blue);text-decoration:none}.foot a:hover{text-decoration:underline}
+    .success{text-align:center}.success-icon{display:grid;place-items:center;border-radius:50%;height:60px;width:60px;margin:18px auto 3px;color:var(--green);background:#e7f6ed;font-size:29px;font-weight:800}
+    @media(max-width:520px){body{padding:13px}.card{padding:25px 21px;border-radius:17px}h1{font-size:24px}}
   </style>
 </head>
 <body>
-  <main class="card">
-    <div class="brand">COMPASS</div><div class="sub">Student Support</div>
+  <main class="card" aria-label="COMPASS account recovery">
+    <div class="brand">COMPASS</div>
+    <div class="sub">Student Support</div>
 
-    <section id="loadingView">
-      <h1>Opening password recovery</h1>
-      <p class="muted">Checking your secure Supabase recovery session…</p>
+    <section id="loadingView" aria-live="polite">
+      <h1>Verifying recovery link</h1>
+      <p class="muted">Checking your secure COMPASS password-reset session…</p>
+    </section>
+
+    <section id="requestView" class="hidden">
+      <h1>Reset your password</h1>
+      <p class="muted">Enter your COMPASS account email. We’ll send you a secure link to create a new password.</p>
+      <form id="requestForm" class="stack">
+        <label for="recoveryEmail">Account email<input id="recoveryEmail" name="email" type="email" autocomplete="email" placeholder="name@example.com" required></label>
+        <button id="requestSubmit" class="primary wide" type="submit">Send Reset Link</button>
+      </form>
+      <div id="requestMessage" class="message" role="status" aria-live="polite"></div>
+      <div class="tip">For security, password reset links expire. Use the newest email and open it on the same device where you want to reset your password.</div>
     </section>
 
     <section id="passwordView" class="hidden">
-      <h1>Set New Password</h1>
-      <p class="muted">Your recovery session is valid. Enter the new password you want to use for COMPASS.</p>
+      <h1>Create a new password</h1>
+      <p class="muted">Your recovery link was verified. Choose a new password for your COMPASS account.</p>
       <form id="passwordForm" class="stack">
-        <label>New Password<input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></label>
-        <label>Confirm Password<input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required></label>
-        <button class="primary wide" type="submit">Save New Password</button>
+        <label for="newPassword">New password<input id="newPassword" name="new-password" type="password" minlength="12" autocomplete="new-password" required></label>
+        <label for="confirmPassword">Confirm new password<input id="confirmPassword" name="confirm-password" type="password" minlength="12" autocomplete="new-password" required></label>
+        <button id="savePasswordBtn" class="primary wide" type="submit">Save New Password</button>
       </form>
-      <div id="passwordMessage" class="message"></div>
+      <div class="tip">Use at least 12 characters and a password you don't use on another website.</div>
+      <div id="passwordMessage" class="message" role="status" aria-live="polite"></div>
     </section>
 
     <section id="invalidView" class="hidden">
-      <h1>Recovery session not found</h1>
-      <p class="muted">This page needs a valid Supabase recovery token. If your browser is currently showing a localhost recovery URL, keep everything beginning with <strong>#access_token=</strong> and open it on the live COMPASS address instead.</p>
-      <div class="notice">Live recovery address:<br><strong>https://csims02-ghs.github.io/Compass/reset.html</strong></div>
-      <div class="stack"><a class="button wide" href="./">Return to COMPASS</a></div>
+      <h1>Recovery link unavailable</h1>
+      <p class="muted">The recovery link may be invalid, expired, or already used. You can request a new one.</p>
+      <div id="invalidMessage" class="message error" role="alert"></div>
+      <div class="stack"><button id="requestAnotherBtn" class="primary wide" type="button">Request a New Link</button></div>
     </section>
 
-    <section id="successView" class="hidden success-box">
-      <div class="success-icon">✓</div>
-      <h1>Password Updated</h1>
-      <p class="muted">Your COMPASS password was changed successfully. Sign in normally with your email and new password.</p>
+    <section id="successView" class="hidden success" role="status" aria-live="polite">
+      <div class="success-icon" aria-hidden="true">✓</div>
+      <h1>Password updated</h1>
+      <p class="muted">Your password was successfully changed. Return to COMPASS and sign in using your new password.</p>
       <div class="stack"><a class="button primary wide" href="./">Return to COMPASS Sign In</a></div>
     </section>
-  </main>
 
+    <div class="foot"><a href="./">← Back to COMPASS</a></div>
+  </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const SUPABASE_URL='https://ykkexfsbnnxgncnyaksr.supabase.co';
-    const SUPABASE_PUBLISHABLE_KEY='sb_publishable_3qkWcBut_bVwI6mlhOQOzA_50z_46cY';
-    const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-    const $=id=>document.getElementById(id);
-    function view(name){['loadingView','passwordView','invalidView','successView'].forEach(id=>$(id).classList.toggle('hidden',id!==name));}
-    async function checkRecovery(){
-      const hash=new URLSearchParams(location.hash.replace(/^#/,''));
-      const looksLikeRecovery=hash.get('type')==='recovery'||hash.has('access_token');
-      await new Promise(r=>setTimeout(r,350));
-      const {data:{session}}=await sb.auth.getSession();
-      if(session?.user && looksLikeRecovery){view('passwordView');return;}
-      if(session?.user){view('passwordView');return;}
-      view('invalidView');
+/* COMPASS password recovery flow. Do not log, persist or send recovery tokens anywhere except Supabase Auth. */
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const views = ['loadingView','requestView','passwordView','invalidView','successView'];
+  const cleanPath = location.pathname; // Never leave recovery tokens or auth codes in browser history.
+  const fragment = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const search = new URLSearchParams(location.search);
+  const hasRecoveryMarker = fragment.get('type') === 'recovery' || search.get('type') === 'recovery';
+  const hasCode = search.has('code');
+  const recoveryAttempt = hasRecoveryMarker || hasCode;
+  const incomingError = fragment.get('error_description') || search.get('error_description') || fragment.get('error') || search.get('error');
+  const resetRedirect = new URL('./reset.html', location.href.split(/[?#]/)[0]).href;
+  let recovering = false;
+  let submitted = false;
+  let initialized = false;
+
+  const show = id => {
+    views.forEach(view => $(view).classList.toggle('hidden', view !== id));
+    const heading = $(id)?.querySelector('h1');
+    if (heading) document.title = heading.textContent + ' | COMPASS';
+  };
+  const message = (id, text, kind = '') => {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'message' + (kind ? ' ' + kind : '');
+  };
+  const scrubLink = () => {
+    try { history.replaceState(null, '', cleanPath || location.pathname); } catch (_) {}
+  };
+  const invalid = text => {
+    message('invalidMessage', text || 'This link may have expired or already been used. Request a new reset email.', 'error');
+    show('invalidView');
+    scrubLink();
+  };
+  const enterRecovery = session => {
+    if (!recoveryAttempt || recovering || !session?.user) return;
+    recovering = true;
+    scrubLink();
+    show('passwordView');
+    $('newPassword').focus();
+  };
+
+  if (!window.supabase?.createClient) {
+    invalid('Unable to load secure sign-in. Check your connection, refresh the page, and try again.');
+    return;
+  }
+  const sb = window.supabase.createClient(
+    'https://ykkexfsbnnxgncnyaksr.supabase.co',
+    'sb_publishable_3qkWcBut_bVwI6mlhOQOzA_50z_46cY',
+    {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
+  );
+
+  sb.auth.onAuthStateChange((event, session) => {
+    // An existing SIGNED_IN / INITIAL_SESSION is NOT proof of a recovery link.
+    if (event === 'PASSWORD_RECOVERY') enterRecovery(session);
+  });
+
+  $('requestForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = $('recoveryEmail').value.trim();
+    if (!email) return;
+    const button = $('requestSubmit');
+    button.disabled = true;
+    message('requestMessage', 'Requesting a secure password reset email…');
+    try {
+      const {error} = await sb.auth.resetPasswordForEmail(email, {redirectTo:resetRedirect});
+      if (error) message('requestMessage', error.message || 'Unable to request a reset email. Try again.', 'error');
+      else message('requestMessage', 'If this email belongs to a COMPASS account, a password reset link will arrive shortly. Check your spam folder too.', 'success');
+    } catch (_) {
+      message('requestMessage', 'Unable to contact Supabase. Check your internet connection and try again.', 'error');
+    } finally { button.disabled = false; }
+  });
+
+  $('passwordForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!recovering || submitted) return;
+    const password = $('newPassword').value;
+    const confirmation = $('confirmPassword').value;
+    if (password.length < 12) { message('passwordMessage', 'Use at least 12 characters for your new password.', 'error'); return; }
+    if (password !== confirmation) { message('passwordMessage', 'The passwords do not match.', 'error'); return; }
+    if (!$('passwordForm').reportValidity()) return;
+    submitted = true;
+    $('savePasswordBtn').disabled = true;
+    message('passwordMessage', 'Saving your new password…');
+    try {
+      const {error} = await sb.auth.updateUser({password});
+      if (error) { message('passwordMessage', error.message || 'Password update failed. Request a new link if this one has expired.', 'error'); return; }
+      $('passwordForm').reset();
+      scrubLink();
+      // End the temporary recovery session. A sign-out network failure must not undo a successful password change.
+      try { await sb.auth.signOut(); } catch (_) {}
+      show('successView');
+    } catch (_) {
+      message('passwordMessage', 'Unable to save the password. Check your connection and try again.', 'error');
+    } finally {
+      submitted = false;
+      $('savePasswordBtn').disabled = false;
     }
-    sb.auth.onAuthStateChange((event,session)=>{
-      if((event==='PASSWORD_RECOVERY'||event==='SIGNED_IN')&&session?.user)view('passwordView');
-    });
-    $('passwordForm').addEventListener('submit',async e=>{
-      e.preventDefault();
-      const p=$('newPassword').value,c=$('confirmPassword').value,m=$('passwordMessage');
-      m.className='message';m.textContent='';
-      if(p!==c){m.className='message error';m.textContent='Passwords do not match.';return;}
-      if(p.length<8){m.className='message error';m.textContent='Password must be at least 8 characters.';return;}
-      m.textContent='Saving password…';
-      const {error}=await sb.auth.updateUser({password:p});
-      if(error){m.className='message error';m.textContent=error.message;return;}
-      await sb.auth.signOut();
-      history.replaceState({},document.title,location.pathname);
-      view('successView');
-    });
-    checkRecovery();
-  </script>
+  });
+
+  $('requestAnotherBtn').addEventListener('click', () => {
+    message('requestMessage', '');
+    show('requestView');
+  });
+
+  async function initialize() {
+    if (initialized) return;
+    initialized = true;
+    if (incomingError) { invalid('Supabase could not verify this link. It may have expired or already been used. Please request a new email.'); return; }
+    if (!recoveryAttempt) { show('requestView'); return; }
+    show('loadingView');
+    try {
+      const {error} = await sb.auth.getSession();
+      if (error && !recovering) { invalid('Unable to verify the recovery link. Request a new email and try again.'); return; }
+      // Supabase emits PASSWORD_RECOVERY asynchronously when it verifies a real recovery link.
+      await new Promise(resolve => setTimeout(resolve, 1100));
+      if (!recovering) invalid('The recovery link could not be verified. Request a fresh password reset email.');
+    } catch (_) {
+      if (!recovering) invalid('Unable to connect to Supabase. Check your internet connection and request a new link.');
+    }
+  }
+  initialize();
+})();
+
+</script>
 </body>
 </html>
