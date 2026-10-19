@@ -73,7 +73,7 @@ async function main(){
   if(!oldRenderer.includes('function renderProgress()')||!oldRenderer.includes('function avgAccuracy('))
     throw Error('Legacy Progress renderer changed unexpectedly');
   source=source.slice(0,oldRendererStart)+source.slice(oldRendererEnd);
-  replaceUnique('renderDocuments();renderProgress();renderBehavior()','renderDocuments();renderBehavior()','initial render');
+  replaceUnique('renderDocuments();renderProgress();renderBehavior()','renderDocuments();renderGoalAchievement();renderBehavior()','initial render');
   replaceUnique(";if(name==='progress')renderProgress()}",'}','tab navigation');
   replaceUnique("$('progressProgramFilter').addEventListener('change',renderProgress);",'','legacy filter listener');
   const oldProgressLoader=source.indexOf('      if(!window.__compassProgressModuleRequested){');
@@ -82,6 +82,12 @@ async function main(){
   source=source.slice(0,oldProgressLoader)+source.slice(loaderEnd);
   for(const obsolete of ['id="progressChart"','id="studentSessionsBody"','id="progressProgramFilter"','setTimeout(activate,30)'])
     if(source.includes(obsolete))throw Error('Old Progress residue remains: '+obsolete);
+  // The legacy Progress renderer formerly refreshed ALL goal and performance charts.
+  // Keep those graph refreshes independent of the native Progress tab.
+  if(!source.includes('renderDocuments();renderGoalAchievement();renderBehavior()'))
+    throw Error('COMPASS graph refresh disconnected from Student Profile');
+  if(source.includes('function renderProgress()'))
+    throw Error('Legacy Progress renderer is still present');
   // The former prototype CSS bypassed login and made Home render over the public page.
   // Never ship review-only visibility overrides in COMPASS production.
   const review=/<style\s+id=["']review-only["'][^>]*>[\s\S]*?<\/style>/gi;
