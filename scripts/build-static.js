@@ -88,6 +88,17 @@ async function main(){
     throw Error('COMPASS graph refresh disconnected from Student Profile');
   if(source.includes('function renderProgress()'))
     throw Error('Legacy Progress renderer is still present');
+  // Compile the complete Student Profile Edit Programs bulk UI into HTML; no runtime patches.
+  const editStart=source.indexOf('  function openEditPrograms(){');
+  const editEnd=source.indexOf('  function openLibraryAssign(){',editStart);
+  if(editStart<0||editEnd<=editStart)throw Error('COMPASS Edit Programs source anchors are missing');
+  const obsolete=source.slice(editStart,editEnd);
+  if(!obsolete.includes('data-remove-assigned')||!obsolete.includes('program-edit-row'))
+    throw Error('Original Edit Programs section changed unexpectedly');
+  const bulkSource=read('scripts/student-edit-programs-source.js.txt');
+  if(!bulkSource.includes('archiveSelectedAssignedPrograms')||!bulkSource.includes('programBulkRemove'))
+    throw Error('Bulk selection implementation incomplete');
+  source=source.slice(0,editStart)+bulkSource+'\n'+source.slice(editEnd);
   // The former prototype CSS bypassed login and made Home render over the public page.
   // Never ship review-only visibility overrides in COMPASS production.
   const review=/<style\s+id=["']review-only["'][^>]*>[\s\S]*?<\/style>/gi;
@@ -111,6 +122,8 @@ async function main(){
     '@media(max-width:860px){#sidebar{max-height:100dvh}}',
     '</style>'].join('\n');
   if(!source.includes('compass-static-layout-foundation'))source=source.replace(/<\/head>/i,css+'\n</head>');
+  const bulkStyles='<style id="compass-program-bulk-styles">\n'+read('scripts/student-edit-programs.css')+'\n</style>';
+  if(!source.includes('compass-program-bulk-styles'))source=source.replace(/<\/head>/i,bulkStyles+'\n</head>');
   // Append the goal-display module to the finished document, never inside a JS string.
   const docEnd=source.toLowerCase().lastIndexOf('</body>');
   if(docEnd<0)throw Error('Final COMPASS HTML has no closing body');
