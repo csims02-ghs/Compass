@@ -53,6 +53,43 @@ const { chromium }=require('playwright');
    assert(metrics.content.x>=metrics.main.x&&metrics.content.x<metrics.main.x+100,
      'Home content should not be shifted or hidden far to the right');
    assert(metrics.home.right<=width+8,'Home section should fit inside viewport');
+   // Progress is now one native view. The legacy graph must not exist even momentarily.
+   assert.equal(await page.locator('#progressChart,#progressProgramFilter,#studentSessionsBody').count(),0,
+     'Legacy Progress DOM must not be shipped');
+   assert.equal(await page.locator('#profile-tab-progress').count(),1,'Native Progress tab must exist');
+   await page.waitForFunction(()=>!!window.__compassProgressUIv1,{timeout:10000});
+   const progressCheck=await page.evaluate(()=>{
+     const profile=document.querySelector('#page-student-profile'),home=document.querySelector('#page-home');
+     home.classList.remove('active');home.hidden=true;home.style.display='none';
+     profile.classList.add('active');profile.hidden=false;profile.style.display='block';
+     window.__compassProgressSnapshot={
+       studentId:'local-demo-only',
+       programs:[{assignment:{id:'demo-assignment',program_id:'demo-program',goal_percentage:80,display_order:1},
+         definition:{program_name:'Test Reading Program',program_config:{targets:[{id:'demo-target',name:'Reading Task'}]}}}],
+       sessions:[{id:'demo-session',student_compass_program_id:'demo-assignment',
+         target_key:'demo-target',target_name:'Reading Task',
+         trials_total:5,targets_correct:4,prompted_correct:0,incorrect:1,no_response:0,
+         session_date:'2026-10-18',total_behaviors:0,source_record:{}}],
+       goals:[],goalLinks:[],trialEvents:[]
+     };
+     window.dispatchEvent(new Event('compass-progress-data'));
+     const tab=document.querySelector('[data-tab="progress"]');
+     if(!tab)throw Error('Progress tab button missing');
+     tab.click();
+     const panel=document.querySelector('#profile-tab-progress');
+     const native=document.querySelector('#cpr-liveView');
+     return{newView:!!native, visible:!!native&&!!native.getBoundingClientRect().height,
+       nativeInTab:panel.contains(native),oldGraph:!!document.querySelector('#progressChart'),
+       controlCount:panel.querySelectorAll('#cpr-program,#cpr-target,#cpr-benchmark,#cpr-period').length,
+       svgCount:panel.querySelectorAll('svg').length,tabActive:panel.classList.contains('active')};
+   });
+   assert(progressCheck.newView&&progressCheck.visible&&progressCheck.nativeInTab,
+     'The redesigned Progress view must render immediately inside the native tab');
+   assert.equal(progressCheck.oldGraph,false,'Old graph cannot appear');
+   assert.equal(progressCheck.controlCount,4,'All four progress filters should display');
+   assert(progressCheck.tabActive,'Progress tab must become active');
+   assert.equal(errors.length,0,'No browser JavaScript errors permitted');
+   console.log('PROGRESS_SMOKE_PASS '+JSON.stringify({width,progressCheck}));
    console.log('UI_SMOKE_PASS '+JSON.stringify({width,metrics,errors:errors.slice(0,3)}));
    await page.screenshot({path:'compass-smoke-'+width+'.png',fullPage:false});
    await page.close();
