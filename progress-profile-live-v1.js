@@ -250,19 +250,18 @@ return title+'<div class="cpr-tablewrap"><table class="cpr-table"><thead><tr><th
 }
 function redraw(){if(!sel("chart"))return;graph();acquisition();sel("acquisition").hidden=picks.record==="graph";sel("view").value=picks.record}
 function scaffold(){
-let progress=[...d.querySelectorAll("button,[role=tab]")].find(b=>String(b.textContent||"").trim().toLowerCase()==="progress");
-if(!progress)return null;
-let nav=progress.parentElement; if(!nav)return null;
+const host=d.getElementById("profile-tab-progress");
+if(!host)return null;
 let panel=sel("liveView");
 if(!panel){
-style();panel=d.createElement("section");panel.id="cpr-liveView";panel.className="cpr-panel";panel.hidden=true;
+style();panel=d.createElement("section");panel.id="cpr-liveView";panel.className="cpr-panel";panel.hidden=false;
 panel.innerHTML='<div class="cpr-head"><div><div class="cpr-title">Program Progress</div><div class="cpr-muted">Live program sessions · linked to this student profile</div></div></div>'+
 '<div class="cpr-controls"><div><label>Program</label><select id="cpr-program"></select></div><div><label>Target</label><select id="cpr-target"></select></div><div><label>Benchmark</label><select id="cpr-benchmark"></select></div><div><label>Time Range</label><select id="cpr-period"></select></div></div>'+
 '<div class="cpr-custom"><strong>Custom Date Range</strong><div class="cpr-row"><div><label>From</label><input type="date" id="cpr-dateFrom"/></div><div><label>To</label><input type="date" id="cpr-dateTo"/></div><button class="cpr-btn" id="cpr-apply">Show Range</button></div></div>'+
 '<div class="cpr-viewhead"><div><strong>Progress Record View</strong><div class="cpr-muted">Acquisition tracking comes from dated student sessions and program setup.</div></div><select id="cpr-view"><option value="acquisition">Acquisition Sheet</option><option value="graph">Progress Graph Only</option></select></div>'+
 '<div class="cpr-phases"><strong>Insert Phase Line</strong><div class="cpr-row"><div><label>Reason</label><select id="cpr-phaseReason"><option>New Benchmark</option><option>New Target</option><option>Prompting/Teaching Change</option><option>Reinforcement Change</option><option>Other Clinical Change</option></select></div><div><label>Date</label><input type="date" id="cpr-phaseDate"/></div><div><label>Optional Note</label><input id="cpr-phaseNote" placeholder="What changed?"/></div><button class="cpr-btn" id="cpr-phaseAdd">Preview phase line</button></div><div class="cpr-muted">Manual phase lines are preview-only until persistent clinical event storage is configured.</div></div>'+
 '<div id="cpr-chart"></div><div class="cpr-stats" id="cpr-stats"></div><div class="cpr-sec-title">Phase Line History</div><div class="cpr-tablewrap"><table class="cpr-table"><thead><tr><th>Date</th><th>Phase</th><th>Detail</th><th>Source</th></tr></thead><tbody id="cpr-history"></tbody></table></div><section id="cpr-acquisition"></section>';
- nav.insertAdjacentElement("afterend",panel);
+ host.replaceChildren(panel);
  panel.addEventListener("change",e=>{
 let id=e.target&&e.target.id;if(!id)return;
 if(id==="cpr-program"){picks.program=e.target.value;picks.target="all";picks.benchmark="all";refreshOptions(true);redraw()}
@@ -277,21 +276,23 @@ if(id==="cpr-apply"){const a=sel("dateFrom").value,b=sel("dateTo").value;if(a&&b
 if(id==="cpr-phaseAdd"&&picks.program!=="all"&&sel("phaseDate").value){phasePreview.push({program:picks.program,date:sel("phaseDate").value,type:sel("phaseReason").value,text:sel("phaseReason").value+(sel("phaseNote").value?" — "+sel("phaseNote").value:""),preview:true});sel("phaseNote").value="";redraw()}
 });
 }
-return {panel,nav,tab:progress};
+return {panel,host};
 }
-function restore(){for(const a of hidden){a.classList.remove("cpr-suppressed")}hidden=[];let p=sel("liveView");if(p)p.hidden=true;active=false}
+function restore(){active=false;}
 function activate(){
-const ctx=scaffold();if(!ctx||!snap)return;
-const {nav,panel}=ctx;
-restore();active=true;
-const parent=nav.parentElement,children=parent?Array.from(parent.children):[],pos=children.indexOf(nav);
-if(pos>=0){for(const el of children.slice(pos+1)){if(el!==panel&&!el.contains(panel)){el.classList.add("cpr-suppressed");hidden.push(el)}}}
-panel.hidden=false;refreshOptions(!initialized);initialized=true;redraw();
+  const ctx=scaffold();if(!ctx)return;
+  active=true;ctx.panel.hidden=false;
+  if(!snap){
+    const chart=sel("chart");
+    if(chart)chart.innerHTML='<div class="cpr-muted" role="status" style="padding:22px 0">Loading student program sessions and linked IEP goals…</div>';
+    return;
+  }
+  refreshOptions(!initialized);initialized=true;redraw();
 }
 d.addEventListener("click",e=>{
 const b=e.target.closest&&e.target.closest("button,[role=tab]");if(!b)return;
 const tx=String(b.textContent||"").trim().toLowerCase();
-if(tx==="progress"){setTimeout(activate,30)}
+if(tx==="progress"){activate()}
 else if(["overview","graphs and charts","iep & services","programs","goals","behavior","assessments","observation & session notes","documents","team","history"].includes(tx)){restore()}
 },true);
 window.addEventListener("compass-progress-data",()=>{
@@ -299,5 +300,6 @@ const s=window.__compassProgressSnapshot;if(!s)return;
 if(currentStudent!==s.studentId){currentStudent=s.studentId;picks={program:"all",target:"all",benchmark:"all",period:"",record:"acquisition",customFrom:"",customTo:""};initialized=false;phasePreview=[]}
 snap=s;if(active)activate();
 });
+scaffold();
 if(window.__compassProgressSnapshot)window.dispatchEvent(new Event("compass-progress-data"));
 })();
