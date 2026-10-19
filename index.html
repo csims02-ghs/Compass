@@ -467,6 +467,27 @@ body{display:block!important;width:100%;min-width:0}
 .content,.page>.content{min-width:0}
 @media(max-width:860px){#sidebar{max-height:100dvh}}
 </style>
+<style id="compass-program-bulk-styles">
+
+/* COMPASS Student Profile — native Edit Programs bulk controls */
+.edit-programs-modal .program-bulk-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;position:sticky;top:0;z-index:4;padding:11px 4px 13px;background:var(--surface,#fff);border-bottom:1px solid var(--line,#dbe5ef);margin-bottom:14px}
+.edit-programs-modal .program-bulk-toolbar #programSelectionCount{margin-left:auto;color:#365473;font-weight:700;white-space:nowrap}
+.edit-programs-modal .program-bulk-toolbar #programBulkRemove{min-width:170px}
+.edit-programs-modal .program-edit-row{grid-template-columns:38px minmax(0,1fr) auto;gap:10px}
+.edit-programs-modal .program-edit-checkbox{display:flex;align-items:center;justify-content:center;width:38px;height:42px;cursor:pointer}
+.edit-programs-modal .program-edit-checkbox input{width:19px;height:19px;cursor:pointer;accent-color:#2175ed}
+.edit-programs-modal .program-edit-details{min-width:0}
+.edit-programs-modal .program-edit-row-selected{background:#f0f6ff;border-color:#7baef3}
+.edit-programs-modal .program-edit-actions{justify-content:flex-end;flex-wrap:wrap}
+.edit-programs-modal .program-edit-actions .btn:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:600px){
+ .edit-programs-modal .program-bulk-toolbar #programSelectionCount{order:0;margin-left:0;flex-basis:100%}
+ .edit-programs-modal .program-bulk-toolbar #programBulkRemove{flex:1;min-width:0}
+ .edit-programs-modal .program-edit-row{grid-template-columns:34px minmax(0,1fr);row-gap:5px}
+ .edit-programs-modal .program-edit-actions{grid-column:2;justify-content:flex-start}
+}
+
+</style>
 </head>
 <body>
 
@@ -1640,23 +1661,117 @@ function activeStudentProgramsOrdered(){
     toast('Program removed from the student. Past data was preserved.','success');
     closeModal();await loadStudentProfile();openEditPrograms()
   }
+  async function archiveSelectedAssignedPrograms(ids,studentId){
+    if(!ids.length||!studentId||state.currentStudent?.id!==studentId)throw new Error('Student context changed. Reopen Edit Programs.');
+    const allowed=new Set(activeStudentProgramsOrdered().filter(sp=>sp.student_id===studentId).map(sp=>sp.id));
+    if(ids.some(id=>!allowed.has(id))||new Set(ids).size!==ids.length)throw new Error('Program selection changed. Reopen Edit Programs.');
+    // Same soft removal as the existing one-at-a-time Remove control; never delete historic trials.
+    const {data,error}=await sb.from('student_compass_programs')
+      .update({status:'archived'})
+      .eq('student_id',studentId)
+      .in('id',ids)
+      .neq('status','archived')
+      .select('id');
+    if(error)throw error;
+    return Array.isArray(data)?data.length:0;
+  }
   function openEditPrograms(){
     if(!state.currentStudent){toast('Open a student profile first.','error');return}
-    const rows=activeStudentProgramsOrdered();
+    const studentId=state.currentStudent.id;
+    const rows=activeStudentProgramsOrdered().filter(sp=>sp.student_id===studentId);
+    const selected=new Set();
+    let processing=false;
     const body=rows.map((sp,i)=>{
-      const p=programById(sp.program_id);
-      return `<div class="program-edit-row"><div><strong>${i+1}. ${esc(p?.program_name||'Program')}</strong><small>${esc(programDomain(p))} · ${esc(roleName(sp.status))} · Goal ${Number(sp.goal_percentage||80)}%</small></div><div class="program-edit-actions"><button class="btn move-btn" type="button" data-move-assigned="${sp.id}" data-move-dir="-1" ${i===0?'disabled':''} title="Move up">↑</button><button class="btn move-btn" type="button" data-move-assigned="${sp.id}" data-move-dir="1" ${i===rows.length-1?'disabled':''} title="Move down">↓</button><button class="btn danger" type="button" data-remove-assigned="${sp.id}">Remove</button></div></div>`
+      const p=programById(sp.program_id),name=p?.program_name||'Program',id=esc(sp.id);
+      return '<div class="program-edit-row" data-program-edit-row="'+id+'">'+
+        '<label class="program-edit-checkbox"><input type="checkbox" data-select-assigned="'+id+'" aria-label="Select '+esc(name)+'"></label>'+
+        '<div class="program-edit-details"><strong>'+(i+1)+'. '+esc(name)+'</strong>'+
+        '<small>'+esc(programDomain(p))+' · '+esc(roleName(sp.status))+' · Goal '+Number(sp.goal_percentage??80)+'%</small></div>'+
+        '<div class="program-edit-actions">'+
+        '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="-1" '+(i===0?'disabled':'')+' title="Move up">↑</button>'+
+        '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="1" '+(i===rows.length-1?'disabled':'')+' title="Move down">↓</button>'+
+        '<button class="btn danger" type="button" data-remove-assigned="'+id+'">Remove</button></div></div>';
     }).join('');
-    openModal('Edit Programs',`<div id="editProgramsList" class="program-edit-list">${body||'<div class="empty-state compact">No assigned programs.</div>'}</div><div class="program-edit-note">Use ↑ and ↓ to change the order. Remove takes the program off this student's list; past session data is kept.</div>`,()=>{
-      document.querySelector('.modal')?.classList.add('edit-programs-modal');
-      $('editProgramsList')?.addEventListener('click',async e=>{
-        const move=e.target.closest('[data-move-assigned]');
-        if(move){await moveAssignedProgram(move.dataset.moveAssigned,Number(move.dataset.moveDir));return}
-        const remove=e.target.closest('[data-remove-assigned]');
-        if(remove){await removeAssignedProgram(remove.dataset.removeAssigned);return}
-      })
-    })
+    const toolbar='<div class="program-bulk-toolbar" aria-label="Bulk program selection">'+
+      '<button class="btn small" type="button" id="programSelectAll" '+(rows.length?'':'disabled')+'>Select All</button>'+
+      '<button class="btn small" type="button" id="programClearSelection" disabled>Clear Selection</button>'+
+      '<span id="programSelectionCount" aria-live="polite">0 selected</span>'+
+      '<button class="btn danger" type="button" id="programBulkRemove" disabled>Remove Selected (0)</button></div>';
+    openModal('Edit Programs',toolbar+
+      '<div id="editProgramsList" class="program-edit-list">'+
+      (body||'<div class="empty-state compact">No assigned programs.</div>')+'</div>'+
+      '<div class="program-edit-note">Select multiple programs to remove them together. Removing an assignment keeps all prior session, trial, and graph history. Use ↑ and ↓ to change order.</div>',
+      ()=>{
+        const list=$('editProgramsList'),all=$('programSelectAll'),clear=$('programClearSelection');
+        const counter=$('programSelectionCount'),bulk=$('programBulkRemove');
+        if(!list||!all||!clear||!counter||!bulk)return;
+        function refreshSelection(){
+          list.querySelectorAll('input[data-select-assigned]').forEach(input=>{
+            const checked=selected.has(input.dataset.selectAssigned);
+            input.checked=checked;
+            input.closest('.program-edit-row')?.classList.toggle('program-edit-row-selected',checked);
+            input.disabled=processing;
+          });
+          counter.textContent=selected.size+' of '+rows.length+' selected';
+          clear.disabled=processing||selected.size===0;
+          all.disabled=processing||selected.size===rows.length;
+          bulk.disabled=processing||selected.size===0;
+          bulk.textContent=processing?'Removing…':'Remove Selected ('+selected.size+')';
+          list.querySelectorAll('button').forEach(btn=>{btn.disabled=processing||btn.hasAttribute('data-original-disabled')});
+        }
+        // Move buttons retain their original disabled state after busy/idle transitions.
+        list.querySelectorAll('button:disabled').forEach(btn=>btn.dataset.originalDisabled='true');
+        list.addEventListener('change',e=>{
+          const input=e.target.closest('input[data-select-assigned]');
+          if(!input||processing)return;
+          if(input.checked)selected.add(input.dataset.selectAssigned);
+          else selected.delete(input.dataset.selectAssigned);
+          refreshSelection();
+        });
+        all.addEventListener('click',()=>{
+          if(processing)return;
+          rows.forEach(sp=>selected.add(sp.id));
+          refreshSelection();
+        });
+        clear.addEventListener('click',()=>{
+          if(processing)return;
+          selected.clear();refreshSelection();
+        });
+        bulk.addEventListener('click',async()=>{
+          if(processing||!selected.size)return;
+          const ids=[...selected],names=rows.filter(sp=>selected.has(sp.id))
+            .map(sp=>programById(sp.program_id)?.program_name||'Program');
+          const preview=names.slice(0,5).join(', ')+(names.length>5?' and '+(names.length-5)+' more':'');
+          if(!confirm('Remove '+ids.length+' selected programs from this student?\n\n'+preview+
+            '\n\nThese assignments will be archived. Past trial data, sessions, and graphs will be preserved.'))return;
+          if(state.currentStudent?.id!==studentId){toast('The student profile changed. Please reopen Edit Programs.','error');return}
+          processing=true;refreshSelection();
+          try{
+            const changed=await archiveSelectedAssignedPrograms(ids,studentId);
+            closeModal();
+            await loadStudentProfile();
+            openEditPrograms();
+            if(changed!==ids.length){
+              toast(changed+' of '+ids.length+' selected programs were removed. Review the remaining assignments.','error');
+            }else{
+              toast(changed+' programs removed from the student. Past data was preserved.','success');
+            }
+          }catch(error){
+            processing=false;refreshSelection();
+            toast(error?.message||'Could not remove selected programs. Please try again.','error');
+          }
+        });
+        list.addEventListener('click',async e=>{
+          if(processing)return;
+          const move=e.target.closest('[data-move-assigned]');
+          if(move){await moveAssignedProgram(move.dataset.moveAssigned,Number(move.dataset.moveDir));return}
+          const remove=e.target.closest('[data-remove-assigned]');
+          if(remove){await removeAssignedProgram(remove.dataset.removeAssigned);return}
+        });
+        refreshSelection();
+      });
   }
+
   function openLibraryAssign(){const students=state.caseloadStudents,pOpts=state.programCatalog.filter(p=>p.active!==false&&!compassCatalogHeld(p)).map(p=>`<option value="${p.id}"${state.programSelected?.id===p.id?' selected':''}>${esc(p.program_name)} · ${esc(programDomain(p))}</option>`).join(''),sOpts=students.map(s=>`<option value="${s.id}">${esc(studentLabel(s))}</option>`).join('');openModal('Assign COMPASS Program',`<form id="libraryAssignForm" class="form-stack"><label>Student<select id="libraryAssignStudent" required><option value="">Choose student…</option>${sOpts}</select></label><label>Program<select id="libraryAssignProgram" required><option value="">Choose from ${state.programCatalog.length} programs…</option>${pOpts}</select></label><label>Goal %<input id="libraryAssignGoal" type="number" min="0" max="100" value="80"></label><button class="btn primary" type="submit">Assign Program</button></form>`,()=>{$('libraryAssignForm').addEventListener('submit',async e=>{e.preventDefault();const sid=$('libraryAssignStudent').value,pid=$('libraryAssignProgram').value,existing=await safe(()=>sb.from('student_compass_programs').select('id,status').eq('student_id',sid).eq('program_id',pid).in('status',['active','hold']));if(existing.length){toast('That COMPASS program is already assigned to this student.','error');return}const prior=await safe(()=>sb.from('student_compass_programs').select('display_order').eq('student_id',sid)),max=Math.max(0,...prior.map(x=>Number(x.display_order||0))),{error}=await sb.from('student_compass_programs').insert({student_id:sid,program_id:pid,assigned_by:state.user.id,status:'active',goal_percentage:Number($('libraryAssignGoal').value||80),display_order:max+1});if(error){toast(error.message,'error');return}closeModal();toast('COMPASS program assigned.')})})}
   function openGoalModal(goal=null){const links=goal?new Set(linkedIds(goal.id)):new Set(),checks=state.studentPrograms.map(sp=>`<label class="inline-check"><input type="checkbox" name="goalProgram" value="${sp.id}"${links.has(sp.id)?' checked':''}> ${esc(programById(sp.program_id)?.program_name||'Program')}</label>`).join('');openModal(goal?'Edit IEP Goal':'Add IEP Goal',`<form id="goalForm" class="form-stack"><label>Goal Area<input id="goalArea" value="${esc(goal?.goal_area||'')}"></label><label>Title<input id="goalTitle" required value="${esc(goal?.title||'')}"></label><label>Description<textarea id="goalDescription">${esc(goal?.description||'')}</textarea></label><div class="two-col"><label>Baseline %<input id="goalBaseline" type="number" min="0" max="100" value="${goal?.baseline_percent??''}"></label><label>Target %<input id="goalTarget" type="number" min="0" max="100" value="${goal?.target_percent??80}"></label></div><div class="two-col"><label>Current %<input id="goalCurrent" type="number" min="0" max="100" value="${goal?.current_percent??''}"></label><label>Status<select id="goalStatus"><option value="active">Active</option><option value="draft">Draft</option><option value="met">Met</option><option value="on_hold">On Hold</option><option value="discontinued">Discontinued</option></select></label></div><div class="two-col"><label>Start Date<input id="goalStart" type="date" value="${goal?.start_date||todayISO()}"></label><label>Review Date<input id="goalReview" type="date" value="${goal?.review_date||''}"></label></div><fieldset><legend>Linked Student Programs</legend><div class="form-stack">${checks||'<span class="muted">Assign programs first to link them.</span>'}</div></fieldset><button class="btn primary" type="submit">Save IEP Goal</button></form>`,()=>{$('goalStatus').value=goal?.status||'active';$('goalForm').addEventListener('submit',async e=>{e.preventDefault();const payload={student_id:state.currentStudent.id,goal_area:$('goalArea').value.trim()||null,title:$('goalTitle').value.trim(),description:$('goalDescription').value.trim(),baseline_percent:$('goalBaseline').value===''?null:Number($('goalBaseline').value),target_percent:Number($('goalTarget').value||80),current_percent:$('goalCurrent').value===''?null:Number($('goalCurrent').value),status:$('goalStatus').value,start_date:$('goalStart').value||todayISO(),review_date:$('goalReview').value||null};let id=goal?.id,savedGoal=null;if(id){const {data,error}=await sb.from('student_iep_goals').update(payload).eq('id',id).select('*').single();if(error){toast(error.message,'error');return}savedGoal=data;const {error:de}=await sb.from('student_iep_goal_compass_programs').delete().eq('goal_id',id);if(de){toast(de.message,'error');return}}else{const {data,error}=await sb.from('student_iep_goals').insert(payload).select('*').single();if(error){toast(error.message,'error');return}savedGoal=data;id=data.id}const sel=qsa('input[name="goalProgram"]:checked',$('goalForm')).map(x=>x.value),linkRows=sel.map(sp=>({goal_id:id,student_compass_program_id:sp}));if(linkRows.length){const {error}=await sb.from('student_iep_goal_compass_programs').insert(linkRows);if(error){toast(error.message,'error');return}}closeModal();if(savedGoal&&state.currentStudent?.id===payload.student_id){state.goals=[savedGoal,...(Array.isArray(state.goals)?state.goals:[]).filter(g=>g.id!==id&&g.student_id===payload.student_id)].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));state.goalLinks=[...(Array.isArray(state.goalLinks)?state.goalLinks:[]).filter(l=>l.goal_id!==id),...linkRows];renderStudentProfile()}toast('IEP goal saved.');await loadStudentProfile();if(savedGoal&&state.currentStudent?.id===payload.student_id&&!state.goals.some(g=>g.id===id)){state.goals=[savedGoal,...state.goals.filter(g=>g.id!==id)];state.goalLinks=[...state.goalLinks.filter(l=>l.goal_id!==id),...linkRows];renderStudentProfile()}await loadGlobalData()})})}
   function openNoteModal(){openModal('Add Student Note',`<form id="noteForm" class="form-stack"><label>Note Type<select id="noteType"><option value="observation">Observation</option><option value="session">Session</option><option value="general">General</option><option value="team">Team</option></select></label><label>Date<input id="noteDate" type="date" value="${todayISO()}"></label><label>Title<input id="noteTitle"></label><label>Note<textarea id="noteText" required></textarea></label><button class="btn primary" type="submit">Save Note</button></form>`,()=>{$('noteForm').addEventListener('submit',async e=>{e.preventDefault();const {error}=await sb.from('student_notes').insert({student_id:state.currentStudent.id,note_type:$('noteType').value,note_date:$('noteDate').value,title:$('noteTitle').value.trim()||null,note_text:$('noteText').value.trim(),author_id:state.user.id});if(error){toast(error.message,'error');return}closeModal();toast('Note saved.');await loadStudentProfile();await loadGlobalData()})})}
