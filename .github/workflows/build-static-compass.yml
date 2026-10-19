@@ -5,6 +5,10 @@ on:
     paths:
       - '.github/workflows/build-static-compass.yml'
       - 'scripts/build-static.js'
+      - 'scripts/index-loader-source.html'
+      - 'index-base-20261016.html'
+      - 'index-profile-charts-v5-20261017.html'
+      - 'release/v20261010-3/**'
 permissions:
   contents: write
 jobs:
@@ -33,6 +37,14 @@ jobs:
           assert 'Loading COMPASS 1/' not in h
           print('Static HTML ready:',len(h),'characters')
           PY
+      - name: Browser smoke test before publishing
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          google-chrome --version
+          python3 -m http.server 8099 --bind 127.0.0.1 >/tmp/compass-prepublish.log 2>&1 &
+          sleep 2
+          node scripts/smoke-ui.cjs
       - name: Commit the final HTML directly
         run: |
           git config user.name "COMPASS Build"
