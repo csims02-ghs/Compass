@@ -1,0 +1,18 @@
+
+/* COMPASS Student Profile — native Edit Programs bulk controls */
+.edit-programs-modal .program-bulk-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;position:sticky;top:0;z-index:4;padding:11px 4px 13px;background:var(--surface,#fff);border-bottom:1px solid var(--line,#dbe5ef);margin-bottom:14px}
+.edit-programs-modal .program-bulk-toolbar #programSelectionCount{margin-left:auto;color:#365473;font-weight:700;white-space:nowrap}
+.edit-programs-modal .program-bulk-toolbar #programBulkRemove{min-width:170px}
+.edit-programs-modal .program-edit-row{grid-template-columns:38px minmax(0,1fr) auto;gap:10px}
+.edit-programs-modal .program-edit-checkbox{display:flex;align-items:center;justify-content:center;width:38px;height:42px;cursor:pointer}
+.edit-programs-modal .program-edit-checkbox input{width:19px;height:19px;cursor:pointer;accent-color:#2175ed}
+.edit-programs-modal .program-edit-details{min-width:0}
+.edit-programs-modal .program-edit-row-selected{background:#f0f6ff;border-color:#7baef3}
+.edit-programs-modal .program-edit-actions{justify-content:flex-end;flex-wrap:wrap}
+.edit-programs-modal .program-edit-actions .btn:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:600px){
+ .edit-programs-modal .program-bulk-toolbar #programSelectionCount{order:0;margin-left:0;flex-basis:100%}
+ .edit-programs-modal .program-bulk-toolbar #programBulkRemove{flex:1;min-width:0}
+ .edit-programs-modal .program-edit-row{grid-template-columns:34px minmax(0,1fr);row-gap:5px}
+ .edit-programs-modal .program-edit-actions{grid-column:2;justify-content:flex-start}
+}
