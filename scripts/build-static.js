@@ -45,6 +45,43 @@ async function main(){
   source=await layer(source,'index');
   source=await layer(source,'charts');
   source=await layer(source,'base');
+  // Build-time replacement: old graph and Session Data DOM never reach browsers.
+  function replaceUnique(from,to,label){
+    const count=source.split(from).length-1;
+    if(count!==1)throw Error('Static Progress '+label+' source mismatch: '+count);
+    source=source.replace(from,to);
+  }
+  const progressStart=source.indexOf('<div id="profile-tab-progress" class="profile-tab">');
+  const progressEnd=source.indexOf('<div id="profile-tab-docs" class="profile-tab">',progressStart);
+  if(progressStart<0||progressEnd<progressStart)throw Error('Native Progress tab markup not found');
+  const legacyMarkup=source.slice(progressStart,progressEnd);
+  if(!legacyMarkup.includes('id="progressChart"')||!legacyMarkup.includes('id="studentSessionsBody"'))
+    throw Error('Legacy Progress section changed unexpectedly');
+  const nativeProgress='<div id="profile-tab-progress" class="profile-tab">'+
+    '<section class="cpr-panel" aria-live="polite" aria-label="Program Progress">'+
+    '<h2>Program Progress</h2><p class="muted" role="status">Loading student progress…</p>'+
+    '</section></div>\n          ';
+  source=source.slice(0,progressStart)+nativeProgress+source.slice(progressEnd);
+  const oldFilterStart=source.indexOf("    $('progressProgramFilter').innerHTML=");
+  const oldFilterEnd=source.indexOf('\n',oldFilterStart);
+  if(oldFilterStart<0||oldFilterEnd<0)throw Error('Legacy filter assignment missing');
+  source=source.slice(0,oldFilterStart)+source.slice(oldFilterEnd+1);
+  const oldRendererStart=source.indexOf('  function filteredSessions(){');
+  const oldRendererEnd=source.indexOf('  function compassProfileRoot(){',oldRendererStart);
+  if(oldRendererStart<0||oldRendererEnd<oldRendererStart)throw Error('Legacy renderer region missing');
+  const oldRenderer=source.slice(oldRendererStart,oldRendererEnd);
+  if(!oldRenderer.includes('function renderProgress()')||!oldRenderer.includes('function avgAccuracy('))
+    throw Error('Legacy Progress renderer changed unexpectedly');
+  source=source.slice(0,oldRendererStart)+source.slice(oldRendererEnd);
+  replaceUnique('renderDocuments();renderProgress();renderBehavior()','renderDocuments();renderBehavior()','initial render');
+  replaceUnique(";if(name==='progress')renderProgress()}",'}','tab navigation');
+  replaceUnique("$('progressProgramFilter').addEventListener('change',renderProgress);",'','legacy filter listener');
+  const oldProgressLoader=source.indexOf('      if(!window.__compassProgressModuleRequested){');
+  const loaderEnd=source.indexOf("      window.dispatchEvent(new Event('compass-progress-data'));",oldProgressLoader);
+  if(oldProgressLoader<0||loaderEnd<oldProgressLoader)throw Error('Deferred Progress injection not found');
+  source=source.slice(0,oldProgressLoader)+source.slice(loaderEnd);
+  for(const obsolete of ['id="progressChart"','id="studentSessionsBody"','id="progressProgramFilter"','setTimeout(activate,30)'])
+    if(source.includes(obsolete))throw Error('Old Progress residue remains: '+obsolete);
   // The former prototype CSS bypassed login and made Home render over the public page.
   // Never ship review-only visibility overrides in COMPASS production.
   const review=/<style\s+id=["']review-only["'][^>]*>[\s\S]*?<\/style>/gi;
@@ -71,8 +108,9 @@ async function main(){
   // Append the goal-display module to the finished document, never inside a JS string.
   const docEnd=source.toLowerCase().lastIndexOf('</body>');
   if(docEnd<0)throw Error('Final COMPASS HTML has no closing body');
-  const linkedModule='<script src="./assigned-program-iep-links.js?v=1"></scr'+'ipt>\n';
-  source=source.slice(0,docEnd)+linkedModule+source.slice(docEnd);
+  const linkedModule='<script src="./assigned-program-iep-links.js?v=1"></scr'+'ipt>\n';  const progressModule='<script src="./progress-profile-live-v1.js?v=3"></scr'+'ipt>\n';
+
+  source=source.slice(0,docEnd)+linkedModule+progressModule+source.slice(docEnd);
   // The browser treats every literal </script> as an end tag, including strings.
   // Parse all inline blocks now; refuse to publish syntactically broken login/runner code.
   const scripts=[...source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
