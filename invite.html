@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Accept COMPASS Invitation</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#0e3769,#245a9d);color:#102f55;font-family:Inter,system-ui,"Segoe UI",sans-serif}.card{width:min(470px,100%);padding:34px;background:white;border-radius:21px;box-shadow:0 24px 60px #09264e55}.brand{font-size:36px;font-weight:900;letter-spacing:-1.5px}.sub{color:#2467ce;font-weight:750}h1{font-size:29px;margin:25px 0 9px}p{line-height:1.5;color:#627690;font-size:15px}label{display:block;font-size:14px;font-weight:750;margin-top:16px}input{display:block;width:100%;border:1px solid #d0ddec;border-radius:10px;padding:13px;margin-top:7px;font:inherit}button,.button{display:block;width:100%;border:1px solid #1c63cb;padding:13px 16px;color:#fff;background:#216bdd;border-radius:10px;margin-top:18px;font:inherit;font-weight:800;text-align:center;text-decoration:none;cursor:pointer}.button{background:#fff;color:#164d96}.hidden{display:none!important}.notice{font-weight:650;font-size:13px;min-height:24px;margin-top:13px}.err{color:#b42c41}.ok{color:#117843}
+</style></head><body><main class="card"><div class="brand">COMPASS</div><div class="sub">Student Support</div>
+<section id="waiting"><h1>Accepting invitation</h1><p>Checking your secure invitation link…</p></section>
+<section id="invalid" class="hidden"><h1>Invitation not available</h1><p>This invitation is missing, expired, or already used. Ask your COMPASS administrator for a new invitation.</p><a class="button" href="./">Return to COMPASS</a></section>
+<section id="password" class="hidden"><h1>Welcome to COMPASS</h1><p>Your invitation is verified. Set a private password to activate your staff account. Only your assigned students will appear in your caseload.</p>
+<form id="form"><label>New password<input id="newPassword" type="password" autocomplete="new-password" minlength="10" required></label><label>Confirm new password<input id="confirmPassword" type="password" autocomplete="new-password" minlength="10" required></label><button id="submit" type="submit">Activate COMPASS Account</button></form><div id="message" class="notice" role="status"></div>
+</section>
+<section id="complete" class="hidden"><h1>Account activated</h1><p>Your password is saved. You can now sign in to COMPASS with your email and the password you just created.</p><a class="button" href="./">Continue to COMPASS Sign In</a></section>
+</main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+(()=>{
+const $=id=>document.getElementById(id);
+const pieces=new URLSearchParams(location.hash.replace(/^#/,''));
+const eligible=pieces.get('type')==='invite' && (pieces.has('access_token')||pieces.has('token_hash')||pieces.has('code'));
+const sb=window.supabase.createClient('https://ykkexfsbnnxgncnyaksr.supabase.co','sb_publishable_3qkWcBut_bVwI6mlhOQOzA_50z_46cY',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+let accepted=false;
+function show(name){for(const id of ['waiting','invalid','password','complete'])$(id).classList.toggle('hidden',name!==id)}
+async function check(){
+ if(!eligible){show('invalid');return}
+ const {data,error}=await sb.auth.getSession();
+ if(error||!data.session?.user){show('invalid');return}
+ accepted=true;show('password');history.replaceState({},'',location.pathname);
+}
+sb.auth.onAuthStateChange((ev,session)=>{if(eligible && (ev==='SIGNED_IN'||ev==='INITIAL_SESSION')&&session?.user){accepted=true;show('password');history.replaceState({},'',location.pathname)}});
+$('form').addEventListener('submit',async e=>{
+ e.preventDefault();const p=$('newPassword').value,c=$('confirmPassword').value,m=$('message'),btn=$('submit');
+ m.className='notice';m.textContent='';
+ if(!accepted){m.classList.add('err');m.textContent='The invitation must be verified before changing a password.';return}
+ if(p.length<10){m.classList.add('err');m.textContent='Use at least 10 characters.';return}
+ if(p!==c){m.classList.add('err');m.textContent='Passwords do not match.';return}
+ btn.disabled=true;m.textContent='Saving your password…';
+ const {error}=await sb.auth.updateUser({password:p});
+ if(error){btn.disabled=false;m.classList.add('err');m.textContent=error.message;return}
+ await sb.auth.signOut();show('complete');
+});
+check().catch(()=>show('invalid'));
+})();
+</script></body></html>
