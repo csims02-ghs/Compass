@@ -22,6 +22,7 @@ const { chromium }=require('playwright');
    });
    console.log('UI_BEFORE_LOGIN '+JSON.stringify(before));
    console.log('UI_ERRORS_BEFORE_LOGIN '+JSON.stringify(errors));
+   console.log('UI_AUTH_INITIAL '+JSON.stringify({landing:await landing.isVisible(),login:await login.isVisible(),app:await app.isVisible()}));
    const valid=before.loginButtons.findIndex(x=>x.rect.x>=0&&x.rect.right<=width&&x.rect.y>=0&&x.rect.y<950);
    assert(valid>=0,'At least one sign-in button must be inside the viewport');
    await page.locator('[data-show-login]').nth(valid).click({timeout:6000});
