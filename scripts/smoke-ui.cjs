@@ -53,6 +53,31 @@ const { chromium }=require('playwright');
    assert(metrics.content.x>=metrics.main.x&&metrics.content.x<metrics.main.x+100,
      'Home content should not be shifted or hidden far to the right');
    assert(metrics.home.right<=width+8,'Home section should fit inside viewport');
+   const nav=await page.evaluate(()=>{
+     const sidebar=document.querySelector('#sidebar'),additional=document.querySelector('#compassAdditionalTools');
+     if(!sidebar||!additional)return {exists:false};
+     additional.open=true;
+     const items=[...additional.querySelectorAll('[data-page]')].map(x=>x.dataset.page);
+     const inner=additional.querySelector('.nav');
+     const navComputed=getComputedStyle(inner),sidebarComputed=getComputedStyle(sidebar);
+     return {exists:true,items,
+       mainScroll:sidebarComputed.overflowY,
+       nestedScroll:navComputed.overflowY,
+       nestedConstrained:inner.scrollHeight>inner.clientHeight+3,
+       oldOfflineButtons:sidebar.querySelectorAll('.nav [data-page="offline-programs"]').length,
+       adminButtonPresent:!!sidebar.querySelector('#compassAdminNav'),
+       compactFont:parseFloat(getComputedStyle(sidebar.querySelector('.brand-title')).fontSize)
+     };
+   });
+   assert.equal(nav.exists,true,'Native Additional Tools disclosure must exist');
+   assert.equal(nav.mainScroll,'auto','The sidebar itself must be the only vertical scroll container');
+   assert.equal(nav.nestedConstrained,false,'Additional Tools must not have a nested vertical scrollbar');
+   assert(nav.items.includes('offline-programs')&&nav.items.includes('sessions')&&nav.items.includes('settings'),
+     'Offline lists, Session Notes and Settings must be in Additional Tools');
+   assert.equal(nav.adminButtonPresent,false,'Staff administration must not appear before owner authentication');
+   assert(nav.compactFont<=32,'COMPASS sidebar title must use compact typography');
+   console.log('SIDEBAR_SMOKE_PASS '+JSON.stringify({width,nav}));
+
    // Progress is now one native view. The legacy graph must not exist even momentarily.
    assert.equal(await page.locator('#progressChart,#progressProgramFilter,#studentSessionsBody').count(),0,
      'Legacy Progress DOM must not be shipped');
