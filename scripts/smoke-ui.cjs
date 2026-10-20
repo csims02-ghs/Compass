@@ -54,29 +54,40 @@ const { chromium }=require('playwright');
      'Home content should not be shifted or hidden far to the right');
    assert(metrics.home.right<=width+8,'Home section should fit inside viewport');
    const nav=await page.evaluate(()=>{
-     const sidebar=document.querySelector('#sidebar'),additional=document.querySelector('#compassAdditionalTools');
-     if(!sidebar||!additional)return {exists:false};
-     additional.open=true;
+     const sidebar=document.querySelector('#sidebar'),scroll=document.querySelector('#compassSidebarScroll');
+     const toggle=document.querySelector('#compassAdditionalToggle'),additional=document.querySelector('#compassAdditionalNav');
+     if(!sidebar||!scroll||!toggle||!additional)return {exists:false};
+     const measure=()=>{const sr=sidebar.getBoundingClientRect(),tr=toggle.getBoundingClientRect();
+       return {sidebarTop:sr.top,sidebarBottom:sr.bottom,toggleTop:tr.top,toggleBottom:tr.bottom}};
+     const collapsed=additional.hidden;
+     const initial=measure();
+     toggle.click();
+     const expanded=!additional.hidden;
      const items=[...additional.querySelectorAll('[data-page]')].map(x=>x.dataset.page);
-     const inner=additional.querySelector('.nav');
-     const navComputed=getComputedStyle(inner),sidebarComputed=getComputedStyle(sidebar);
-     return {exists:true,items,
-       mainScroll:sidebarComputed.overflowY,
-       nestedScroll:navComputed.overflowY,
-       nestedConstrained:inner.scrollHeight>inner.clientHeight+3,
-       oldOfflineButtons:sidebar.querySelectorAll('.nav [data-page="offline-programs"]').length,
-       adminButtonPresent:!!sidebar.querySelector('#compassAdminNav'),
-       compactFont:parseFloat(getComputedStyle(sidebar.querySelector('.brand-title')).fontSize)
-     };
+     const mainScroll=getComputedStyle(scroll).overflowY,sidebarScroll=getComputedStyle(sidebar).overflowY;
+     const nestedScroll=getComputedStyle(additional).overflowY;
+     scroll.scrollTop=scroll.scrollHeight;
+     const after=measure();
+     toggle.click();
+     return {exists:true,collapsed,expanded,items,initial,after,mainScroll,sidebarScroll,nestedScroll,
+       nestedConstrained:additional.scrollHeight>additional.clientHeight+3,
+       ownerOnlyAdminButton:!!sidebar.querySelector('#compassAdminNav'),
+       compactFont:parseFloat(getComputedStyle(sidebar.querySelector('.brand-title')).fontSize),
+       scrollHeight:scroll.scrollHeight,scrollClientHeight:scroll.clientHeight,
+       toggleExpandedAfterClose:toggle.getAttribute('aria-expanded')};
    });
-   assert.equal(nav.exists,true,'Native Additional Tools disclosure must exist');
-   assert.equal(nav.mainScroll,'auto','The sidebar itself must be the only vertical scroll container');
-   assert.equal(nav.nestedConstrained,false,'Additional Tools must not have a nested vertical scrollbar');
+   assert(nav.exists&&nav.collapsed&&nav.expanded,'Pinned Additional Tools must expand from a collapsed state');
+   assert.equal(nav.mainScroll,'auto','The entire navigation must share one scrolling area');
+   assert.equal(nav.sidebarScroll,'hidden','The sidebar itself must not create a second scrollbar');
+   assert.equal(nav.nestedConstrained,false,'Additional Tools must not have its own scrollbar');
    assert(nav.items.includes('offline-programs')&&nav.items.includes('sessions')&&nav.items.includes('settings'),
      'Offline lists, Session Notes and Settings must be in Additional Tools');
-   assert.equal(nav.adminButtonPresent,false,'Staff administration must not appear before owner authentication');
+   assert.equal(nav.ownerOnlyAdminButton,false,'Administration cannot be shown without owner authentication');
+   assert(nav.initial.toggleTop>=0&&nav.initial.toggleBottom<=950,'Additional Tools must initially be visible within the viewport');
+   assert(Math.abs(nav.initial.toggleTop-nav.after.toggleTop)<2,'Additional Tools must stay pinned while menu scrolls');
+   assert.equal(nav.toggleExpandedAfterClose,'false','Additional Tools must collapse');
    assert(nav.compactFont<=32,'COMPASS sidebar title must use compact typography');
-   console.log('SIDEBAR_SMOKE_PASS '+JSON.stringify({width,nav}));
+   console.log('SIDEBAR_PINNED_SMOKE_PASS '+JSON.stringify({width,nav}));
 
    // Progress is now one native view. The legacy graph must not exist even momentarily.
    assert.equal(await page.locator('#progressChart,#progressProgramFilter,#studentSessionsBody').count(),0,
