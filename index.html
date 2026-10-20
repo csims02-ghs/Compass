@@ -332,6 +332,37 @@ table{font-size:14.5px}th{font-size:12.5px;padding:11px 12px}td{padding:12px}
 @media(min-width:1001px) and (max-width:1250px){#profileName{font-size:28px}}
 @media(max-width:760px){.followup-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.control,input,select,textarea{font-size:16px}}
+/* COMPASS native compact sidebar — exactly one full-height scrolling surface. */
+:root{--sidebar:264px}
+#sidebar{width:var(--sidebar);height:100vh;height:100dvh;overflow-x:hidden;overflow-y:auto;
+ scrollbar-width:thin;scrollbar-color:rgba(203,223,248,.65) transparent;overscroll-behavior-y:contain;
+ padding:18px 12px 14px}
+#sidebar::-webkit-scrollbar{width:8px}
+#sidebar::-webkit-scrollbar-track{background:transparent}
+#sidebar::-webkit-scrollbar-thumb{background:rgba(203,223,248,.65);border-radius:8px}
+#sidebar .brand{margin:2px 8px 15px}
+#sidebar .brand-title{font-size:30px;letter-spacing:-1.2px;line-height:1}
+#sidebar .brand-sub{font-size:14px;margin-top:5px}
+#sidebar .side-label{margin:13px 12px 5px;font-size:11px;letter-spacing:.05em}
+#sidebar .nav{display:grid;gap:3px;overflow:visible}
+#sidebar .nav button{width:100%;min-height:39px;text-align:left;font-size:14.5px;
+ font-weight:740;line-height:1.2;border-radius:10px;padding:8px 12px;white-space:normal}
+#sidebar .side-foot{margin:16px 3px 0;padding:10px 12px;font-size:12px}
+#sidebar .side-foot small{font-size:11px}
+#sidebar .compass-tools{display:block;margin:14px 3px 0;overflow:visible}
+#sidebar .compass-tools>summary{list-style:none;cursor:pointer;display:flex;align-items:center;
+ justify-content:space-between;gap:10px;padding:10px 13px;border-radius:11px;
+ border:1px solid rgba(198,225,250,.32);background:rgba(255,255,255,.065);
+ color:#fff;font-size:14px;font-weight:800;line-height:1.25}
+#sidebar .compass-tools>summary::-webkit-details-marker{display:none}
+#sidebar .compass-tools>summary::after{content:"⌄";font-size:16px;line-height:1}
+#sidebar .compass-tools[open]>summary::after{content:"⌃"}
+#sidebar .compass-tools>summary:focus-visible{outline:3px solid #98c8ff;outline-offset:3px}
+#sidebar .compass-tools>.nav{margin-top:6px;overflow:visible!important;max-height:none!important;height:auto!important}
+#sidebar .compass-tools>.nav button{padding-left:14px}
+@media (min-width:851px) and (max-width:1250px){:root{--sidebar:246px}}
+@media (max-width:850px){:root{--sidebar:282px}#sidebar .nav button{min-height:44px}}
+
 </style>
 
 <style id="compass-program-editor-css">
@@ -621,18 +652,25 @@ body{display:block!important;width:100%;min-width:0}
 
   <div id="app" class="app hidden">
     <aside id="sidebar" class="sidebar">
-      <div class="brand"><div class="brand-title">COMPASS</div><div class="brand-sub">Student Support</div></div>
-      <nav class="nav"><button class="active" data-page="home">Home</button></nav>
-      <div class="side-label">Students</div>
-      <nav class="nav"><button data-page="caseload">My Caseload</button><button data-page="students">Students</button></nav>
-      <div class="side-label">Instruction</div>
-      <nav class="nav"><button data-page="programs">Programs</button><button data-page="offline-programs">Offline Program Lists <span id="offlineNavBadge" class="offline-nav-badge hidden">0</span></button><button data-page="sessions">Session &amp; Notes</button><button data-page="assessments">Assessments</button><button data-page="data-collection">Data Collection</button><button data-page="progress">Data &amp; Progress</button></nav>
-      <div class="side-label">Compliance</div>
-      <nav class="nav"><button data-page="iep-goals">IEP Goals</button><button data-page="documents">Documents</button><button data-page="tasks">Deadlines &amp; Tasks</button></nav>
-      <div class="side-label">Resources</div>
-      <nav class="nav"><button data-page="settings">Settings</button></nav>
-      <div class="side-foot"><div id="sidebarName">Signed-in User</div><small id="sidebarRole">Staff</small></div>
-    </aside>
+  <div class="brand"><div class="brand-title">COMPASS</div><div class="brand-sub">Student Support</div></div>
+  <nav class="nav" aria-label="Home"><button class="active" data-page="home">Home</button></nav>
+  <div class="side-label">Students</div>
+  <nav class="nav" aria-label="Students"><button data-page="caseload">My Caseload</button><button data-page="students">Students</button></nav>
+  <div class="side-label">Instruction</div>
+  <nav class="nav" aria-label="Instruction"><button data-page="programs">Programs</button><button data-page="assessments">Assessments</button><button data-page="data-collection">Data Collection</button><button data-page="progress">Data &amp; Progress</button></nav>
+  <div class="side-label">Compliance</div>
+  <nav class="nav" aria-label="Compliance"><button data-page="iep-goals">IEP Goals</button><button data-page="documents">Documents</button><button data-page="tasks">Deadlines &amp; Tasks</button></nav>
+  <details id="compassAdditionalTools" class="compass-tools">
+    <summary>Additional Tools</summary>
+    <nav class="nav" id="compassAdditionalNav" aria-label="Additional Tools">
+      <button data-page="offline-programs">Offline Program Lists <span id="offlineNavBadge" class="offline-nav-badge hidden">0</span></button>
+      <button data-page="sessions">Session &amp; Notes</button>
+      <button data-page="progress" data-reports-shortcut="true">Reports</button>
+      <button data-page="settings">Settings</button>
+    </nav>
+  </details>
+  <div class="side-foot"><div id="sidebarName">Signed-in User</div><small id="sidebarRole">Staff</small></div>
+</aside>
 
     <main class="main">
       <button id="mobileMenu" class="mobile-menu btn" type="button">☰</button>
@@ -1597,7 +1635,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function renderCalendarInto(titleId,gridId){const d=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth(),1),title=$(titleId),g=$(gridId);if(!title||!g)return;title.textContent=d.toLocaleDateString(undefined,{month:'long',year:'numeric'});g.innerHTML=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="cal-head">${x}</div>`).join('');const first=new Date(d);first.setDate(1-first.getDay());for(let i=0;i<42;i++){const day=new Date(first);day.setDate(first.getDate()+i);const iso=[day.getFullYear(),String(day.getMonth()+1).padStart(2,'0'),String(day.getDate()).padStart(2,'0')].join('-'),ev=state.events.filter(e=>localISO(e.start_at)===iso),el=document.createElement('div');el.className='cal-day'+(day.getMonth()!==d.getMonth()?' other':'')+(iso===todayISO()?' today':'');el.dataset.date=iso;el.innerHTML=`<div class="cal-num">${day.getDate()}</div>`+ev.slice(0,4).map(calendarEventHtml).join('');g.appendChild(el)}}
   function showTodayInHomeCalendar(){const g=$('homeCalendarGrid'),sc=g?g.parentElement:null;if(!sc||!sc.classList.contains('home-calendar-scroll')||sc.scrollWidth<=sc.clientWidth+1)return;const t=g.querySelector('.cal-day.today');if(!t)return;sc.scrollLeft=Math.max(0,t.getBoundingClientRect().left-g.getBoundingClientRect().left-(sc.clientWidth-t.offsetWidth)/2)}
   function renderCalendar(){renderCalendarInto('homeCalendarTitle','homeCalendarGrid');showTodayInHomeCalendar()}
-  function showPage(name,push=true){if(name==='calendar')name='home';if(name==='student-search'||name==='student-directory')name='students';const p=$('page-'+name);if(!p)return;const siblings=p.parentElement?Array.from(p.parentElement.children).filter(el=>el.id&&el.id.startsWith('page-')):[];const candidates=new Set([...qsa('.page'),...siblings]);const home=$('page-home');if(home)candidates.add(home);candidates.forEach(page=>{const active=page===p;page.classList.toggle('active',active);page.hidden=!active;if(active){page.style.removeProperty('display')}else{page.style.setProperty('display','none','important')}});document.body.dataset.compassPage=name;document.body.classList.toggle('compass-home-active',name==='home');qsa('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));if(push)location.hash=name;$('sidebar').classList.remove('open');window.scrollTo({top:0});if(name==='students')renderDirectory();if(name==='data-collection')loadDataCollection();if(name==='offline-programs')renderOfflinePage();if(name==='home')showTodayInHomeCalendar()}
+  function showPage(name,push=true){if(name==='calendar')name='home';if(name==='student-search'||name==='student-directory')name='students';const p=$('page-'+name);if(!p)return;const siblings=p.parentElement?Array.from(p.parentElement.children).filter(el=>el.id&&el.id.startsWith('page-')):[];const candidates=new Set([...qsa('.page'),...siblings]);const home=$('page-home');if(home)candidates.add(home);candidates.forEach(page=>{const active=page===p;page.classList.toggle('active',active);page.hidden=!active;if(active){page.style.removeProperty('display')}else{page.style.setProperty('display','none','important')}});document.body.dataset.compassPage=name;document.body.classList.toggle('compass-home-active',name==='home');qsa('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));const additionalNav=$('compassAdditionalTools');if(additionalNav&&['offline-programs','sessions','settings','admin-users'].includes(name))additionalNav.open=true;if(push)location.hash=name;$('sidebar').classList.remove('open');window.scrollTo({top:0});if(name==='students')renderDirectory();if(name==='data-collection')loadDataCollection();if(name==='offline-programs')renderOfflinePage();if(name==='home')showTodayInHomeCalendar()}
   function showProfileTab(name){if(name==='behavior'){openBehaviorSelection();return}qsa('#profileTabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));qsa('.profile-tab').forEach(p=>p.classList.remove('active'));$('profile-tab-'+name)?.classList.add('active')}
   let modalReturnFocus=null;
   function openModal(title,html,onReady){const bd=$('modalBackdrop'),m=$('modal');if(bd.classList.contains('hidden'))modalReturnFocus=document.activeElement;m.className='modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-labelledby','modalTitle');m.setAttribute('tabindex','-1');$('modalTitle').textContent=title;$('modalBody').innerHTML=html;bd.classList.remove('hidden');setTimeout(()=>{onReady?.();if(!bd.contains(document.activeElement))m.focus({preventScroll:true})},0)}
