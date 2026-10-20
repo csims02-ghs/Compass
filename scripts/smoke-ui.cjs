@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const { chromium }=require('playwright');
 const compassSource=fs.readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
-assert.equal((compassSource.match(/sb\\.rpc\\('assign_compass_programs_without_duplicates'/g)||[]).length,2,
+assert.equal(compassSource.split("sb.rpc('assign_compass_programs_without_duplicates'").length-1,2,
   'Bulk and individual assignment must both use duplicate-safe Supabase RPC');
 assert.equal(compassSource.includes("sb.from('student_compass_programs').insert("),false,
   'COMPASS must not directly insert student-program assignments without conflict protection');
