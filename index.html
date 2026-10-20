@@ -337,36 +337,36 @@ table{font-size:14.5px}th{font-size:12.5px;padding:11px 12px}td{padding:12px}
 #sidebar{width:var(--sidebar);height:100vh;height:100dvh;display:flex;flex-direction:column;
  overflow:hidden!important;padding:0!important;min-height:0}
 #sidebar .compass-sidebar-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;
- padding:18px 12px 12px;scrollbar-width:thin;scrollbar-color:rgba(203,223,248,.7) transparent;
+ padding:10px 12px 8px;scrollbar-width:thin;scrollbar-color:rgba(203,223,248,.7) transparent;
  overscroll-behavior-y:contain}
 #sidebar .compass-sidebar-scroll::-webkit-scrollbar{width:8px}
 #sidebar .compass-sidebar-scroll::-webkit-scrollbar-track{background:transparent}
 #sidebar .compass-sidebar-scroll::-webkit-scrollbar-thumb{background:rgba(203,223,248,.7);border-radius:8px}
-#sidebar .brand{margin:2px 8px 15px}
-#sidebar .brand-title{font-size:30px;letter-spacing:-1.2px;line-height:1}
-#sidebar .brand-sub{font-size:14px;margin-top:5px}
-#sidebar .side-label{margin:13px 12px 5px;font-size:11px;letter-spacing:.05em}
-#sidebar .nav{display:grid;gap:3px;overflow:visible}
-#sidebar .nav button{width:100%;min-height:39px;text-align:left;font-size:14.5px;
- font-weight:740;line-height:1.2;border-radius:10px;padding:8px 12px;white-space:normal}
+#sidebar .brand{margin:1px 8px 10px}
+#sidebar .brand-title{font-size:29px;letter-spacing:-1.2px;line-height:1}
+#sidebar .brand-sub{font-size:13px;margin-top:3px}
+#sidebar .side-label{margin:9px 12px 3px;font-size:10.5px;letter-spacing:.05em}
+#sidebar .nav{display:grid;gap:1px;overflow:visible}
+#sidebar .nav button{width:100%;min-height:35px;text-align:left;font-size:14px;
+ font-weight:740;line-height:1.2;border-radius:9px;padding:7px 12px;white-space:normal}
 #sidebar #compassAdditionalNav[hidden]{display:none!important}
 #sidebar #compassAdditionalNav{margin:12px 3px 0;padding:8px 0 4px;
  border-top:1px solid rgba(198,225,250,.25);overflow:visible!important;max-height:none!important}
 #sidebar #compassAdditionalNav button{padding-left:14px}
-#sidebar .compass-sidebar-dock{flex:0 0 auto;padding:9px 12px 11px;
+#sidebar .compass-sidebar-dock{flex:0 0 auto;padding:7px 12px 8px;
  background:#123f73;border-top:1px solid rgba(198,225,250,.16);
  box-shadow:0 -6px 15px rgba(5,33,65,.13)}
 #sidebar #compassAdditionalToggle{width:100%;cursor:pointer;display:flex;align-items:center;
- justify-content:space-between;gap:10px;padding:12px 13px;border-radius:11px;
+ justify-content:space-between;gap:10px;padding:10px 13px;border-radius:11px;
  border:1px solid rgba(198,225,250,.42);background:rgba(255,255,255,.07);
  color:#fff;font-size:14px;font-weight:800;line-height:1.25;text-align:left}
 #sidebar #compassAdditionalToggle:hover,#sidebar #compassAdditionalToggle[aria-expanded="true"]{background:rgba(255,255,255,.15)}
 #sidebar #compassAdditionalToggle[aria-expanded="true"] .compass-chevron{transform:rotate(180deg)}
 #sidebar #compassAdditionalToggle:focus-visible{outline:3px solid #98c8ff;outline-offset:3px}
-#sidebar .side-foot{margin:8px 0 0;padding:8px 12px;font-size:12px}
+#sidebar .side-foot{margin:6px 0 0;padding:7px 12px;font-size:12px}
 #sidebar .side-foot small{font-size:11px}
 @media(min-width:851px) and (max-width:1250px){:root{--sidebar:246px}}
-@media(max-width:850px){:root{--sidebar:282px}#sidebar .nav button{min-height:44px}}
+@media(max-width:850px){:root{--sidebar:282px}#sidebar .nav button{min-height:39px;padding-top:8px;padding-bottom:8px}}
 
 </style>
 
@@ -663,7 +663,7 @@ body{display:block!important;width:100%;min-width:0}
     <div class="side-label">Students</div>
     <nav class="nav" aria-label="Students"><button data-page="caseload">My Caseload</button><button data-page="students">Students</button></nav>
     <div class="side-label">Instruction</div>
-    <nav class="nav" aria-label="Instruction"><button data-page="programs">Programs</button><button data-page="assessments">Assessments</button><button data-page="data-collection">Data Collection</button><button data-page="progress">Data &amp; Progress</button></nav>
+    <nav class="nav" aria-label="Instruction"><button data-page="programs">Programs</button><button data-page="assessments">Assessments</button></nav>
     <div class="side-label">Compliance</div>
     <nav class="nav" aria-label="Compliance"><button data-page="iep-goals">IEP Goals</button><button data-page="documents">Documents</button><button data-page="tasks">Deadlines &amp; Tasks</button></nav>
     <nav class="nav compass-additional-items" id="compassAdditionalNav" aria-label="Additional Tools" hidden>
