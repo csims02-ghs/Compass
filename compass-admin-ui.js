@@ -6,17 +6,14 @@ const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_PUBLISHABLE_
 const el=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let assigned=[],staff=[],students=[],editing=null,mounted=false;
+function extraOpen(){const d=el("compassAdditionalTools");if(d)d.open=true}
 function setup(){
 if(mounted)return;
-const sidebar=el("sidebar"),main=document.querySelector("#app main.main");if(!sidebar||!main)return;
+const sidebar=el("sidebar"),main=document.querySelector("#app main.main");
+const extra=el("compassAdditionalTools"),nav=el("compassAdditionalNav");
+if(!sidebar||!main||!extra||!nav)return;
 mounted=true;
 const styles=document.createElement("style");styles.textContent=[
-"#sidebar{overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#8eb0d3 transparent}",
-"#sidebar .brand{margin-bottom:13px!important}#sidebar .side-label{margin:12px 12px 5px!important}",
-"#sidebar .nav{gap:3px!important}#sidebar .nav button{min-height:38px!important;padding:8px 13px!important}",
-".compass-tools{margin-top:12px}.compass-tools>summary{cursor:pointer;color:#fff;padding:12px 14px;border:1px solid #587ba7;border-radius:11px;font-weight:800;list-style:none;background:#ffffff12}",
-".compass-tools>summary::-webkit-details-marker{display:none}.compass-tools>summary:after{content:'⌄';float:right}.compass-tools[open]>summary:after{content:'⌃'}",
-".compass-tools>.nav{margin-top:7px;overflow:visible!important;max-height:none!important}",
 "#page-admin-users .admin-columns{display:grid;grid-template-columns:minmax(270px,1fr) minmax(300px,1fr);gap:18px}",
 "#page-admin-users .admin-panel{padding:22px}#page-admin-users label{display:block;font-weight:750;margin:10px 0;font-size:14px}",
 "#page-admin-users label>.control{display:block;width:100%;margin-top:6px}",
@@ -29,12 +26,8 @@ const styles=document.createElement("style");styles.textContent=[
 "#page-admin-users #adminMessage.error{color:#b1293d}#page-admin-users #adminMessage.ok{color:#147648}",
 "@media(max-width:950px){#page-admin-users .admin-columns{grid-template-columns:1fr}}"
 ].join("\n");document.head.appendChild(styles);
-const extra=document.createElement("details");extra.className="compass-tools";extra.id="compassAdditionalTools";
-extra.innerHTML='<summary>Additional Tools</summary><nav class="nav" id="compassAdditionalNav"></nav>';
-sidebar.insertBefore(extra,sidebar.querySelector(".side-foot"));
-const nav=el("compassAdditionalNav");
-["offline-programs","sessions","tasks","settings"].forEach(name=>{const button=sidebar.querySelector('.nav button[data-page="'+name+'"]');if(button)nav.appendChild(button)});
-const button=document.createElement("button");button.type="button";button.dataset.page="admin-users";button.id="compassAdminNav";button.textContent="User Administration";nav.appendChild(button);
+const button=document.createElement("button");button.type="button";button.dataset.page="admin-users";button.id="compassAdminNav";button.textContent="Administration";
+nav.insertBefore(button,nav.querySelector('button[data-page="settings"]'));
 const page=document.createElement("section");page.id="page-admin-users";page.className="page";page.hidden=true;page.innerHTML=
 '<div class="content"><div class="page-head"><div><h1>User Administration</h1><p class="subtitle">Invite staff, choose their email and assign a student caseload.</p></div></div>'+
 '<div class="admin-columns"><article class="card admin-panel"><h2 id="adminFormHeading">Invite Staff</h2>'+
@@ -106,7 +99,7 @@ async function submit(event){
 async function gate(){
  const {data:{user}}=await sb.auth.getUser();if(!user||user.id!==OWNER_ID)return;
  const {data:profile}=await sb.from("profiles").select("role,active").eq("id",user.id).maybeSingle();
- if(profile?.role==="platform_admin"&&profile.active===true){setup();if(location.hash==="#admin-users")refresh()}
+ if(profile?.role==="platform_admin"&&profile.active===true){setup();if(location.hash==="#admin-users"){extraOpen();refresh()}}
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>gate(),{once:true});else gate();
 sb.auth.onAuthStateChange(event=>{if(event==="SIGNED_IN")gate()});
