@@ -88,6 +88,34 @@ const { chromium }=require('playwright');
    assert.equal(nav.toggleExpandedAfterClose,'false','Additional Tools must collapse');
    assert(nav.compactFont<=32,'COMPASS sidebar title must use compact typography');
    console.log('SIDEBAR_PINNED_SMOKE_PASS '+JSON.stringify({width,nav}));
+   // Verify the compact main menu fits without its own visible scrollbar at desktop heights,
+   // and that the two requested links are absent rather than deleting their underlying pages.
+   for(const compactHeight of [768,831,870]){
+     await page.setViewportSize({width,height:compactHeight});
+     const compact=await page.evaluate(()=>{
+       const scroll=document.querySelector('#compassSidebarScroll');
+       const additional=document.querySelector('#compassAdditionalNav');
+       const instruction=scroll.querySelector('[aria-label="Instruction"]');
+       return {
+         height:innerHeight,scrollHeight:scroll.scrollHeight,clientHeight:scroll.clientHeight,
+         additionalHidden:additional.hidden,
+         instructionLinks:[...instruction.querySelectorAll('[data-page]')].map(n=>n.dataset.page),
+         dataCollectionPageExists:!!document.querySelector('#page-data-collection'),
+         dataProgressPageExists:!!document.querySelector('#page-progress'),
+         dockVisible:document.querySelector('#compassAdditionalToggle').getBoundingClientRect().bottom<=innerHeight
+       };
+     });
+     assert(compact.scrollHeight<=compact.clientHeight+1,
+       'Collapsed sidebar should fit without vertical scrollbar at height '+compactHeight+': '+JSON.stringify(compact));
+     assert(compact.additionalHidden&&compact.dockVisible,'Pinned tools must remain collapsed and visible');
+     assert.deepEqual(compact.instructionLinks,['programs','assessments'],
+       'Instruction menu must omit Data Collection and Data & Progress links');
+     assert(compact.dataCollectionPageExists&&compact.dataProgressPageExists,
+       'Removing navigation must not delete the associated COMPASS modules');
+     console.log('COMPACT_SIDEBAR_FIT_PASS '+JSON.stringify({width,compact}));
+   }
+   await page.setViewportSize({width,height:950});
+
 
    // Progress is now one native view. The legacy graph must not exist even momentarily.
    assert.equal(await page.locator('#progressChart,#progressProgramFilter,#studentSessionsBody').count(),0,
