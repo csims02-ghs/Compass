@@ -1668,17 +1668,36 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     $('assignProgramClear')?.addEventListener('click',()=>{checks().forEach(c=>c.checked=false);refreshCount()});
     $('assignProgramPicker')?.addEventListener('change',refreshCount);
     refreshCount();
+    const assignmentStudentId=state.currentStudent.id;
+    let assigningPrograms=false;
     $('assignProgramForm').addEventListener('submit',async e=>{
       e.preventDefault();
-      const pids=checks().filter(c=>c.checked).map(c=>c.value);
+      if(assigningPrograms)return;
+      if(state.currentStudent?.id!==assignmentStudentId){toast('Student profile changed. Reopen Assign Programs.','error');return}
+      const pids=[...new Set(checks().filter(c=>c.checked).map(c=>c.value))];
       if(!pids.length){toast('Select at least one COMPASS program.','error');return}
-      const visible=state.studentPrograms.filter(x=>x.status!=='archived');
-      const max=Math.max(0,...visible.map(x=>Number(x.display_order||0)));
-      const goal=Number($('assignProgramGoal').value||80),trials=$('assignProgramTrials').value?Number($('assignProgramTrials').value):null;
-      const insertRows=pids.map((pid,i)=>({student_id:state.currentStudent.id,program_id:pid,assigned_by:state.user.id,status:'active',goal_percentage:goal,display_order:max+i+1,trials_per_session:trials}));
-      const {error}=await sb.from('student_compass_programs').insert(insertRows);
-      if(error){toast(error.message,'error');return}
-      closeModal();toast(insertRows.length===1?'COMPASS program assigned.':insertRows.length+' COMPASS programs assigned.');await loadStudentProfile()
+      const goal=Number($('assignProgramGoal').value||80);
+      const trials=$('assignProgramTrials').value.trim()?Number($('assignProgramTrials').value):null;
+      const submit=$('assignProgramForm')?.querySelector('.assign-program-submit');
+      assigningPrograms=true;
+      if(submit){submit.disabled=true;submit.textContent='Assigning programs…'}
+      try{
+        // Database RPC uses ON CONFLICT DO NOTHING for active/on-hold pairs.
+        // It preserves previously assigned rows, goal settings, and session data.
+        const {data,error}=await sb.rpc('assign_compass_programs_without_duplicates',{
+          p_student_id:assignmentStudentId,p_program_ids:pids,
+          p_goal_percentage:goal,p_trials_per_session:trials
+        });
+        if(error)throw error;
+        const result=Array.isArray(data)?data[0]:data;
+        if(!result||!Number.isInteger(Number(result.assigned_count)))throw new Error('Assignment confirmation unavailable. Refresh the student profile.');
+        const added=Number(result.assigned_count)||0,skipped=Number(result.skipped_count)||0;
+        if(state.currentStudent?.id===assignmentStudentId)await loadStudentProfile();
+        closeModal();
+        if(added===0)toast('All selected COMPASS programs were already assigned. No duplicates created.','success');
+        else toast(added+' COMPASS program'+(added===1?'':'s')+' assigned.'+(skipped?' '+skipped+' already assigned; skipped.':''),'success');
+      }catch(error){toast(error.message||'Could not assign COMPASS programs.','error')}
+      finally{assigningPrograms=false;if(submit?.isConnected){submit.disabled=false;submit.textContent='Assign Selected Programs'}}
     })
   })
 }
