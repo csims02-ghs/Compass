@@ -6,11 +6,11 @@ const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_PUBLISHABLE_
 const el=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let assigned=[],staff=[],students=[],editing=null,mounted=false;
-function extraOpen(){const d=el("compassAdditionalTools");if(d)d.open=true}
+function extraOpen(){const items=el("compassAdditionalNav"),toggle=el("compassAdditionalToggle");if(items)items.hidden=false;if(toggle)toggle.setAttribute("aria-expanded","true")}
 function setup(){
 if(mounted)return;
 const sidebar=el("sidebar"),main=document.querySelector("#app main.main");
-const extra=el("compassAdditionalTools"),nav=el("compassAdditionalNav");
+const extra=el("compassAdditionalToggle"),nav=el("compassAdditionalNav");
 if(!sidebar||!main||!extra||!nav)return;
 mounted=true;
 const styles=document.createElement("style");styles.textContent=[
@@ -42,7 +42,7 @@ const page=document.createElement("section");page.id="page-admin-users";page.cla
 '<article class="card admin-panel"><div class="panel-head"><h2>Staff Accounts</h2><button class="btn small" id="adminRefresh" type="button">Refresh</button></div>'+
 '<div id="adminStaff">Loading staff…</div></article></div></div>';
 main.appendChild(page);
-button.addEventListener("click",()=>{extra.open=true;refresh()});
+button.addEventListener("click",()=>{extraOpen();refresh()});
 el("adminCancel").addEventListener("click",reset);
 el("adminRefresh").addEventListener("click",refresh);
 el("adminForm").addEventListener("submit",submit);
