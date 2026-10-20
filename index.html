@@ -2066,6 +2066,9 @@ function activeStudentProgramsOrdered(){
   $('passwordSettingsForm').addEventListener('submit',async e=>{e.preventDefault();const password=$('newPassword').value,confirm=$('confirmPassword').value;if(password.length<8){toast('Password must be at least 8 characters.','error');return}if(password!==confirm){toast('Passwords do not match.','error');return}const {error}=await sb.auth.updateUser({password});if(error){toast(error.message,'error');return}$('newPassword').value='';$('confirmPassword').value='';toast('Password updated. You can use email and password on your next sign-in.','success')});
   $('logoutBtn').addEventListener('click',async()=>{const q=await withTimeout(offlineQueue().catch(()=>[]),1500,[]);if(q.length&&!confirm(q.length+' offline session'+(q.length===1?' has':'s have')+' not synced yet. Sign out anyway? They stay on this device; sign in here again and press Sync Now to upload them.'))return;await withTimeout(clearOfflineDownloads(),2500);let failed=false;try{const r=await withTimeout(sb.auth.signOut(),4000,{error:new Error('timeout')});failed=!!(r&&r.error)}catch(e){failed=true}if(failed){try{Object.keys(localStorage).filter(k=>/^sb-.+-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}}try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}location.reload()});
   window.addEventListener('hashchange',()=>{const h=location.hash.replace('#','');if(h&&$('page-'+h))showPage(h,false)});
+  // Keep student calendar alerts date-current even when the profile stays open overnight.
+  setInterval(()=>{if(state.currentStudent&&document.body.dataset.compassPage==='student-profile')renderProfileAlerts()},60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.currentStudent)renderProfileAlerts()});
   bootstrap();
 })();
 </script>
