@@ -15,11 +15,61 @@ body.hub-fullscreen{overflow:hidden}
 .app.hub-expanded .framewrap{flex:1;height:auto;min-height:0}
 .app.hub-expanded .bottom,.app.hub-expanded .status{display:none}
 @media(max-width:700px){.app.hub-expanded .top{gap:6px;padding:7px}.app.hub-expanded .title{display:none}.app.hub-expanded .actions{width:100%;justify-content:space-between;gap:5px}.app.hub-expanded .btn{padding:8px 7px;font-size:12px}}
-</style></head><body><div class="app"><aside><div class="brand"><h1 id="studentName">Student Programs</h1><small>COMPASS Student Program Hub</small></div><div class="meta"><strong id="studentMeta">Loading student…</strong><small id="programCount">Loading assigned programs…</small><div id="behaviorPills" class="pills"></div></div><input id="search" class="search" type="search" placeholder="Search programs…"><div id="programList" class="list"></div></aside><main><div class="top"><div class="title"><h2 id="runnerTitle">Program Hub</h2><p id="runnerSubtitle">Choose a program from the left.</p></div><div class="actions"><button id="prevBtn" class="btn" disabled>← Previous</button><button id="nextBtn" class="btn primary" disabled>Next Program →</button><button id="fullscreenBtn" class="btn" type="button" aria-pressed="false" title="Expand the program workspace">⛶ Full Screen</button><button id="closeBtn" class="btn">Close Hub</button></div></div><div class="card"><div class="framewrap"><div id="empty" class="empty"><div><strong>Select a program</strong><br>Choose one of this student's assigned programs.</div></div><div id="loading" class="loading" hidden>Loading program…</div><iframe id="runnerFrame" class="runner" title="COMPASS Program Runner" scrolling="auto" hidden></iframe></div><div class="bottom"><button id="bottomPrevBtn" class="btn" disabled>← Previous Program</button><button id="bottomNextBtn" class="btn primary" disabled>Next Program →</button></div></div><div id="status" class="status">Connecting to COMPASS…</div></main></div>
+/* Normal Hub: benchmark sheet. Full Screen: teaching runner. */
+.app{grid-template-columns:clamp(330px,31%,440px) minmax(0,1fr)}
+.program{grid-template-columns:36px minmax(0,1fr) auto;gap:8px}
+.program strong,.program small{white-space:normal;overflow-wrap:anywhere;display:block}
+.program-stage{margin-top:5px;display:inline-block;font-size:10px;padding:3px 7px;border-radius:999px;font-weight:800;background:#eef3fa;color:#526680;border:1px solid #d8e4f0}
+.program-stage.mastered{background:#dbf7e8;color:#13734b}
+.program-stage.introduction,.program-stage.reintroduced{background:#e4f1ff;color:#155da7}
+.program-stage.probe{background:#fff3d7;color:#885800}
+.framewrap{min-height:0;height:calc(100dvh - 176px);overflow:hidden;background:#f7faff}
+.sheet{height:100%;overflow:auto;padding:16px;scrollbar-gutter:stable;color:#193b62}
+.sheet[hidden],.runner[hidden]{display:none!important}
+.sheet-page{max-width:1260px;margin:0 auto;padding:24px;background:#fff;border:1px solid #d5e3f2;border-radius:15px;box-shadow:0 3px 14px rgba(16,51,90,.06)}
+.sheet-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid #e8f0f9}
+.sheet-kicker{font-size:11px;color:#22639f;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.sheet-header h2{margin:4px 0;font-size:clamp(22px,2.1vw,30px);line-height:1.16;color:#103960}
+.sheet-desc{color:#617a98;font-size:13px;max-width:650px;line-height:1.5}
+.sheet-tag{border:1px solid #d6e6f8;border-radius:8px;padding:8px 10px;color:#245789;font-size:12px;font-weight:750;background:#f1f7ff;white-space:nowrap}
+.sheet-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:15px 0}
+.sheet-field{background:#f8fbff;border:1px solid #dae8f7;border-radius:9px;padding:9px 11px}
+.sheet-field .lab{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#59799c;font-weight:900}
+.sheet-field .val{font-size:13px;color:#143d67;font-weight:800;margin-top:4px;overflow-wrap:anywhere}
+.sheet-legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:12px 0 16px}
+.stage-tag{display:inline-block;padding:4px 8px;border:1px solid #dce7f2;border-radius:999px;background:#f4f8fd;color:#496581;font-weight:800;font-size:10px}
+.stage-tag.probe{background:#fff2d0;color:#98610a}
+.stage-tag.introduction{background:#e6f2ff;color:#2468aa}
+.stage-tag.mastered{background:#dcf9e9;color:#147345}
+.stage-tag.reintroduced{background:#f0e7ff;color:#7045a5}
+.sheet-message{padding:18px;border-radius:10px;border:1px dashed #b9d0e8;background:#f6faff;text-align:center;color:#537291;line-height:1.6;font-size:13px}
+.sheet-benchmark{margin:15px 0 19px;border:1px solid #d8e5f2;border-radius:11px;overflow:hidden}
+.sheet-benchmark-head{display:flex;align-items:center;justify-content:space-between;background:#e8f4ff;color:#134a7c;padding:11px 13px;gap:10px}
+.sheet-benchmark-head h3{font-size:14px;margin:0;font-weight:900}
+.sheet-benchmark-head small{font-size:11px;color:#496e90;font-weight:700}
+.sheet-table-scroll{width:100%;overflow-x:auto}
+.sheet-table{width:100%;min-width:680px;border-collapse:collapse;font-size:11px;table-layout:fixed}
+.sheet-table thead th{text-align:center;background:#f3f8fd;border-bottom:1px solid #cfdeec;border-right:1px solid #e2ebf5;padding:7px 5px;font-weight:850;color:#2a567f}
+.sheet-table thead th:first-child{width:35%;text-align:left;padding-left:12px}
+.sheet-table tbody th,.sheet-table tbody td{padding:10px 7px;border-bottom:1px solid #e1eaf5;border-right:1px solid #edf1f6;vertical-align:middle}
+.sheet-table tbody th{text-align:left;font-weight:750;color:#1b4067;overflow-wrap:anywhere}
+.sheet-table tbody tr:last-child th,.sheet-table tbody tr:last-child td{border-bottom:0}
+.sheet-table tbody tr:nth-child(even){background:#fbfdff}
+.sheet-table td{text-align:center;color:#496885}
+.sheet-table .empty-cell{color:#91a5b9}
+.sheet-footnote{color:#69839e;font-size:11px;line-height:1.5;border-top:1px solid #e1eaf4;margin-top:18px;padding-top:11px}
+.sheet-banner{padding:14px;margin:12px 0;border:1px solid #cce0f5;border-radius:10px;background:#f1f7ff;color:#275984;line-height:1.5;font-size:12px;text-align:center}
+.sheet-banner strong{display:block;margin-bottom:4px;color:#113d6a;font-size:15px}
+.app.hub-expanded .framewrap{height:auto;background:#fff}
+.app.hub-expanded .runner{height:100%}
+@media(max-width:1000px) and (min-width:701px){.app{grid-template-columns:34% minmax(0,1fr)}.sheet{padding:8px}.sheet-page{padding:13px}.sheet-meta{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.app{display:block}.sheet{height:65dvh;padding:8px}.sheet-page{padding:13px}.sheet-meta{grid-template-columns:1fr 1fr}.sheet-header{flex-direction:column}.framewrap{height:65dvh;min-height:0}}
+@media print{body{overflow:visible!important;background:#fff}.app{display:block!important}aside,.top,.bottom,.status{display:none!important}main,.card,.framewrap,.sheet{display:block!important;width:100%!important;max-width:none!important;min-height:0!important;height:auto!important;overflow:visible!important;border:0!important;margin:0!important;padding:0!important}.sheet-page{box-shadow:none!important;border:0!important}.sheet-benchmark{break-inside:avoid}.sheet-table-scroll{overflow:visible!important}}
+</style></head><body><div class="app"><aside><div class="brand"><h1 id="studentName">Student Programs</h1><small>COMPASS Student Program Hub</small></div><div class="meta"><strong id="studentMeta">Loading student…</strong><small id="programCount">Loading assigned programs…</small><div id="behaviorPills" class="pills"></div></div><input id="search" class="search" type="search" placeholder="Search programs…"><div id="programList" class="list"></div></aside><main><div class="top"><div class="title"><h2 id="runnerTitle">Program Hub</h2><p id="runnerSubtitle">Choose a program from the left.</p></div><div class="actions"><button id="prevBtn" class="btn" disabled>← Previous</button><button id="nextBtn" class="btn primary" disabled>Next Program →</button><button id="fullscreenBtn" class="btn" type="button" aria-pressed="false" title="Expand the program workspace">⛶ Full Screen</button><button id="closeBtn" class="btn">Close Hub</button></div></div><div class="card"><div class="framewrap"><div id="empty" class="empty"><div><strong>Select a program</strong><br>Choose one of this student's assigned programs.</div></div><div id="loading" class="loading" hidden>Loading program…</div><section id="programSheet" class="sheet" aria-label="Program benchmark and acquisition progress"><div class="sheet-message">Select a program to view its benchmark progress sheet. Choose Full Screen to run the program.</div></section><iframe id="runnerFrame" class="runner" title="COMPASS Program Runner" scrolling="auto" hidden></iframe></div><div class="bottom"><button id="bottomPrevBtn" class="btn" disabled>← Previous Program</button><button id="bottomNextBtn" class="btn primary" disabled>Next Program →</button></div></div><div id="status" class="status">Connecting to COMPASS…</div></main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (async()=>{
-const SUPABASE_URL='https://ykkexfsbnnxgncnyaksr.supabase.co',KEY='sb_publishable_3qkWcBut_bVwI6mlhOQOzA_50z_46cY',sb=supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}),$=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),q=new URLSearchParams(location.search),studentId=q.get('student_id'),initial=q.get('assignment_id'),S={session:null,student:null,programs:[],index:-1,busy:false,blobUrl:null,loadSeq:0,isPlatformAdmin:false};
+const SUPABASE_URL='https://ykkexfsbnnxgncnyaksr.supabase.co',KEY='sb_publishable_3qkWcBut_bVwI6mlhOQOzA_50z_46cY',sb=supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}),$=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),q=new URLSearchParams(location.search),studentId=q.get('student_id'),initial=q.get('assignment_id'),S={session:null,student:null,programs:[],index:-1,busy:false,blobUrl:null,runnerAssignmentId:null,loadSeq:0,isPlatformAdmin:false};
 const status=(m,c='')=>{$('status').textContent=m;$('status').className='status '+c},nav=()=>{const a=S.index<=0,b=S.index<0||S.index>=S.programs.length-1;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).disabled=a);['nextBtn','bottomNextBtn'].forEach(x=>$(x).disabled=b)};
 function setExpandedView(expanded){const app=document.querySelector('.app');app.classList.toggle('hub-expanded',expanded);document.body.classList.toggle('hub-fullscreen',expanded);const b=$('fullscreenBtn');b.textContent=expanded?'↙ Restore View':'⛶ Full Screen';b.setAttribute('aria-pressed',String(expanded));b.title=expanded?'Restore the Program Hub list and normal layout':'Expand the program workspace'}
 async function toggleFullscreen(){const expanded=!document.querySelector('.app').classList.contains('hub-expanded');if(expanded){setExpandedView(true);try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen()}catch(e){/* Immersive CSS layout remains available when browser fullscreen is blocked. */}}else{setExpandedView(false);if(document.fullscreenElement){try{await document.exitFullscreen()}catch(e){}}}}
