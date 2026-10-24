@@ -78,7 +78,14 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.fullscree
 function closeHub(){if(S.blobUrl){window.URL.revokeObjectURL(S.blobUrl);S.blobUrl=null}try{window.close()}catch(_){}setTimeout(()=>{if(!window.closed)location.assign('./')},80)}
 function renderStudent(){const s=S.student||{},p=(Array.isArray(s.selected_behaviors)?s.selected_behaviors:[]).slice(0,5);$('studentName').textContent=s.display_label||s.student_code||'Student Programs';$('studentMeta').textContent=[s.grade_level&&('Grade '+s.grade_level),s.student_code].filter(Boolean).join(' · ')||'Assigned COMPASS Programs';$('programCount').textContent=`${S.programs.length} active assigned program${S.programs.length===1?'':'s'}`;$('behaviorPills').innerHTML=p.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}
 const lifecycle=p=>p?.program_status==='on_hold'?'on_hold':'active';
-function renderList(){const z=$('search').value.trim().toLowerCase();$('programList').innerHTML=S.programs.map((x,i)=>{const n=x.program?.program_name||'Program',d=x.program?.program_config?.domain||x.program?.program_config?.category||x.program?.description||'';if(z&&!(`${n} ${d}`.toLowerCase().includes(z)))return'';const hold=lifecycle(x.program)==='on_hold',locked=hold&&!S.isPlatformAdmin;return `<button class="program${i===S.index?' active':''}" data-index="${i}"${locked?' disabled aria-label="Program On Hold"':''}><span class="num">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(n)}</strong><small>${esc(d)}</small>${hold?'<span class="compass-hub-hold">On Hold</span>':''}</span><span>${locked?'⏸':'›'}</span></button>`}).join('')||'<div style="padding:12px;color:#64748b">No matching programs.</div>'}
+function acquisitionStage(sp){
+ const cfg=sp?.instance_config||{};
+ const raw=String(cfg.acquisition_status||cfg.acquisition_stage||cfg.current_stage||'').toLowerCase().trim();
+ const map={probe:'Probe',introduction:'Introduction',introduced:'Introduction',acquisition:'Introduction',mastered:'Mastered',reintroduced:'Reintroduced',maintenance:'Maintenance'};
+ return map[raw]|| (sp?.status==='mastered'?'Mastered':'Not recorded');
+}
+function stageClass(stage){return stage==='Not recorded'?'':stage.toLowerCase().replace(/[^a-z]/g,'')}
+function renderList(){const z=$('search').value.trim().toLowerCase();$('programList').innerHTML=S.programs.map((x,i)=>{const n=x.program?.program_name||'Program',d=x.program?.program_config?.domain||x.program?.program_config?.category||x.program?.description||'';if(z&&!(`${n} ${d}`.toLowerCase().includes(z)))return'';const hold=lifecycle(x.program)==='on_hold',locked=hold&&!S.isPlatformAdmin;return `<button class="program${i===S.index?' active':''}" data-index="${i}"${locked?' disabled aria-label="Program On Hold"':''}><span class="num">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(n)}</strong><small>${esc(d)}</small><span class="program-stage ${stageClass(acquisitionStage(x))}">${esc(acquisitionStage(x))}</span></span><span>${locked?'⏸':'›'}</span></button>`}).join('')||'<div style="padding:12px;color:#64748b">No matching programs.</div>'}
 const V25_COUNT_CODE='CP-1TO1-COUNT';
 function usesV25Counting(sp){return sp?.program?.program_code===V25_COUNT_CODE}
 function runtimeEndpoint(sp){
@@ -86,6 +93,113 @@ function runtimeEndpoint(sp){
  return `${SUPABASE_URL}/functions/v1/compass-student-program-runtime?assignment_id=${encodeURIComponent(sp.id)}&token=${encodeURIComponent(sp.view_token||'')}&staff_id=${encodeURIComponent(S.session.user.id)}`;
 }
 async function runtimeBlobUrl(sp){const r=await fetch(runtimeEndpoint(sp),{cache:'no-store',headers:{Authorization:'Bearer '+S.session.access_token,apikey:KEY}});if(!r.ok)throw new Error('Program could not load ('+r.status+')');const buf=await r.arrayBuffer();if(!buf.byteLength)throw new Error('Program runtime was empty.');return window.URL.createObjectURL(new Blob([buf],{type:'text/html;charset=utf-8'}))}
+function formatSheetDate(d){
+ if(!d)return '—';
+ const iso=String(d).slice(0,10);
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(iso))return '—';
+ const [y,m,day]=iso.split('-');return m+'/'+day+'/'+y;
+}
+function benchmarkKey(t){
+ const m=t?.metadata||{};
+ const n=m.benchmark_number??m.benchmark;
+ if(n!==undefined&&n!==null&&String(n).trim()!=='')return ['B'+String(n),m.benchmark_name||('Benchmark '+n)];
+ if(m.number_band)return ['R'+m.number_band,'Target range '+m.number_band];
+ if(m.benchmark_id)return ['B'+m.benchmark_id,m.benchmark_name||m.benchmark_id];
+ return ['UNGROUPED','Targets without a recorded benchmark'];
+}
+function normalizeTarget(r,studentSpecific){
+ const m=r.metadata||{};
+ return {key:String(r.target_key??r.name??r.target_name??''),name:String(r.target_name??r.name??r.target_key??'Target'),
+   order:Number(r.display_order??m.quantity??m.source_acquisition_order??0),
+   metadata:m,status:studentSpecific?String(r.status||'not_introduced'):'not_introduced',
+   introduced_at:studentSpecific?r.introduced_at||null:null,
+   mastered_at:studentSpecific?r.mastered_at||null:null,
+   studentSpecific};
+}
+function targetStage(t){
+ const raw=String(t.metadata?.acquisition_status||t.metadata?.stage_status||t.status||'').toLowerCase();
+ const map={probe:'Probe',introduction:'Introduction',introduced:'Introduction',acquisition:'Introduction',mastered:'Mastered',
+  reintroduced:'Reintroduced',maintenance:'Maintenance',paused:'Paused'};
+ return map[raw]||'Not recorded';
+}
+function sheetCell(v){return v!==undefined&&v!==null&&String(v).trim()!==''?esc(v):'<span class="empty-cell">—</span>'}
+function sheetContents(sp,targets,hasStudentTargets){
+ const program=sp.program||{},title=esc(program.program_name||'Program'),
+ desc=esc(program.description||'View benchmark-organized targets and progress.'),
+ date=formatSheetDate(sp.assigned_date),
+ groupMap=new Map();
+ for(const item of targets){
+   const [key,name]=benchmarkKey(item),group=groupMap.get(key)||{key,name,items:[]};
+   group.items.push(item);groupMap.set(key,group);
+ }
+ const tables=[...groupMap.values()].map((g)=>{
+  const rows=g.items.map((t,j)=>{
+    const m=t.metadata||{},mt=m.maintenance||{};
+    const m1=mt.first||mt.one||m.maintenance1||m.maintenance_1||{},
+          m2=mt.second||mt.two||m.maintenance2||m.maintenance_2||{};
+    const intro=t.introduced_at||null,mastered=t.mastered_at||null;
+    const stage=targetStage(t);
+    return `<tr><th scope="row">${esc(String(j+1)+'. '+t.name)}${stage!=='Not recorded'?` <span class="stage-tag ${stageClass(stage)}">${esc(stage)}</span>`:''}</th>
+      <td>${sheetCell(intro?formatSheetDate(intro):null)}</td>
+      <td>${sheetCell(mastered?formatSheetDate(mastered):null)}</td>
+      <td>${sheetCell(m1.date?formatSheetDate(m1.date):null)}</td><td>${sheetCell(m1.score)}</td>
+      <td>${sheetCell(m2.date?formatSheetDate(m2.date):null)}</td><td>${sheetCell(m2.score)}</td></tr>`;
+  }).join('');
+  return `<section class="sheet-benchmark" aria-label="${esc(g.name)}">
+   <div class="sheet-benchmark-head"><h3>${esc(g.name)}</h3><small>${g.items.length} targets</small></div>
+   <div class="sheet-table-scroll"><table class="sheet-table">
+   <thead><tr><th scope="col">Skill / Target</th><th scope="col">Introduced</th><th scope="col">Mastered</th>
+    <th scope="col">Maintenance 1<br>Date</th><th scope="col">Score</th>
+    <th scope="col">Maintenance 2<br>Date</th><th scope="col">Score</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+ }).join('');
+ const stage=acquisitionStage(sp);
+ return `<div class="sheet-page">
+  <div class="sheet-header"><div><div class="sheet-kicker">COMPASS · Benchmark Progress Sheet</div>
+  <h2>${title}</h2><div class="sheet-desc">${desc}</div></div><div class="sheet-tag">Assigned Program</div></div>
+  <div class="sheet-meta">
+   <div class="sheet-field"><div class="lab">Student</div><div class="val">${esc(S.student?.display_label||S.student?.student_code||'Student')}</div></div>
+   <div class="sheet-field"><div class="lab">Acquisition status</div><div class="val">${esc(stage)}</div></div>
+   <div class="sheet-field"><div class="lab">Assigned</div><div class="val">${esc(date)}</div></div>
+  </div>
+  <div class="sheet-legend"><strong style="font-size:11px;color:#496989">Stage key:</strong>${['Probe','Introduction','Mastered','Reintroduced','Mastered'].map(v=>`<span class="stage-tag ${stageClass(v)}">${v}</span>`).join('')}</div>
+  ${tables||'<div class="sheet-message">No target or benchmark definitions are available for this program yet. Full Screen can still open the teaching program.</div>'}
+  <div class="sheet-banner"><strong>Open Full Screen to Run Program</strong>The Program Hub shows benchmark information and recorded progress. Full Screen opens the interactive teaching program.</div>
+  <div class="sheet-footnote">${hasStudentTargets?'Introduced and mastered dates come from this student’s assigned targets.':'Target names come from the program library; student target milestones have not been recorded here.'}
+   Blank maintenance fields mean no maintenance entries were found in the target record. Probe and mastery are not inferred from assignment alone.</div>
+ </div>`;
+}
+async function renderSheet(sp,seq){
+ const page=$('programSheet');
+ page.innerHTML='<div class="sheet-message">Loading benchmark progress…</div>';
+ const program=sp.program||{};
+ let targets=[],personal=false,notes=[];
+ try{
+   const {data,error}=await sb.from('student_compass_program_targets')
+     .select('target_key,target_name,display_order,status,introduced_at,mastered_at,metadata')
+     .eq('student_compass_program_id',sp.id).order('display_order',{ascending:true}).limit(800);
+   if(error)throw error;
+   if(data?.length){personal=true;targets=data.map(x=>normalizeTarget(x,true));}
+ }catch(err){notes.push('Assigned target data could not be loaded.')}
+ if(!targets.length){
+   const configured=Array.isArray(program.program_config?.targets)?program.program_config.targets:[];
+   if(configured.length){targets=configured.map((t,i)=>normalizeTarget({...t,display_order:i+1},false));}
+   else{
+     try{
+      const {data,error}=await sb.from('compass_programming_targets')
+        .select('target_key,target_name,display_order,metadata').eq('program_id',sp.program_id)
+        .order('display_order',{ascending:true}).limit(800);
+      if(error)throw error;
+      targets=(data||[]).map(x=>normalizeTarget(x,false));
+     }catch(err){notes.push('Program target definitions could not be loaded.')}
+   }
+ }
+ if(seq!==S.loadSeq||S.programs[S.index]?.id!==sp.id)return;
+ targets.sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name));
+ page.innerHTML=sheetContents(sp,targets,personal);
+ if(notes.length)page.insertAdjacentHTML('afterbegin','<div class="sheet-message">'+notes.map(esc).join(' ')+'</div>');
+ page.scrollTop=0;
+ status(targets.length?'Program benchmark sheet ready. Select Full Screen to run the program.':'No benchmark target data found; Full Screen can still open the program.',targets.length?'ok':'');
+}
 async function openAt(i){if(i<0||i>=S.programs.length)return;const seq=++S.loadSeq;S.busy=true;S.index=i;renderList();nav();const sp=S.programs[i],name=sp.program?.program_name||'Program',frame=$('runnerFrame');const held=lifecycle(sp.program)==='on_hold';if(held&&!S.isPlatformAdmin){S.busy=false;$('runnerTitle').textContent=name;$('runnerSubtitle').textContent='On Hold — Platform Admin only';$('empty').hidden=false;$('loading').hidden=true;frame.hidden=true;frame.removeAttribute('src');frame.removeAttribute('srcdoc');status('On Hold — only Platform Admin can open this program.','error');nav();return;}$('runnerTitle').textContent=`${i+1} of ${S.programs.length}: ${name}`;$('runnerSubtitle').textContent=held?'On Hold — Platform Admin Access':'Student Program Hub · student behavior tracking active';$('empty').hidden=true;$('loading').hidden=false;frame.hidden=true;status('Loading '+name+'…');try{const url=await runtimeBlobUrl(sp);if(seq!==S.loadSeq){window.URL.revokeObjectURL(url);return}if(S.blobUrl)window.URL.revokeObjectURL(S.blobUrl);S.blobUrl=url;frame.onload=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;status(usesV25Counting(sp)?'1:1 Counting V25 ready — student context loading.':name+' ready.','ok');if(usesV25Counting(sp)){sendV25Context(sp).catch(e=>status('Student context could not load: '+e.message,'error'))}try{frame.contentWindow.scrollTo(0,0)}catch(_){}};frame.onerror=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;status(name+' could not render.','error')};frame.removeAttribute('srcdoc');frame.src=url;setTimeout(()=>{if(seq===S.loadSeq&&$('loading').hidden===false){$('loading').hidden=true;frame.hidden=false;status(name+' loaded; waiting for program scripts.','ok')}},3500)}catch(e){console.error(e);if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;frame.removeAttribute('src');frame.srcdoc=`<div style="font-family:Arial;padding:28px;color:#b42318"><h2>Program could not open</h2><p>${esc(e.message||'Unknown error')}</p></div>`;status(e.message||'Program could not open.','error')}finally{if(seq===S.loadSeq){S.busy=false;nav()}}}
 $('programList').onclick=e=>{const b=e.target.closest('[data-index]');if(b)openAt(Number(b.dataset.index))};$('search').oninput=renderList;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index-1));['nextBtn','bottomNextBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index+1));$('fullscreenBtn').onclick=toggleFullscreen;$('closeBtn').onclick=closeHub;
 const v25SavesInFlight=new Set(),v25SavesConfirmed=new Set();
