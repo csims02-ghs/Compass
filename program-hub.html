@@ -71,8 +71,28 @@ body.hub-fullscreen{overflow:hidden}
 (async()=>{
 const SUPABASE_URL='https://ykkexfsbnnxgncnyaksr.supabase.co',KEY='sb_publishable_3qkWcBut_bVwI6mlhOQOzA_50z_46cY',sb=supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}),$=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),q=new URLSearchParams(location.search),studentId=q.get('student_id'),initial=q.get('assignment_id'),S={session:null,student:null,programs:[],index:-1,busy:false,blobUrl:null,runnerAssignmentId:null,loadSeq:0,isPlatformAdmin:false};
 const status=(m,c='')=>{$('status').textContent=m;$('status').className='status '+c},nav=()=>{const a=S.index<=0,b=S.index<0||S.index>=S.programs.length-1;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).disabled=a);['nextBtn','bottomNextBtn'].forEach(x=>$(x).disabled=b)};
-function setExpandedView(expanded){const app=document.querySelector('.app');app.classList.toggle('hub-expanded',expanded);document.body.classList.toggle('hub-fullscreen',expanded);const b=$('fullscreenBtn');b.textContent=expanded?'↙ Restore View':'⛶ Full Screen';b.setAttribute('aria-pressed',String(expanded));b.title=expanded?'Restore the Program Hub list and normal layout':'Expand the program workspace'}
-async function toggleFullscreen(){const expanded=!document.querySelector('.app').classList.contains('hub-expanded');if(expanded){setExpandedView(true);try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen()}catch(e){/* Immersive CSS layout remains available when browser fullscreen is blocked. */}}else{setExpandedView(false);if(document.fullscreenElement){try{await document.exitFullscreen()}catch(e){}}}}
+function setExpandedView(expanded){
+ const app=document.querySelector('.app');app.classList.toggle('hub-expanded',expanded);document.body.classList.toggle('hub-fullscreen',expanded);
+ const b=$('fullscreenBtn');b.textContent=expanded?'↙ Restore View':'⛶ Full Screen';b.setAttribute('aria-pressed',String(expanded));
+ b.title=expanded?'Return to the Program Hub progress sheet':'Open the selected teaching program in Full Screen';
+ $('programSheet').hidden=expanded;
+ if(!expanded){$('runnerFrame').hidden=true;$('loading').hidden=true;$('empty').hidden=true}
+ else {$('runnerFrame').hidden=S.runnerAssignmentId!==S.programs[S.index]?.id||!S.blobUrl}
+}
+async function toggleFullscreen(){
+ if(S.index<0||!S.programs[S.index])return;
+ const expanded=!document.querySelector('.app').classList.contains('hub-expanded');
+ if(expanded){
+  setExpandedView(true);
+  const seq=S.loadSeq,sp=S.programs[S.index];
+  try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen()}catch(e){}
+  if(S.runnerAssignmentId!==sp.id)void loadRunner(sp,seq);
+  else {$('runnerFrame').hidden=false;status('Teaching program ready.','ok')}
+ }else{
+  setExpandedView(false);
+  if(document.fullscreenElement){try{await document.exitFullscreen()}catch(e){}}
+ }
+}
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.querySelector('.app').classList.contains('hub-expanded'))setExpandedView(false)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.fullscreenElement&&document.querySelector('.app').classList.contains('hub-expanded'))setExpandedView(false)});
 function closeHub(){if(S.blobUrl){window.URL.revokeObjectURL(S.blobUrl);S.blobUrl=null}try{window.close()}catch(_){}setTimeout(()=>{if(!window.closed)location.assign('./')},80)}
@@ -200,7 +220,61 @@ async function renderSheet(sp,seq){
  page.scrollTop=0;
  status(targets.length?'Program benchmark sheet ready. Select Full Screen to run the program.':'No benchmark target data found; Full Screen can still open the program.',targets.length?'ok':'');
 }
-async function openAt(i){if(i<0||i>=S.programs.length)return;const seq=++S.loadSeq;S.busy=true;S.index=i;renderList();nav();const sp=S.programs[i],name=sp.program?.program_name||'Program',frame=$('runnerFrame');const held=lifecycle(sp.program)==='on_hold';if(held&&!S.isPlatformAdmin){S.busy=false;$('runnerTitle').textContent=name;$('runnerSubtitle').textContent='On Hold — Platform Admin only';$('empty').hidden=false;$('loading').hidden=true;frame.hidden=true;frame.removeAttribute('src');frame.removeAttribute('srcdoc');status('On Hold — only Platform Admin can open this program.','error');nav();return;}$('runnerTitle').textContent=`${i+1} of ${S.programs.length}: ${name}`;$('runnerSubtitle').textContent=held?'On Hold — Platform Admin Access':'Student Program Hub · student behavior tracking active';$('empty').hidden=true;$('loading').hidden=false;frame.hidden=true;status('Loading '+name+'…');try{const url=await runtimeBlobUrl(sp);if(seq!==S.loadSeq){window.URL.revokeObjectURL(url);return}if(S.blobUrl)window.URL.revokeObjectURL(S.blobUrl);S.blobUrl=url;frame.onload=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;status(usesV25Counting(sp)?'1:1 Counting V25 ready — student context loading.':name+' ready.','ok');if(usesV25Counting(sp)){sendV25Context(sp).catch(e=>status('Student context could not load: '+e.message,'error'))}try{frame.contentWindow.scrollTo(0,0)}catch(_){}};frame.onerror=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;status(name+' could not render.','error')};frame.removeAttribute('srcdoc');frame.src=url;setTimeout(()=>{if(seq===S.loadSeq&&$('loading').hidden===false){$('loading').hidden=true;frame.hidden=false;status(name+' loaded; waiting for program scripts.','ok')}},3500)}catch(e){console.error(e);if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;frame.removeAttribute('src');frame.srcdoc=`<div style="font-family:Arial;padding:28px;color:#b42318"><h2>Program could not open</h2><p>${esc(e.message||'Unknown error')}</p></div>`;status(e.message||'Program could not open.','error')}finally{if(seq===S.loadSeq){S.busy=false;nav()}}}
+async function loadRunner(sp,seq){
+ if(!sp||seq!==S.loadSeq)return;
+ const frame=$('runnerFrame'),name=sp.program?.program_name||'Program';
+ $('loading').hidden=false;status('Opening '+name+'…');S.busy=true;
+ try{
+  const url=await runtimeBlobUrl(sp);
+  if(seq!==S.loadSeq||sp.id!==S.programs[S.index]?.id){URL.revokeObjectURL(url);return}
+  if(S.blobUrl)URL.revokeObjectURL(S.blobUrl);
+  S.blobUrl=url;S.runnerAssignmentId=sp.id;
+  frame.onload=()=>{
+   if(seq!==S.loadSeq)return;
+   $('loading').hidden=true;
+   frame.hidden=!document.querySelector('.app').classList.contains('hub-expanded');
+   status(usesV25Counting(sp)?'1:1 Counting V25 ready — student context loading.':name+' ready.','ok');
+   if(usesV25Counting(sp))sendV25Context(sp).catch(e=>status('Student context could not load: '+e.message,'error'));
+   try{frame.contentWindow.scrollTo(0,0)}catch(_){}
+  };
+  frame.onerror=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;status(name+' could not render.','error')};
+  frame.removeAttribute('srcdoc');frame.src=url;
+  frame.hidden=!document.querySelector('.app').classList.contains('hub-expanded');
+ }catch(err){
+  console.error(err);if(seq!==S.loadSeq)return;
+  $('loading').hidden=true;S.runnerAssignmentId=null;frame.hidden=true;
+  status(err.message||'Unable to load teaching program','error');
+ }finally{if(seq===S.loadSeq){S.busy=false;nav()}}
+}
+async function openAt(i){
+ if(i<0||i>=S.programs.length)return;
+ const seq=++S.loadSeq,prev=S.programs[S.index],next=S.programs[i];
+ // Preserve an interrupted chain before switching to another assignment.
+ if(prev?.id!==next.id&&S.runnerAssignmentId===prev?.id&&usesV25Counting(prev)){
+  try{$('runnerFrame').contentWindow?.postMessage({type:'COMPASS_DEMO_V18_PAUSE'},location.origin)}catch(_){}
+ }
+ S.index=i;renderList();nav();
+ const held=lifecycle(next.program)==='on_hold',name=next.program?.program_name||'Program';
+ $('runnerTitle').textContent=`${i+1} of ${S.programs.length}: ${name}`;
+ $('runnerSubtitle').textContent='Benchmark progress · Full Screen opens the teaching program';
+ $('empty').hidden=true;
+ if(held&&!S.isPlatformAdmin){
+  $('programSheet').innerHTML='<div class="sheet-message">Program On Hold — Platform Admin only.</div>';
+  $('runnerFrame').hidden=true;$('loading').hidden=true;
+  status('On Hold — only Platform Admin can open this program.','error');return;
+ }
+ if(S.runnerAssignmentId!==next.id){
+  if(S.blobUrl){URL.revokeObjectURL(S.blobUrl);S.blobUrl=null}
+  S.runnerAssignmentId=null;
+  $('runnerFrame').hidden=true;$('runnerFrame').removeAttribute('src');$('runnerFrame').removeAttribute('srcdoc');
+ }
+ void renderSheet(next,seq);
+ if(document.querySelector('.app').classList.contains('hub-expanded')){
+  $('programSheet').hidden=true;
+  if(S.runnerAssignmentId===next.id&&S.blobUrl)$('runnerFrame').hidden=false;
+  else void loadRunner(next,seq);
+ }else{$('programSheet').hidden=false;$('runnerFrame').hidden=true;$('loading').hidden=true}
+}
 $('programList').onclick=e=>{const b=e.target.closest('[data-index]');if(b)openAt(Number(b.dataset.index))};$('search').oninput=renderList;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index-1));['nextBtn','bottomNextBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index+1));$('fullscreenBtn').onclick=toggleFullscreen;$('closeBtn').onclick=closeHub;
 const v25SavesInFlight=new Set(),v25SavesConfirmed=new Set();
 async function sendV25Context(sp){
