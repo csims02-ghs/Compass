@@ -29,10 +29,117 @@ function closeHub(){if(S.blobUrl){window.URL.revokeObjectURL(S.blobUrl);S.blobUr
 function renderStudent(){const s=S.student||{},p=(Array.isArray(s.selected_behaviors)?s.selected_behaviors:[]).slice(0,5);$('studentName').textContent=s.display_label||s.student_code||'Student Programs';$('studentMeta').textContent=[s.grade_level&&('Grade '+s.grade_level),s.student_code].filter(Boolean).join(' · ')||'Assigned COMPASS Programs';$('programCount').textContent=`${S.programs.length} active assigned program${S.programs.length===1?'':'s'}`;$('behaviorPills').innerHTML=p.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}
 const lifecycle=p=>p?.program_status==='on_hold'?'on_hold':'active';
 function renderList(){const z=$('search').value.trim().toLowerCase();$('programList').innerHTML=S.programs.map((x,i)=>{const n=x.program?.program_name||'Program',d=x.program?.program_config?.domain||x.program?.program_config?.category||x.program?.description||'';if(z&&!(`${n} ${d}`.toLowerCase().includes(z)))return'';const hold=lifecycle(x.program)==='on_hold',locked=hold&&!S.isPlatformAdmin;return `<button class="program${i===S.index?' active':''}" data-index="${i}"${locked?' disabled aria-label="Program On Hold"':''}><span class="num">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(n)}</strong><small>${esc(d)}</small>${hold?'<span class="compass-hub-hold">On Hold</span>':''}</span><span>${locked?'⏸':'›'}</span></button>`}).join('')||'<div style="padding:12px;color:#64748b">No matching programs.</div>'}
-function runtimeEndpoint(sp){return `${SUPABASE_URL}/functions/v1/compass-student-program-runtime?assignment_id=${encodeURIComponent(sp.id)}&token=${encodeURIComponent(sp.view_token||'')}&staff_id=${encodeURIComponent(S.session.user.id)}`}
+const V25_COUNT_CODE='CP-1TO1-COUNT';
+function usesV25Counting(sp){return sp?.program?.program_code===V25_COUNT_CODE}
+function runtimeEndpoint(sp){
+ if(usesV25Counting(sp))return `${SUPABASE_URL}/functions/v1/compass-program-runner?program_code=${encodeURIComponent(V25_COUNT_CODE)}&preview_version=25&format=html`;
+ return `${SUPABASE_URL}/functions/v1/compass-student-program-runtime?assignment_id=${encodeURIComponent(sp.id)}&token=${encodeURIComponent(sp.view_token||'')}&staff_id=${encodeURIComponent(S.session.user.id)}`;
+}
 async function runtimeBlobUrl(sp){const r=await fetch(runtimeEndpoint(sp),{cache:'no-store',headers:{Authorization:'Bearer '+S.session.access_token,apikey:KEY}});if(!r.ok)throw new Error('Program could not load ('+r.status+')');const buf=await r.arrayBuffer();if(!buf.byteLength)throw new Error('Program runtime was empty.');return window.URL.createObjectURL(new Blob([buf],{type:'text/html;charset=utf-8'}))}
-async function openAt(i){if(i<0||i>=S.programs.length)return;const seq=++S.loadSeq;S.busy=true;S.index=i;renderList();nav();const sp=S.programs[i],name=sp.program?.program_name||'Program',frame=$('runnerFrame');const held=lifecycle(sp.program)==='on_hold';if(held&&!S.isPlatformAdmin){S.busy=false;$('runnerTitle').textContent=name;$('runnerSubtitle').textContent='On Hold — Platform Admin only';$('empty').hidden=false;$('loading').hidden=true;frame.hidden=true;frame.removeAttribute('src');frame.removeAttribute('srcdoc');status('On Hold — only Platform Admin can open this program.','error');nav();return;}$('runnerTitle').textContent=`${i+1} of ${S.programs.length}: ${name}`;$('runnerSubtitle').textContent=held?'On Hold — Platform Admin Access':'Student Program Hub · student behavior tracking active';$('empty').hidden=true;$('loading').hidden=false;frame.hidden=true;status('Loading '+name+'…');try{const url=await runtimeBlobUrl(sp);if(seq!==S.loadSeq){window.URL.revokeObjectURL(url);return}if(S.blobUrl)window.URL.revokeObjectURL(S.blobUrl);S.blobUrl=url;frame.onload=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;status(name+' ready.','ok');try{frame.contentWindow.scrollTo(0,0)}catch(_){}};frame.onerror=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;status(name+' could not render.','error')};frame.removeAttribute('srcdoc');frame.src=url;setTimeout(()=>{if(seq===S.loadSeq&&$('loading').hidden===false){$('loading').hidden=true;frame.hidden=false;status(name+' loaded; waiting for program scripts.','ok')}},3500)}catch(e){console.error(e);if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;frame.removeAttribute('src');frame.srcdoc=`<div style="font-family:Arial;padding:28px;color:#b42318"><h2>Program could not open</h2><p>${esc(e.message||'Unknown error')}</p></div>`;status(e.message||'Program could not open.','error')}finally{if(seq===S.loadSeq){S.busy=false;nav()}}}
-$('programList').onclick=e=>{const b=e.target.closest('[data-index]');if(b)openAt(Number(b.dataset.index))};$('search').oninput=renderList;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index-1));['nextBtn','bottomNextBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index+1));$('fullscreenBtn').onclick=toggleFullscreen;$('closeBtn').onclick=closeHub;addEventListener('message',e=>{if(e.source!==$('runnerFrame').contentWindow)return;if(e.data?.type==='compass-next-program')openAt(S.index+1);if(e.data?.type==='compass-previous-program')openAt(S.index-1);if(e.data?.type==='compass-program-session-saved')status('Program session saved to COMPASS.','ok')});
+async function openAt(i){if(i<0||i>=S.programs.length)return;const seq=++S.loadSeq;S.busy=true;S.index=i;renderList();nav();const sp=S.programs[i],name=sp.program?.program_name||'Program',frame=$('runnerFrame');const held=lifecycle(sp.program)==='on_hold';if(held&&!S.isPlatformAdmin){S.busy=false;$('runnerTitle').textContent=name;$('runnerSubtitle').textContent='On Hold — Platform Admin only';$('empty').hidden=false;$('loading').hidden=true;frame.hidden=true;frame.removeAttribute('src');frame.removeAttribute('srcdoc');status('On Hold — only Platform Admin can open this program.','error');nav();return;}$('runnerTitle').textContent=`${i+1} of ${S.programs.length}: ${name}`;$('runnerSubtitle').textContent=held?'On Hold — Platform Admin Access':'Student Program Hub · student behavior tracking active';$('empty').hidden=true;$('loading').hidden=false;frame.hidden=true;status('Loading '+name+'…');try{const url=await runtimeBlobUrl(sp);if(seq!==S.loadSeq){window.URL.revokeObjectURL(url);return}if(S.blobUrl)window.URL.revokeObjectURL(S.blobUrl);S.blobUrl=url;frame.onload=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;status(usesV25Counting(sp)?'1:1 Counting V25 ready — student context loading.':name+' ready.','ok');if(usesV25Counting(sp)){setExpandedView(true);sendV25Context(sp).catch(e=>status('Student context could not load: '+e.message,'error'))}try{frame.contentWindow.scrollTo(0,0)}catch(_){}};frame.onerror=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;status(name+' could not render.','error')};frame.removeAttribute('srcdoc');frame.src=url;setTimeout(()=>{if(seq===S.loadSeq&&$('loading').hidden===false){$('loading').hidden=true;frame.hidden=false;status(name+' loaded; waiting for program scripts.','ok')}},3500)}catch(e){console.error(e);if(seq!==S.loadSeq)return;$('loading').hidden=true;frame.hidden=false;frame.removeAttribute('src');frame.srcdoc=`<div style="font-family:Arial;padding:28px;color:#b42318"><h2>Program could not open</h2><p>${esc(e.message||'Unknown error')}</p></div>`;status(e.message||'Program could not open.','error')}finally{if(seq===S.loadSeq){S.busy=false;nav()}}}
+$('programList').onclick=e=>{const b=e.target.closest('[data-index]');if(b)openAt(Number(b.dataset.index))};$('search').oninput=renderList;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index-1));['nextBtn','bottomNextBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index+1));$('fullscreenBtn').onclick=toggleFullscreen;$('closeBtn').onclick=closeHub;
+const v25SavesInFlight=new Set(),v25SavesConfirmed=new Set();
+async function sendV25Context(sp){
+ if(!usesV25Counting(sp)||sp.id!==S.programs[S.index]?.id||!S.session?.user)return;
+ let goals=[];
+ try{
+  const {data,error}=await sb.from('student_iep_goal_compass_programs')
+   .select('goal_id,student_iep_goals(id,title,student_id,status)')
+   .eq('student_compass_program_id',sp.id);
+  if(!error&&Array.isArray(data)){goals=data.map(x=>Array.isArray(x.student_iep_goals)?x.student_iep_goals[0]:x.student_iep_goals)
+   .filter(g=>g&&g.student_id===sp.student_id&&g.status!=='discontinued')
+   .map(g=>({id:g.id,title:g.title}));}
+ }catch(err){console.warn('V25 goal context unavailable',err)}
+ if(sp.id!==S.programs[S.index]?.id)return;
+ S.v25Goals=goals;
+ const assigned=[...(Array.isArray(S.student?.selected_behaviors)?S.student.selected_behaviors:[]),
+   ...(Array.isArray(S.student?.secondary_behaviors)?S.student.secondary_behaviors:[])]
+   .filter(x=>typeof x==='string'&&x.trim()).map(x=>x.trim());
+ const behaviors=[...new Set(assigned)].slice(0,30);
+ $('runnerFrame').contentWindow?.postMessage({
+  type:'COMPASS_DEMO_V18_CONTEXT',
+  student:{id:sp.student_id,name:S.student?.display_label||S.student?.student_code||'Student',
+   schoolTimeZone:'America/New_York',goals:goals.map(x=>x.title),behaviors},
+  sessionId:null
+ },location.origin);
+}
+function v25Payload(sp,run){
+ const records=Array.isArray(run.records)?run.records:[];
+ const target=records.filter(x=>x.phase==='Target');
+ const counts=run.probe?{independent_correct:0,prompted_correct:0,incorrect:0,no_response:0}:{
+   independent_correct:target.filter(x=>x.response==='correct').length,
+   prompted_correct:target.filter(x=>x.response==='prompted').length,
+   incorrect:target.filter(x=>x.response==='incorrect').length,
+   no_response:target.filter(x=>x.response==='no_response').length
+ };
+ const behavior_counts={};
+ for(const record of records)for(const [name,n] of Object.entries(record.behaviors||{})){
+   behavior_counts[name]=(behavior_counts[name]||0)+Math.max(0,Number(n)||0);
+ }
+ const goal=(S.v25Goals||[]).find(g=>g.title===run.goal);
+ // Probes are saved as distinct source records, never normal teaching events.
+ const trial_events=run.probe?[]:records.map(x=>({
+  trial_type:x.phase==='Distractor'?'D':'T',
+  result:x.response==='correct'?'independent_correct':x.response==='prompted'?'prompted':x.response==='incorrect'?'incorrect':'no_response',
+  target_key:String(x.target??run.target??''),
+  target_name:String(x.target??run.target??''),
+  benchmark_key:String(x.benchmark??run.benchmark??''),
+  occurred_at:x.recordedAt||run.recordedAt,
+  behavior_counts:x.behaviors||{}
+ }));
+ return {action:'save_session',staff_id:S.session.user.id,submission_key:'V25:'+run.id,
+   started_at:run.startedAt,ended_at:run.recordedAt,
+   counts,behavior_counts,goal_id:goal?.id||null,
+   target_key:String(run.target??''),target_name:'1:1 Count · '+String(run.target??''),
+   notes:run.probe?'COMPASS V25 benchmark probe; excluded from teaching mastery.':'COMPASS V25 completed DTI chain; mastery requires separate qualifying instructional dates.',
+   trial_events,school_date:run.instructionalDate,
+   v25_run:run,program_version:25};
+}
+async function saveV25Run(sp,entry){
+ if(!usesV25Counting(sp)||entry?.kind!=='run_completed'||!entry.data?.id||entry.studentId!==sp.student_id)return;
+ const id=String(entry.data.id),key=sp.id+':'+id;
+ if(v25SavesInFlight.has(key)||v25SavesConfirmed.has(key))return;
+ v25SavesInFlight.add(key);
+ try{
+  const body=v25Payload(sp,entry.data);
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session?.access_token||session.user.id!==S.session.user.id)throw Error('Sign in to sync');
+  const response=await fetch(runtimeEndpoint({id:sp.id,view_token:sp.view_token,program:null}),{
+   method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':KEY},
+   body:JSON.stringify(body),cache:'no-store'
+  });
+  const data=await response.json().catch(()=>null);
+  if(!response.ok||!data?.ok||!data.session_id)throw Error(data?.error||'Cloud save not confirmed');
+  v25SavesConfirmed.add(key);
+  status('COMPASS confirmed completed-run save ('+data.saved_trial_events+' step records).','ok');
+ }catch(error){
+  console.warn('V25 cloud save pending',error);
+  status('Run preserved on device; COMPASS cloud sync pending. Reopen the program when online to retry.','error');
+ }finally{v25SavesInFlight.delete(key)}
+}
+addEventListener('message',async e=>{
+ if(e.source!==$('runnerFrame').contentWindow||e.origin!==location.origin)return;
+ const msg=e.data||{},sp=S.programs[S.index];
+ if(!usesV25Counting(sp))return;
+ if(msg.type==='COMPASS_DEMO_V18_READY'){
+  await sendV25Context(sp).catch(err=>status('Student context error: '+err.message,'error'));return;
+ }
+ if(msg.type==='COMPASS_DEMO_V18_NEXT_PROGRAM'){
+  if(msg.studentId!==sp.student_id)return;
+  if(S.index+1<S.programs.length)openAt(S.index+1);
+  else status('Completed. This student has no next assigned program.','ok');
+  return;
+ }
+ if(msg.type!=='COMPASS_DEMO_V18_EVENT'||msg.studentId!==sp.student_id)return;
+ if(msg.event==='sync_requested'&&msg.payload?.kind==='run_completed'){
+  void saveV25Run(sp,msg.payload);return;
+ }
+ if(msg.event==='context_ready'){status('COMPASS V25 linked to this student.','ok');return}
+ if(msg.event==='run_completed'){status('Run saved on device; confirming COMPASS sync.');return}
+ if(msg.event==='attention_upsert'){status('Interrupted run recorded on this device; central Needs Attention synchronization is not yet enabled.','error')}
+});
+
+addEventListener('message',e=>{if(e.source!==$('runnerFrame').contentWindow)return;if(e.data?.type==='compass-next-program')openAt(S.index+1);if(e.data?.type==='compass-previous-program')openAt(S.index-1);if(e.data?.type==='compass-program-session-saved')status('Program session saved to COMPASS.','ok')});
 if(!studentId){status('No student was selected. Return to COMPASS and open Run Programs again.','error');return}const {data:{session}}=await sb.auth.getSession();if(!session?.user){status('COMPASS sign-in was not found in this tab. Return to the main site and reopen Run Programs.','error');return}S.session=session;const {data:profile}=await sb.from('profiles').select('role,active').eq('id',session.user.id).maybeSingle();S.isPlatformAdmin=profile?.role==='platform_admin'&&profile?.active===true;const {data:student,error:se}=await sb.from('students').select('id,display_label,student_code,grade_level,selected_behaviors,secondary_behaviors,status').eq('id',studentId).maybeSingle();if(se||!student){status(se?.message||'Student could not be loaded.','error');return}S.student=student;const {data:assigned,error:ae}=await sb.from('student_compass_programs').select('id,student_id,program_id,view_token,status,display_order,goal_percentage').eq('student_id',studentId).eq('status','active').order('display_order',{ascending:true});if(ae){status(ae.message,'error');return}const ids=[...new Set((assigned||[]).map(x=>x.program_id).filter(Boolean))];let catalog=[];if(ids.length){const {data,error}=await sb.from('compass_programming_programs').select('id,program_code,program_name,description,program_config,program_status,active').in('id',ids);if(error){status(error.message,'error');return}catalog=data||[]}const map=new Map(catalog.map(p=>[p.id,p]));S.programs=(assigned||[]).map(x=>({...x,program:map.get(x.program_id)})).filter(x=>x.program).sort((a,b)=>(Number(a.display_order||0)-Number(b.display_order||0))||String(a.id).localeCompare(String(b.id)));renderStudent();renderList();nav();status(S.programs.length?'Programs loaded.':'This student has no active assigned programs.',S.programs.length?'ok':'');if(S.programs.length){const f=S.programs.findIndex(x=>x.id===initial),i=f>=0?f:0;setTimeout(()=>openAt(i),180)}
 })().catch(e=>{console.error(e);const s=document.getElementById('status');if(s){s.textContent=e.message||'Program Hub could not start.';s.className='status error'}})
 </script></body></html>
