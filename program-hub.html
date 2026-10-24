@@ -111,6 +111,9 @@ async function saveV25Run(sp,entry){
   const data=await response.json().catch(()=>null);
   if(!response.ok||!data?.ok||!data.session_id)throw Error(data?.error||'Cloud save not confirmed');
   v25SavesConfirmed.add(key);
+  if(usesV25Counting(S.programs[S.index])&&S.programs[S.index]?.id===sp.id){
+   $('runnerFrame').contentWindow?.postMessage({type:'COMPASS_DEMO_V18_SYNC_CONFIRMED',studentId:sp.student_id,outboxId:entry.id,runId:id},location.origin);
+  }
   status('COMPASS confirmed completed-run save ('+data.saved_trial_events+' step records).','ok');
  }catch(error){
   console.warn('V25 cloud save pending',error);
