@@ -1422,7 +1422,7 @@ body{display:block!important;width:100%;min-width:0}
               <div class="clinical-readiness-head"><div><strong>BCBA Clinical Review</strong><p>Completion percentages are not clinical approval. Verify source evidence and intervention recommendations before signing.</p></div><span id="clinicalReviewStatus" class="clinical-review-status">Not reviewed</span></div>
               <div id="clinicalReviewChecks" class="clinical-check-list"></div>
               <p id="clinicalReviewNote" class="clinical-review-note"></p>
-              <button id="clinicalFinalizeBtn" type="button" class="btn primary" disabled>Review &amp; Finalize FBA</button>
+              <div class="clinical-review-actions"><button id="clinicalFinalizeBtn" type="button" class="btn primary" disabled>Review &amp; Finalize FBA</button><button id="clinicalReopenBtn" type="button" class="btn" hidden>Reopen for BCBA Review</button></div>
             </section>
           </main>
 
@@ -2197,7 +2197,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     $('clinicalReviewStatus').textContent=completed?(verified?'BCBA reviewed':'Legacy completed · unverified'):(missing.length?'Documentation incomplete':'Ready for clinician review');
     $('clinicalReviewNote').textContent=completed?(verified?'Approval was recorded and signed server-side. Reopen before revising this assessment.':'Older completed assessment: no independent clinician sign-off record was found.'):(isReviewer?'You must independently verify observation quality, functional interpretation, and BIP recommendations before signing.':'Only an active BCBA account can finalize this FBA.');
     const btn=$('clinicalFinalizeBtn');btn.disabled=!record||!!missing.length||!isReviewer||completed;
-    btn.hidden=completed;btn.textContent='Review & Finalize FBA';
+    btn.hidden=completed;btn.textContent='Review & Finalize FBA';const reopen=$('clinicalReopenBtn');if(reopen)reopen.hidden=!completed||!isReviewer;
   }
   async function compassFinalizeFBA(){
     const record=state.assessmentRecord;if(!record||state.assessmentType!=='fba'||!compassCanReviewFBA())return;
@@ -2209,11 +2209,25 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     if(error){toast(error.message,'error');return}
     state.assessmentRecord=data;state.globalAssessments=state.globalAssessments.map(x=>x.id===data.id?data:x);
     state.assessments=state.assessments.map(x=>x.id===data.id?data:x);
-    renderAssessmentWorkspace();toast('FBA finalized with BCBA review recorded.','success');
+    renderAssessmentWorkspace();renderRoleFocus();toast('FBA finalized with BCBA review recorded.','success');
   }
+
+  async function compassReopenFBA(){
+    const record=state.assessmentRecord;if(!record||state.assessmentType!=='fba'||!compassCanReviewFBA()||assessmentStatus(record)!=='completed')return;
+    if(!confirm('Reopen this FBA for clinical review? It will return to In Progress, and any previous sign-off must be repeated.'))return;
+    const assessment_data={...assessmentData(record),status:'in_progress',clinical_review:null,completed_at:null};
+    const {data,error}=await sb.from('student_assessments').update({assessment_data}).eq('id',record.id).eq('student_id',record.student_id).select('*').single();
+    if(error){toast(error.message,'error');return}
+    state.assessmentRecord=data;
+    state.globalAssessments=state.globalAssessments.map(a=>a.id===data.id?data:a);
+    state.assessments=state.assessments.map(a=>a.id===data.id?data:a);
+    renderAssessmentWorkspace();renderRoleFocus();toast('FBA reopened for BCBA review.','success');
+  }
+
   function bindCompassProfessionalWorkflows(){
     $('printIepEvidenceBtn')?.addEventListener('click',printIEPEvidenceSummary);
     $('clinicalFinalizeBtn')?.addEventListener('click',compassFinalizeFBA);
+    $('clinicalReopenBtn')?.addEventListener('click',compassReopenFBA);
     document.addEventListener('click',async e=>{
       const role=e.target.closest('[data-role-view]');if(role&&compassIsManagerRole()){compassRoleView=role.dataset.roleView;renderRoleFocus();return}
       const goal=e.target.closest('[data-role-goal]');if(goal){await openStudent(goal.dataset.roleGoal);showProfileTab('goals');return}
