@@ -361,11 +361,6 @@ function patchCompassOverview(source){
                 </div>
                 <div id="compassPromptPrograms" class="compass-overview-prompt-list" hidden></div>
               </article>
-              <article class="card panel compass-overview-documents">
-                <div class="panel-head"><h2>Documents</h2><button class="btn small" data-profile-tab="notes" type="button">Upload / View</button></div>
-                <div id="overviewDocuments" class="compass-overview-document-list"></div>
-                <button type="button" class="link-btn compass-overview-docs-link" data-profile-tab="notes">View All Documents →</button>
-              </article>
             </div>
             <div class="overview-bottom compass-legacy-overview-data" hidden><article class="card panel chart-panel"><div class="panel-head"><h2>IEP Goal Achievement by Student Program</h2><span id="overviewProgressLabel" class="muted"></span></div><div id="overviewChart" class="chart-area"></div></article><article class="card panel"><div class="panel-head"><h2>Goals Snapshot</h2><button class="btn small" data-profile-tab="goals" type="button">Connect IEP Goals</button></div><div id="overviewGoals" class="stack-list"></div></article></div>
           </div>
@@ -472,7 +467,7 @@ function patchCompassOverview(source){
   if(!source.includes('id="compass-overview-progress-v1"')){
     const css=String.raw`<style id="compass-overview-progress-v1">
 #page-student-profile .profile-content{max-width:none;padding:16px 20px 24px}
-#page-student-profile .overview-grid.compass-overview-three{display:grid;grid-template-columns:minmax(230px,.83fr) minmax(430px,1.7fr) minmax(250px,1fr);gap:16px;align-items:stretch}
+#page-student-profile .overview-grid.compass-overview-three{display:grid;grid-template-columns:minmax(230px,.84fr) minmax(0,2.84fr);gap:16px;align-items:stretch}
 #page-student-profile .compass-overview-three>.card{min-width:0;border:1px solid #d8e4f2;border-radius:19px;background:#fff;padding:22px;box-shadow:0 7px 19px rgba(18,64,115,.045);overflow:hidden}
 #page-student-profile .compass-overview-three h2{font-size:clamp(20px,1.5vw,27px);line-height:1.16;margin:0;font-weight:830;color:#082c55;letter-spacing:-.028em}
 #page-student-profile .compass-overview-snapshot .snapshot-list{margin-top:25px}
@@ -535,8 +530,8 @@ function patchCompassOverview(source){
 #page-student-profile .compass-doc-empty{padding:45px 3px;text-align:center;font-size:14px;line-height:1.5;color:#66809a}
 #page-student-profile .compass-overview-docs-link{display:block;margin-top:16px}
 #page-student-profile .compass-legacy-overview-data{display:none!important}
-@media(max-width:1270px){#page-student-profile .overview-grid.compass-overview-three{grid-template-columns:minmax(195px,.9fr) minmax(360px,1.7fr);gap:12px}#page-student-profile .compass-overview-documents{grid-column:1/-1}#page-student-profile .compass-overview-document-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:22px}}
-@media(max-width:950px){#page-student-profile .overview-grid.compass-overview-three{grid-template-columns:minmax(0,1fr)}#page-student-profile .compass-overview-documents{grid-column:auto}}
+@media(max-width:1270px){#page-student-profile .overview-grid.compass-overview-three{grid-template-columns:minmax(205px,.78fr) minmax(0,2.3fr);gap:12px}}
+@media(max-width:950px){#page-student-profile .overview-grid.compass-overview-three{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:570px){#page-student-profile .profile-content{padding:10px}#page-student-profile .compass-overview-three>.card{padding:15px}#page-student-profile .compass-overview-kpis{grid-template-columns:1fr 1fr}#page-student-profile .compass-overview-kpi.behavior{grid-column:1/-1}#page-student-profile .compass-overview-head{flex-wrap:wrap}#page-student-profile .compass-domain-row{grid-template-columns:23px minmax(95px,1fr) 65px 43px;gap:4px}#page-student-profile .compass-overview-domain-head{flex-wrap:wrap}#page-student-profile .compass-overview-bottom{grid-template-columns:1fr}}
 </style>
 `;
