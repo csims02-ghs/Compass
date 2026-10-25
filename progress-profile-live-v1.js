@@ -15,7 +15,7 @@ const monthEnd=s=>{let a=dateFrom(s);return iso(new Date(a.getFullYear(),a.getMo
 const fmtMonth=s=>{let a=dateFrom(s);return mon[a.getMonth()]+" "+a.getFullYear()};
 const sel=id=>d.getElementById("cpr-"+id);
 let snap=null,currentStudent="",active=false, hidden=[],initialized=false,phasePreview=[];
-let picks={program:"all",target:"all",benchmark:"all",period:"",record:"acquisition",customFrom:"",customTo:""};
+let picks={program:"all",target:"all",benchmark:"all",period:"",customFrom:"",customTo:""};
 function style(){
 if(d.getElementById("cpr-styles"))return;
 const tag=d.createElement("style");tag.id="cpr-styles";tag.textContent=
@@ -302,7 +302,7 @@ function acquisition(options={}){
   });
  });
 }
-function redraw(){if(!sel("chart"))return;graph();acquisition();sel("acquisition").hidden=picks.record==="graph";sel("view").value=picks.record}
+function redraw(){if(!sel("chart"))return;graph()}
 function scaffold(){
 const host=d.getElementById("profile-tab-progress");
 if(!host)return null;
@@ -312,9 +312,9 @@ style();panel=d.createElement("section");panel.id="cpr-liveView";panel.className
 panel.innerHTML='<div class="cpr-head"><div><div class="cpr-title">Program Progress</div><div class="cpr-muted">Live program sessions · linked to this student profile</div></div></div>'+
 '<div class="cpr-controls"><div><label>Program</label><select id="cpr-program"></select></div><div><label>Target</label><select id="cpr-target"></select></div><div><label>Benchmark</label><select id="cpr-benchmark"></select></div><div><label>Time Range</label><select id="cpr-period"></select></div></div>'+
 '<div class="cpr-custom"><strong>Custom Date Range</strong><div class="cpr-row"><div><label>From</label><input type="date" id="cpr-dateFrom"/></div><div><label>To</label><input type="date" id="cpr-dateTo"/></div><button class="cpr-btn" id="cpr-apply">Show Range</button></div></div>'+
-'<div class="cpr-viewhead"><div><strong>Progress Record View</strong><div class="cpr-muted">Acquisition tracking comes from dated student sessions and program setup.</div></div><select id="cpr-view"><option value="acquisition">Acquisition Sheet</option><option value="graph">Progress Graph Only</option></select></div>'+
+
 '<div class="cpr-phases"><strong>Insert Phase Line</strong><div class="cpr-row"><div><label>Reason</label><select id="cpr-phaseReason"><option>New Benchmark</option><option>New Target</option><option>Prompting/Teaching Change</option><option>Reinforcement Change</option><option>Other Clinical Change</option></select></div><div><label>Date</label><input type="date" id="cpr-phaseDate"/></div><div><label>Optional Note</label><input id="cpr-phaseNote" placeholder="What changed?"/></div><button class="cpr-btn" id="cpr-phaseAdd">Preview phase line</button></div><div class="cpr-muted">Manual phase lines are preview-only until persistent clinical event storage is configured.</div></div>'+
-'<div id="cpr-chart"></div><div class="cpr-stats" id="cpr-stats"></div><div class="cpr-sec-title">Phase Line History</div><div class="cpr-tablewrap"><table class="cpr-table"><thead><tr><th>Date</th><th>Phase</th><th>Detail</th><th>Source</th></tr></thead><tbody id="cpr-history"></tbody></table></div><section id="cpr-acquisition"></section>';
+'<div id="cpr-chart"></div><div class="cpr-stats" id="cpr-stats"></div><div class="cpr-sec-title">Phase Line History</div><div class="cpr-tablewrap"><table class="cpr-table"><thead><tr><th>Date</th><th>Phase</th><th>Detail</th><th>Source</th></tr></thead><tbody id="cpr-history"></tbody></table></div>';
  host.replaceChildren(panel);
  panel.addEventListener("change",e=>{
 let id=e.target&&e.target.id;if(!id)return;
@@ -322,7 +322,7 @@ if(id==="cpr-program"){picks.program=e.target.value;picks.target="all";picks.ben
 else if(id==="cpr-target"){picks.target=e.target.value;redraw()}
 else if(id==="cpr-benchmark"){picks.benchmark=e.target.value;redraw()}
 else if(id==="cpr-period"){picks.period=e.target.value;dateInputs();redraw()}
-else if(id==="cpr-view"){picks.record=e.target.value;redraw()}
+
 });
 panel.addEventListener("click",e=>{
 let id=e.target&&e.target.id;
@@ -364,7 +364,7 @@ else if(["overview","graphs and charts","iep & services","programs","goals","beh
 },true);
 window.addEventListener("compass-progress-data",()=>{
 const s=window.__compassProgressSnapshot;if(!s)return;
-if(currentStudent!==s.studentId){currentStudent=s.studentId;picks={program:"all",target:"all",benchmark:"all",period:"",record:"acquisition",customFrom:"",customTo:""};initialized=false;phasePreview=[]}
+if(currentStudent!==s.studentId){currentStudent=s.studentId;picks={program:"all",target:"all",benchmark:"all",period:"",customFrom:"",customTo:""};initialized=false;phasePreview=[]}
 snap=s;if(active)activate();
 });
 scaffold();
