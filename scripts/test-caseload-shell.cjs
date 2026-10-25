@@ -24,6 +24,9 @@ assert(casePage.indexOf('id="caseloadSearch"')<casePage.indexOf('class="caseload
 assert(casePage.includes('id="caseloadBody"'),'Student table missing');
 assert(!casePage.includes('data-case-sort="programs"'),'Programs table column must be removed from My Caseload');
 assert(!casePage.includes('id="caseProgramFilter"'),'Programs filter must not appear in My Caseload');
+assert(shell.includes(':root{--sidebar:248px}'),'Sidebar width must retain the compact desktop layout');
+assert(shell.includes('white-space:nowrap!important;overflow-wrap:normal!important;word-break:keep-all!important'),'Profile action must retain its single-line protection');
+
 assert.equal((casePage.match(/<th>/g)||[]).length,8,'My Caseload must have eight table columns');
 assert(shell.includes("readRows('student_compass_programs'"),'Program assignments remain available for target and prompt calculations');
 assert(shell.includes('data-case-sort="prompt"')&&shell.includes('data-case-sort="mastered"'),'Prompt and mastery columns must remain');
