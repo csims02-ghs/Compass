@@ -166,6 +166,91 @@ module.exports = function premiumStudentProfile(source){
 @media(max-width:1350px){#page-student-profile .compass-premium-grid{grid-template-columns:minmax(0,1fr) minmax(325px,.8fr);gap:15px}#page-student-profile .compass-premium-hero{padding:25px 22px;gap:16px}#page-student-profile .compass-premium-hero .avatar{width:98px;height:98px;min-width:98px;font-size:35px}#page-student-profile .compass-premium-edit{font-size:13px;padding:8px 11px}#page-student-profile .compass-premium-tabs{padding:0 5px}#page-student-profile .compass-premium-tabs>button{font-size:10.5px}}
 @media(max-width:1090px){#page-student-profile .compass-premium-grid{grid-template-columns:1fr}#page-student-profile .compass-premium-information{order:2}#page-student-profile .compass-premium-hero{min-height:186px}#page-student-profile .compass-premium-tabs>button{font-size:12px}}
 @media(max-width:680px){#page-student-profile .compass-premium-top{padding:12px}#page-student-profile .compass-premium-hero{display:flex;align-items:center;flex-wrap:wrap;padding:22px 15px;gap:13px}#page-student-profile .compass-premium-edit{position:static;margin-left:auto}#page-student-profile .compass-premium-tabs{overflow-x:auto;justify-content:flex-start;scrollbar-width:thin}#page-student-profile .compass-premium-tabs>button{min-width:95px;font-size:11px}#page-student-profile .compass-premium-more{position:sticky;right:0;background:#fff}#page-student-profile .compass-premium-person h1{font-size:24px}#page-student-profile .compass-premium-person .profile-meta{font-size:14px}#page-student-profile .compass-premium-information{padding:18px}#page-student-profile #profile-tab-notes.profile-tab.active{grid-template-columns:1fr}#page-student-profile .compass-premium-attention{padding:16px}#page-student-profile .compass-premium-attention-head h2{font-size:20px}}
+
+/* COMPASS compact student profile • desktop/laptop/tablet: visually consistent with approved premium header */
+#page-student-profile .compass-premium-top{padding:12px 14px 10px;max-width:none}
+#page-student-profile .compass-premium-toolbar{margin-bottom:8px}
+#page-student-profile .compass-premium-grid{grid-template-columns:minmax(0,1.72fr) minmax(305px,.95fr);gap:13px}
+#page-student-profile .compass-premium-left{gap:11px}
+#page-student-profile .compass-premium-identity,
+#page-student-profile .compass-premium-attention,
+#page-student-profile .compass-premium-information{border-radius:16px}
+#page-student-profile .compass-premium-hero{min-height:151px;padding:20px 22px;gap:18px;border-radius:16px 16px 0 0}
+#page-student-profile .compass-premium-hero .avatar{width:96px;height:96px;min-width:96px;font-size:36px;border-width:4px}
+#page-student-profile .compass-premium-person{padding-right:105px}
+#page-student-profile .compass-premium-person h1{font-size:clamp(22px,2vw,31px);line-height:1.1}
+#page-student-profile .compass-premium-person .profile-meta{font-size:14px;margin:8px 0 10px}
+#page-student-profile .compass-premium-person .status-pill{font-size:12px;padding:5px 12px;gap:7px}
+#page-student-profile .compass-premium-person .status-pill:before{width:8px;height:8px}
+#page-student-profile .compass-premium-edit{right:17px;top:16px;font-size:12px;padding:8px 11px;border-radius:9px}
+#page-student-profile .compass-premium-tabs{min-height:66px;gap:1px;padding:0 7px;border-radius:0 0 16px 16px}
+#page-student-profile .compass-premium-tabs>button{gap:4px;font-size:11px;padding:9px 3px 7px;line-height:1.15;border-bottom-width:2px}
+#page-student-profile .compass-premium-tabs>button svg{width:18px;height:18px;flex:none}
+#page-student-profile .compass-premium-more summary{min-width:40px;font-size:16px;gap:1px;padding:7px 2px}
+#page-student-profile .compass-premium-more summary span{font-size:11px}
+#page-student-profile .compass-premium-attention{min-height:0;padding:14px 16px}
+#page-student-profile .compass-premium-attention-head{margin-bottom:8px}
+#page-student-profile .compass-premium-attention-head h2{font-size:18px;gap:9px}
+#page-student-profile .compass-premium-bell{width:33px;height:33px}
+#page-student-profile .compass-premium-bell svg{width:18px;height:18px}
+#page-student-profile .compass-premium-view-all{font-size:12px}
+#page-student-profile #profileAlerts.profile-alert-items{gap:6px}
+#page-student-profile #profileAlerts.profile-alert-empty{min-height:60px;padding:12px;font-size:12px}
+#page-student-profile .profile-alert-row{min-height:52px;padding:8px 11px;gap:9px;border-radius:10px}
+#page-student-profile .profile-alert-row .profile-alert-sym{width:34px;height:34px;font-size:19px;border-radius:9px}
+#page-student-profile .profile-alert-row .profile-alert-text strong{font-size:13px;line-height:1.25}
+#page-student-profile .profile-alert-row .profile-alert-text small{font-size:11px;margin-top:2px;line-height:1.25}
+#page-student-profile .compass-premium-days{padding:5px 8px;font-size:11px}
+#page-student-profile .compass-premium-information{padding:17px 18px}
+#page-student-profile .compass-premium-info-title{font-size:21px;gap:9px;margin-bottom:7px}
+#page-student-profile .compass-premium-info-mark{width:28px;height:28px}
+#page-student-profile .compass-premium-info-mark svg{width:17px;height:17px}
+#page-student-profile #quickInfo .quick-line{grid-template-columns:45px minmax(0,1fr);gap:11px;padding:10px 0}
+#page-student-profile .profile-info-icon{width:44px;min-height:44px;font-size:22px;border-radius:10px}
+#page-student-profile .profile-info-data small{font-size:12px;margin-bottom:1px}
+#page-student-profile .profile-info-data strong{font-size:15px;line-height:1.3}
+#page-student-profile .compass-premium-next-wrap{padding-top:11px}
+#page-student-profile .compass-premium-next{grid-template-columns:40px minmax(0,1fr) 14px;min-height:70px;gap:10px;padding:10px 12px;border-radius:11px}
+#page-student-profile .compass-premium-next-icon{width:40px;height:40px;font-size:21px}
+#page-student-profile .compass-premium-next small{font-size:12px;margin-bottom:3px}
+#page-student-profile .compass-premium-next strong{font-size:14px;line-height:1.25}
+#page-student-profile .compass-premium-next em{font-size:12px;margin-top:3px}
+#page-student-profile .compass-premium-next-arrow{font-size:22px}
+#page-student-profile .profile-content{padding-top:12px}
+@media (min-width:1180px) and (max-width:1440px){
+  #page-student-profile .compass-premium-grid{grid-template-columns:minmax(0,1.65fr) minmax(305px,.88fr);gap:12px}
+  #page-student-profile .compass-premium-hero{padding:16px 18px;min-height:139px;gap:13px}
+  #page-student-profile .compass-premium-hero .avatar{width:82px;height:82px;min-width:82px;font-size:31px}
+  #page-student-profile .compass-premium-person{padding-right:95px}
+  #page-student-profile .compass-premium-person h1{font-size:clamp(21px,1.75vw,26px)}
+  #page-student-profile .compass-premium-tabs>button{font-size:10px;padding-left:2px;padding-right:2px}
+}
+@media (max-width:1179px){
+  #page-student-profile .compass-premium-grid{grid-template-columns:minmax(0,1fr)}
+  #page-student-profile .compass-premium-information{order:2}
+  #page-student-profile .compass-premium-hero{min-height:133px}
+  #page-student-profile .compass-premium-tabs>button{font-size:11px}
+  #page-student-profile .compass-premium-information{padding:15px}
+  #page-student-profile #quickInfo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px}
+  #page-student-profile .compass-premium-next-wrap{padding-top:12px}
+}
+@media (max-width:680px){
+  #page-student-profile .compass-premium-top{padding:9px}
+  #page-student-profile .compass-premium-hero{min-height:0;padding:14px 12px;gap:10px}
+  #page-student-profile .compass-premium-hero .avatar{width:64px;height:64px;min-width:64px;font-size:25px;border-width:3px}
+  #page-student-profile .compass-premium-person{padding-right:0}
+  #page-student-profile .compass-premium-person h1{font-size:20px}
+  #page-student-profile .compass-premium-person .profile-meta{font-size:12px;margin:5px 0}
+  #page-student-profile .compass-premium-edit{position:static;margin-left:auto}
+  #page-student-profile .compass-premium-tabs{overflow-x:auto;min-height:60px}
+  #page-student-profile .compass-premium-tabs>button{min-width:74px;font-size:10px;padding:7px 3px}
+  #page-student-profile .compass-premium-tabs>button svg{width:18px;height:18px}
+  #page-student-profile #quickInfo{grid-template-columns:1fr}
+  #page-student-profile .compass-premium-attention{padding:11px}
+  #page-student-profile .compass-premium-attention-head h2{font-size:17px}
+  #page-student-profile .compass-premium-information{padding:13px}
+  #page-student-profile #profile-tab-notes.profile-tab.active{grid-template-columns:1fr}
+}
 </style>
 `;
   if(!source.includes('</head>'))throw Error("Head closing tag missing");
