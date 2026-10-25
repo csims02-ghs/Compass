@@ -41,6 +41,7 @@ async function layer(source,label){
   return output;
 }
 async function main(){
+  if(process.env.COMPASS_ALLOW_LEGACY_REBUILD!=='1')throw Error('Legacy COMPASS source rebuild blocked: index.html is the canonical published shell. Set COMPASS_ALLOW_LEGACY_REBUILD=1 only after reconciling all current features into the legacy sources.');
   let source=read('scripts/index-loader-source.html');
   source=await layer(source,'index');
   source=await layer(source,'charts');
