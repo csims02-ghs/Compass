@@ -982,25 +982,45 @@ body{display:block!important;width:100%;min-width:0}
 </style>
 
 <style id="compass-caseload-dashboard-20261025">
-#page-caseload .compass-caseload-content{max-width:1700px}
-#page-caseload .compass-caseload-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
-#page-caseload .compass-caseload-stat{padding:22px 18px;min-height:136px;gap:13px;align-items:center;background:#fff}
-#page-caseload .compass-caseload-stat .stat-icon{width:48px;height:48px;min-width:48px;font-size:25px;border-radius:13px;background:#edf4ff;color:#185cad}
-#page-caseload .compass-caseload-stat span{display:block;font-size:13px;font-weight:800;line-height:1.3;color:#486684}
-#page-caseload .compass-caseload-stat strong{font-size:38px;margin-top:5px;line-height:1}
-#page-caseload .compass-caseload-stat small{font-size:12px;line-height:1.35;margin-top:7px}
-#page-caseload .compass-caseload-panel{padding:22px 24px}
-#page-caseload .compass-caseload-panel>.panel-head{align-items:center;flex-wrap:wrap;margin-bottom:15px}
-#page-caseload .compass-caseload-panel>.panel-head h2{font-size:21px}
-#page-caseload .compass-caseload-filters{margin-bottom:12px}
-#page-caseload .caseload-action-row{display:flex;align-items:center;gap:12px;margin:0 0 18px;flex-wrap:wrap}
-#page-caseload .caseload-action-row .btn{font-size:14px;padding:10px 17px}
-#page-caseload .caseload-action-row .muted{font-size:13px}
-#page-caseload .compass-caseload-table{min-width:700px}
-#page-caseload .compass-caseload-table td{vertical-align:middle}
-#page-caseload .compass-caseload-disclaimer{font-size:12px;line-height:1.45;color:#617991;margin:14px 0 0}
+#page-caseload{background:#f3f7fc}
+#page-caseload .compass-caseload-content{max-width:1740px;padding:32px 35px 50px}
+#page-caseload .page-head{align-items:center;margin-bottom:27px}
+#page-caseload .page-head h1{font-size:clamp(30px,2.5vw,40px);letter-spacing:-.7px;color:#103865}
+#page-caseload .page-head .subtitle{font-size:15px;margin-top:9px}
+#page-caseload .user-box{border-radius:13px;box-shadow:0 1px 2px rgba(17,57,97,.03);padding:12px 17px}
+#page-caseload .compass-caseload-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:26px}
+#page-caseload .compass-caseload-stat{padding:20px 17px;min-height:140px;gap:14px;align-items:flex-start;background:#fff;border:1px solid #dce5f1;box-shadow:0 3px 12px rgba(27,58,100,.04);border-radius:16px}
+#page-caseload .compass-caseload-stat .stat-icon{width:45px;height:45px;min-width:45px;font-size:23px;border-radius:12px;background:#edf4ff;color:#185cad}
+#page-caseload .compass-caseload-stat span{display:block;font-size:13px;font-weight:800;line-height:1.3;color:#476886}
+#page-caseload .compass-caseload-stat strong{font-size:37px;margin-top:5px;line-height:1.03;color:#103865;letter-spacing:-1px}
+#page-caseload .compass-caseload-stat small{font-size:12px;line-height:1.4;margin-top:8px;color:#647e9a}
+#page-caseload .compass-caseload-panel{padding:23px 24px;background:white;border:1px solid #dce5ef;border-radius:17px;box-shadow:0 3px 12px rgba(27,58,100,.04)}
+#page-caseload .compass-caseload-panel>.panel-head{align-items:center;flex-wrap:wrap;margin-bottom:20px}
+#page-caseload .compass-caseload-panel>.panel-head h2{font-size:21px;font-weight:850}
+#page-caseload .compass-caseload-panel>.panel-head .muted{font-size:13px}
+#page-caseload .compass-caseload-filters{display:flex;gap:10px;margin-bottom:13px}
+#page-caseload .compass-caseload-filters input{min-width:220px;flex:1 1 300px}
+#page-caseload .compass-caseload-filters select{font-size:14px;flex:none;min-width:125px}
+#page-caseload .compass-caseload-filters .btn{white-space:nowrap}
+#page-caseload .caseload-action-row{display:flex;align-items:center;gap:12px;margin:0 0 21px;flex-wrap:wrap}
+#page-caseload .caseload-action-row .btn{font-size:14px;padding:11px 18px;background:#2366d5;color:#fff}
+#page-caseload .caseload-action-row .muted{font-size:12px}
+#page-caseload .compass-caseload-table{min-width:700px;border-collapse:separate;border-spacing:0;font-size:14px}
+#page-caseload .compass-caseload-table th{background:#f2f6fb;padding:14px 15px;text-transform:uppercase;letter-spacing:.035em;font-size:11px;font-weight:850;color:#5c7590;border-top:1px solid #e2eaf3;border-bottom:1px solid #dde6f0}
+#page-caseload .compass-caseload-table td{vertical-align:middle;padding:13px 15px;border-bottom:1px solid #e9eef5;color:#23476e}
+#page-caseload .compass-caseload-table tbody tr:hover{background:#f7faff}
+#page-caseload .compass-caseload-table td:last-child,#page-caseload .compass-caseload-table th:last-child{text-align:right}
+#page-caseload .compass-caseload-table .button-row{justify-content:flex-end}
+#page-caseload .compass-caseload-table .btn{font-size:13px;padding:9px 17px;border-radius:9px}
+#page-caseload .caseload-student-cell{display:flex;align-items:center;gap:11px;min-width:180px}
+#page-caseload .caseload-student-avatar{width:38px;height:38px;min-width:38px;border-radius:11px;background:#e8f1ff;color:#165fbd;display:grid;place-items:center;font-size:13px;font-weight:900}
+#page-caseload .caseload-student-name{font-weight:800;color:#153960;line-height:1.3}
+#page-caseload .caseload-status{display:inline-flex;border-radius:999px;padding:6px 11px;font-weight:800;font-size:12px;background:#e7f5ec;color:#167b51}
+#page-caseload .caseload-status:not(.active){background:#eef2f6;color:#607791}
+#page-caseload .compass-caseload-disclaimer{font-size:12px;line-height:1.45;color:#657f9a;margin:16px 0 0}
 @media(max-width:1500px){#page-caseload .compass-caseload-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:750px){#page-caseload .compass-caseload-metrics{grid-template-columns:1fr}#page-caseload .compass-caseload-panel{padding:16px}#page-caseload .compass-caseload-filters{align-items:stretch}#page-caseload .compass-caseload-filters>*,#page-caseload .compass-caseload-filters>.control{width:100%;min-width:0}}
+@media(max-width:1050px){#page-caseload .compass-caseload-filters{flex-wrap:wrap}#page-caseload .compass-caseload-filters input{flex-basis:100%}}
+@media(max-width:750px){#page-caseload .compass-caseload-content{padding:20px 14px 30px}#page-caseload .compass-caseload-metrics{grid-template-columns:1fr}#page-caseload .compass-caseload-panel{padding:16px}#page-caseload .compass-caseload-filters>*,#page-caseload .compass-caseload-filters>.control{width:100%;min-width:0}}
 </style>
 </head>
 <body>
@@ -1736,7 +1756,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     }else $('casePlans').textContent='—';
   }
   function renderCaseload(){$('caseTotal').textContent=state.caseloadStudents.length;$('caseloadHeading').textContent=`My Caseload (${state.caseloadStudents.length})`;const grades=[...new Set(state.caseloadStudents.map(s=>s.grade_level).filter(Boolean))].sort();$('caseloadGradeFilter').innerHTML='<option value="">All Grades</option>'+grades.map(x=>`<option>${esc(x)}</option>`).join('');const schools=[...new Set(state.caseloadStudents.map(s=>schoolForStudent(s).school?.name).filter(Boolean))].sort();$('caseloadSchoolFilter').innerHTML='<option value="">All Schools</option>'+schools.map(x=>`<option>${esc(x)}</option>`).join('');filterCaseload()}
-  function filterCaseload(){const q=$('caseloadSearch').value.toLowerCase().trim(),grade=$('caseloadGradeFilter').value,school=$('caseloadSchoolFilter').value;const list=state.caseloadStudents.filter(s=>{const r=schoolForStudent(s),h=[studentLabel(s),s.student_code,s.grade_level,r.classroom?.name,r.school?.name,s.status].join(' ').toLowerCase();return(!q||h.includes(q))&&(!grade||s.grade_level===grade)&&(!school||r.school?.name===school)});const b=$('caseloadBody');b.innerHTML='';for(const s of list){const rel=schoolForStudent(s),tr=document.createElement('tr');tr.innerHTML=`<td><strong>${esc(studentLabel(s))}</strong></td><td>${esc(s.student_code||'—')}</td><td>${esc(s.grade_level||'—')}</td><td>${esc(rel.school?.name||'—')}</td><td>${esc(s.status||'—')}</td><td><div class="button-row"><button class="btn small primary" data-open-student="${s.id}" aria-label="Open student profile">Profile</button></div></td>`;b.appendChild(tr)}if(!list.length)b.innerHTML='<tr><td colspan="6" class="muted">No matching students.</td></tr>'}
+  function filterCaseload(){const q=$('caseloadSearch').value.toLowerCase().trim(),grade=$('caseloadGradeFilter').value,school=$('caseloadSchoolFilter').value;const list=state.caseloadStudents.filter(s=>{const r=schoolForStudent(s),h=[studentLabel(s),s.student_code,s.grade_level,r.classroom?.name,r.school?.name,s.status].join(' ').toLowerCase();return(!q||h.includes(q))&&(!grade||s.grade_level===grade)&&(!school||r.school?.name===school)});const b=$('caseloadBody');b.innerHTML='';for(const s of list){const rel=schoolForStudent(s),tr=document.createElement('tr');tr.innerHTML=`<td><div class="caseload-student-cell"><span class="caseload-student-avatar" aria-hidden="true">${esc(initials(studentLabel(s)))}</span><span class="caseload-student-name">${esc(studentLabel(s))}</span></div></td><td>${esc(s.student_code||'—')}</td><td>${esc(s.grade_level||'—')}</td><td>${esc(rel.school?.name||'—')}</td><td><span class="caseload-status ${s.status==='active'?'active':''}">${esc(roleName(s.status||'active'))}</span></td><td><div class="button-row"><button class="btn small primary" data-open-student="${s.id}" aria-label="Open student profile">Profile</button></div></td>`;b.appendChild(tr)}if(!list.length)b.innerHTML='<tr><td colspan="6" class="muted">No matching students.</td></tr>'}
   function renderDirectory(){const b=$('directoryBody');if(!b)return;const q=($('studentSearchInput')?.value||'').toLowerCase().trim(),rows=state.students.filter(s=>{const r=schoolForStudent(s);return!q||[studentLabel(s),s.student_code,s.grade_level,r.classroom?.name,r.school?.name,s.status].join(' ').toLowerCase().includes(q)});b.innerHTML='';for(const s of rows){const r=schoolForStudent(s),tr=document.createElement('tr');tr.innerHTML=`<td><strong>${esc(studentLabel(s))}</strong></td><td>${esc(s.student_code||'—')}</td><td>${esc(s.grade_level||'—')}</td><td>${esc(r.classroom?.name||'—')}</td><td>${esc(r.school?.name||'—')}</td><td><span class="status-chip">${esc(roleName(s.status||'active'))}</span></td><td><button class="btn primary small" data-open-student="${s.id}">Open</button></td>`;b.appendChild(tr)}if(!rows.length)b.innerHTML='<tr><td colspan="7" class="muted">No matching students.</td></tr>';if($('studentDirectoryCount'))$('studentDirectoryCount').textContent=rows.length===state.students.length?`${rows.length} student${rows.length===1?'':'s'}`:`${rows.length} of ${state.students.length} students`}
   function renderStudentSearch(){renderDirectory()}
   
