@@ -8,6 +8,59 @@ assert.equal(compassSource.split("sb.rpc('assign_compass_programs_without_duplic
 assert.equal(compassSource.includes("sb.from('student_compass_programs').insert("),false,
   'COMPASS must not directly insert student-program assignments without conflict protection');
 console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
+
+const srcSection=(begin,end)=>{
+ const a=compassSource.indexOf(begin),b=compassSource.indexOf(end,a+begin.length);
+ assert(a>=0&&b>a,'Missing professional workflow boundary '+begin);
+ return compassSource.slice(a,b);
+};
+assert(compassSource.includes('id="compassRoleFocus"'),'Role Home panel missing');
+assert(compassSource.includes('id="iepEvidenceReviewPanel"'),'SPED evidence panel missing');
+assert(compassSource.includes('id="clinicalReadinessPanel"'),'BCBA clinical review panel missing');
+assert(compassSource.includes('id="clinicalReopenBtn"'),'BCBA legacy review action missing');
+assert(compassSource.includes("state.assessmentType==='fba'?'in_progress'"),
+ 'FBA sections must not automatically clinically finalize at 100%');
+assert(compassSource.includes('compass-role-workflows.css?v=20261025-1'),'Scoped role stylesheet missing');
+assert(compassSource.includes("function compassCanReviewFBA(){return state.profile?.role==='bcba'}"),
+ 'Clinical sign-off must require BCBA role in client workflow');
+const fbaSection=srcSection('  function compassClinicalChecks(record){','  function renderClinicalReadiness(){');
+const checkFBA=new Function('assessmentData','ASSESSMENT_TYPES','compassFbaCore',
+  fbaSection+';return compassClinicalChecks;')(
+  r=>r?.assessment_data||{}, {fba:{sections:[
+    'Student & Evaluation Information','Background Information','Observational Behavior Data',
+    'Behavior Analysis (ABC)','Functional Hypothesis','Functional Behavior Pathways','Recommendations'
+  ]}}, ['Observational Behavior Data','Behavior Analysis (ABC)','Functional Hypothesis','Recommendations']);
+const fieldNames=[
+    'Student & Evaluation Information','Background Information','Observational Behavior Data',
+    'Behavior Analysis (ABC)','Functional Hypothesis','Functional Behavior Pathways','Recommendations'
+];
+const readyRecord={assessment_data:{sections:Object.fromEntries(fieldNames.map(n=>[n,{percent:100}])),
+ notes:Object.fromEntries(fieldNames.map(n=>[n,'Clinician-reviewed source information included.']))}};
+assert.equal(checkFBA(readyRecord).length,0,'Fully documented FBA should reach review readiness');
+const missingRecord=structuredClone(readyRecord);
+missingRecord.assessment_data.notes['Functional Hypothesis']='';
+assert(checkFBA(missingRecord).some(x=>x.includes('Functional Hypothesis')),
+ 'Clinical checklist must catch missing function-hypothesis evidence');
+missingRecord.assessment_data.sections['Observational Behavior Data'].percent=85;
+assert(checkFBA(missingRecord).some(x=>x.includes('Observational Behavior Data')),
+ 'A partially documented observation section must fail the review checklist');
+const goalSection=srcSection('  function compassGoalEvidence(goal){','  function renderIEPEvidenceReview(){');
+const goalEvidence=new Function('state','linkedIds',goalSection+';return compassGoalEvidence;')({
+ sessions:[
+ {student_compass_program_id:'assignment1',selected_goal_id:'goal1',session_date:'2026-10-20'},
+ {student_compass_program_id:'assignment1',selected_goal_id:'different-goal',session_date:'2026-10-20'}],
+ trialEvents:[
+ {student_compass_program_id:'assignment1',goal_id:'goal1',trial_type:'T',result:'independent_correct',occurred_at:'2026-10-20T10:00:00Z'},
+ {student_compass_program_id:'assignment1',goal_id:'goal1',trial_type:'T',result:'prompted',occurred_at:'2026-10-20T10:02:00Z'},
+ {student_compass_program_id:'assignment1',goal_id:'goal1',trial_type:'P',result:'independent_correct',occurred_at:'2026-10-20T10:05:00Z'},
+ {student_compass_program_id:'assignment1',goal_id:'different-goal',trial_type:'T',result:'independent_correct',occurred_at:'2026-10-20T10:07:00Z'}]
+},id=>id==='goal1'?['assignment1']:[])({id:'goal1',title:'Example target'});
+assert.equal(goalEvidence.programs,1);
+assert.equal(goalEvidence.sessions,1,'Do not attribute a different goal session');
+assert.equal(goalEvidence.trials,2,'Exclude probes and different-goal trials from IEP evidence');
+assert.equal(goalEvidence.independent,50,'Independent accuracy must count correct / scored teaching trials');
+console.log('COMPASS_ROLE_CLINICAL_AND_IEP_EVIDENCE_LOGIC_PASS');
+
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
