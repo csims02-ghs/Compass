@@ -150,8 +150,8 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
      const topFive=visibleTabs.slice(0,5).map(b=>b.getAttribute('aria-label'));
      const actualOrder=visibleTabs.map(b=>b.getAttribute('aria-label'));
      const navStyle=getComputedStyle(profileNav);
-     const columns=navStyle.gridTemplateColumns.trim().split(/\\s+/).length;
-     const rows=navStyle.gridTemplateRows.trim().split(/\\s+/).length;
+     const columns=navStyle.gridTemplateColumns.trim().split(/\s+/).length;
+     const rows=navStyle.gridTemplateRows.trim().split(/\s+/).length;
      if(visibleTabs.length!==10)throw Error('Expected exactly ten student profile tabs; found '+visibleTabs.length);
      if(!document.querySelector('#compassGraphsChartsTab'))throw Error('Graphs tab missing');
      // Signed-out test harness: show native Progress directly without forging an authenticated student session.
