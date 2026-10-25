@@ -2968,7 +2968,7 @@ if(removed.length){
     programs:assigned.map(p=>({assignment:{...p},definition:programById(p.program_id)||{}})),
     sessions:(state.sessions||[]).filter(s=>idSet.has(s.student_compass_program_id)).map(s=>({...s})),
     trialEvents:(state.trialEvents||[]).filter(t=>idSet.has(t.student_compass_program_id)).map(t=>({...t})),
-    weeks:Number(window.compassOverviewWeeks)||4,now:localISO(new Date()),masteredCount:null
+    weeks:Number(window.compassOverviewWeeks)||4,now:new Date().toISOString(),printedDate:localISO(new Date()),masteredCount:null
   };
   // The print button opens synchronously; the report completes with saved mastery data.
   if(ids.length){
