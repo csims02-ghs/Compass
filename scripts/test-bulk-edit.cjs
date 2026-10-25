@@ -25,7 +25,8 @@ const result=await page.evaluate(async()=>{
  const mockSupabase={from(t){calls.push({type:'from',table:t});return mockQuery}};
  const area=document.createElement('div');area.id='bulk-test-area';document.body.append(area);
  const openModal=(title,html,ready)=>{area.innerHTML=html;ready()};
- const find=id=>area.querySelector('#'+id);
+ const modalFrame=document.createElement('div'),modalBackdrop=document.createElement('div');
+ const find=id=>id==='modal'?modalFrame:id==='modalBackdrop'?modalBackdrop:area.querySelector('#'+id);
  const fn=new Function('state','sb','activeStudentProgramsOrdered','programById','programDomain','roleName',
  'esc','openModal','$','toast','confirm','closeModal','loadStudentProfile','moveAssignedProgram','removeAssignedProgram',
  source+';return {openEditPrograms,archiveSelectedAssignedPrograms};');
