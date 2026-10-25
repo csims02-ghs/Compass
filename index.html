@@ -421,7 +421,7 @@ table{font-size:14.5px}th{font-size:12.5px;padding:11px 12px}td{padding:12px}
 .assign-program-form select,.assign-program-form input{width:100%!important;max-width:100%!important;min-width:0!important;padding:9px 11px!important;font-size:14px!important}
 .assign-program-form .two-col{grid-template-columns:1fr 1fr!important;gap:10px!important}
 .assign-program-submit{width:auto!important;justify-self:start!important;padding:8px 15px!important;font-size:13px!important;border-radius:9px!important}
-.edit-programs-modal{width:min(720px,calc(100vw - 28px))!important}
+/* Edit Programs modal sizing is controlled by compass-program-bulk-styles below. */
 .edit-programs-modal .modal-body{overflow-x:hidden!important}
 .program-edit-list{display:grid;gap:8px}
 .program-edit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff}
@@ -537,22 +537,101 @@ body{display:block!important;width:100%;min-width:0}
 </style>
 <style id="compass-program-bulk-styles">
 
-/* COMPASS Student Profile — native Edit Programs bulk controls */
-.edit-programs-modal .program-bulk-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;position:sticky;top:0;z-index:4;padding:11px 4px 13px;background:var(--surface,#fff);border-bottom:1px solid var(--line,#dbe5ef);margin-bottom:14px}
-.edit-programs-modal .program-bulk-toolbar #programSelectionCount{margin-left:auto;color:#365473;font-weight:700;white-space:nowrap}
+/* COMPASS Edit Programs — viewport-width, compact rows, right-aligned names and right-edge selection */
+.modal-backdrop.edit-programs-backdrop{padding:8px!important}
+#modal.edit-programs-modal{
+ width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important;
+ height:calc(100dvh - 16px);max-height:calc(100dvh - 16px);
+ display:flex;flex-direction:column;min-width:0;overflow:hidden;
+ border-radius:16px
+}
+#modal.edit-programs-modal .modal-head{flex:0 0 auto;padding:14px 20px;align-items:center}
+#modal.edit-programs-modal .modal-head .icon-btn{width:44px;height:44px;min-width:44px}
+#modal.edit-programs-modal .modal-body{
+ flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto!important;
+ overflow-x:hidden!important;overscroll-behavior:contain;
+ padding:12px 18px 18px
+}
+.edit-programs-modal .program-bulk-toolbar{
+ display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+ position:sticky;top:-12px;z-index:4;
+ padding:12px 4px 14px;margin-bottom:10px;background:#fff;
+ border-bottom:1px solid var(--line,#dbe5ef)
+}
+.edit-programs-modal .program-bulk-toolbar .btn{
+ min-height:44px;padding:8px 13px!important
+}
+.edit-programs-modal .program-bulk-toolbar #programSelectionCount{
+ margin-left:auto;white-space:nowrap;color:#365473;font-weight:750
+}
 .edit-programs-modal .program-bulk-toolbar #programBulkRemove{min-width:170px}
-.edit-programs-modal .program-edit-row{grid-template-columns:38px minmax(0,1fr) auto;gap:10px}
-.edit-programs-modal .program-edit-checkbox{display:flex;align-items:center;justify-content:center;width:38px;height:42px;cursor:pointer}
-.edit-programs-modal .program-edit-checkbox input{width:19px;height:19px;cursor:pointer;accent-color:#2175ed}
-.edit-programs-modal .program-edit-details{min-width:0}
-.edit-programs-modal .program-edit-row-selected{background:#f0f6ff;border-color:#7baef3}
-.edit-programs-modal .program-edit-actions{justify-content:flex-end;flex-wrap:wrap}
+.edit-programs-modal .program-edit-list{display:grid;gap:8px;min-width:0;width:100%}
+.edit-programs-modal .program-edit-row{
+ display:grid;grid-template-columns:max-content minmax(0,1fr) 52px;
+ align-items:center;gap:clamp(9px,1.6vw,20px);
+ padding:10px 14px;min-height:74px;min-width:0;width:100%;
+ background:#fff;border:1px solid var(--line,#dbe5ef);border-radius:11px
+}
+.edit-programs-modal .program-edit-details{
+ grid-column:2;grid-row:1;justify-self:end;align-self:center;
+ min-width:0;max-width:100%;text-align:right;overflow-wrap:anywhere
+}
+.edit-programs-modal .program-edit-details strong{
+ display:block;white-space:normal;overflow:visible;text-overflow:clip;
+ font-size:clamp(14px,1.55vw,18px);line-height:1.23
+}
+.edit-programs-modal .program-edit-details small{
+ display:block;white-space:normal;overflow-wrap:anywhere;
+ font-size:clamp(11px,1.15vw,14px);line-height:1.4;margin-top:3px
+}
+.edit-programs-modal .program-edit-checkbox{
+ grid-column:3;grid-row:1;justify-self:end;
+ width:48px;height:48px;display:flex;align-items:center;justify-content:center;
+ border-radius:9px;cursor:pointer
+}
+.edit-programs-modal .program-edit-checkbox input{
+ width:23px;height:23px;min-width:23px;accent-color:#2175ed;cursor:pointer
+}
+.edit-programs-modal .program-edit-checkbox:focus-within{outline:2px solid #2175ed;outline-offset:0}
+.edit-programs-modal .program-edit-actions{
+ grid-column:1;grid-row:1;justify-self:start;display:flex;
+ align-items:center;justify-content:flex-start;flex-wrap:nowrap;gap:7px;
+ min-width:0
+}
+.edit-programs-modal .program-edit-actions .btn{
+ min-height:44px;padding:8px 13px!important;font-size:13px!important;
+ white-space:nowrap
+}
+.edit-programs-modal .program-edit-actions .move-btn{
+ min-width:44px;width:44px;height:44px;padding:7px!important
+}
 .edit-programs-modal .program-edit-actions .btn:disabled{opacity:.45;cursor:not-allowed}
-@media(max-width:600px){
- .edit-programs-modal .program-bulk-toolbar #programSelectionCount{order:0;margin-left:0;flex-basis:100%}
+.edit-programs-modal .program-edit-row-selected{background:#f0f6ff;border-color:#7baef3}
+.edit-programs-modal .program-edit-note{font-size:12px;line-height:1.5;padding:5px 3px 12px}
+@media(max-width:640px){
+ .modal-backdrop.edit-programs-backdrop{padding:5px!important}
+ #modal.edit-programs-modal{
+  width:calc(100vw - 10px)!important;max-width:calc(100vw - 10px)!important;
+  height:calc(100dvh - 10px);max-height:calc(100dvh - 10px);border-radius:11px
+ }
+ #modal.edit-programs-modal .modal-head{padding:12px}
+ #modal.edit-programs-modal .modal-body{padding:8px 10px 14px}
+ .edit-programs-modal .program-bulk-toolbar{gap:7px;top:-8px;padding:10px 1px}
+ .edit-programs-modal .program-bulk-toolbar #programSelectionCount{order:0;margin-left:0;flex-basis:100%;font-size:13px}
  .edit-programs-modal .program-bulk-toolbar #programBulkRemove{flex:1;min-width:0}
- .edit-programs-modal .program-edit-row{grid-template-columns:34px minmax(0,1fr);row-gap:5px}
- .edit-programs-modal .program-edit-actions{grid-column:2;justify-content:flex-start}
+ .edit-programs-modal .program-edit-row{
+  grid-template-columns:minmax(0,1fr) 52px;
+  grid-template-rows:auto auto;row-gap:5px;column-gap:7px;
+  padding:9px 10px;min-height:0
+ }
+ .edit-programs-modal .program-edit-details{grid-column:1;grid-row:1;justify-self:end;text-align:right}
+ .edit-programs-modal .program-edit-checkbox{grid-column:2;grid-row:1;align-self:start}
+ .edit-programs-modal .program-edit-actions{
+  grid-column:1 / -1;grid-row:2;justify-self:start;justify-content:flex-start
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .edit-programs-modal *{scroll-behavior:auto}
 }
 
 </style>
@@ -1768,8 +1847,8 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function showPage(name,push=true){if(name==='calendar')name='home';if(name==='student-search'||name==='student-directory')name='students';const p=$('page-'+name);if(!p)return;const siblings=p.parentElement?Array.from(p.parentElement.children).filter(el=>el.id&&el.id.startsWith('page-')):[];const candidates=new Set([...qsa('.page'),...siblings]);const home=$('page-home');if(home)candidates.add(home);candidates.forEach(page=>{const active=page===p;page.classList.toggle('active',active);page.hidden=!active;if(active){page.style.removeProperty('display')}else{page.style.setProperty('display','none','important')}});document.body.dataset.compassPage=name;document.body.classList.toggle('compass-home-active',name==='home');qsa('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));const additionalNav=$('compassAdditionalNav'),additionalToggle=$('compassAdditionalToggle');if(additionalNav&&['offline-programs','sessions','settings','admin-users'].includes(name)){additionalNav.hidden=false;if(additionalToggle)additionalToggle.setAttribute('aria-expanded','true')}if(push)location.hash=name;$('sidebar').classList.remove('open');window.scrollTo({top:0});if(name==='students')renderDirectory();if(name==='data-collection')loadDataCollection();if(name==='offline-programs')renderOfflinePage();if(name==='home')showTodayInHomeCalendar()}
   function showProfileTab(name){if(name==='behavior'){openBehaviorSelection();return}qsa('#profileTabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));qsa('.profile-tab').forEach(p=>p.classList.remove('active'));$('profile-tab-'+name)?.classList.add('active')}
   let modalReturnFocus=null;
-  function openModal(title,html,onReady){const bd=$('modalBackdrop'),m=$('modal');if(bd.classList.contains('hidden'))modalReturnFocus=document.activeElement;m.className='modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-labelledby','modalTitle');m.setAttribute('tabindex','-1');$('modalTitle').textContent=title;$('modalBody').innerHTML=html;bd.classList.remove('hidden');setTimeout(()=>{onReady?.();if(!bd.contains(document.activeElement))m.focus({preventScroll:true})},0)}
-  function closeModal(){const bd=$('modalBackdrop'),was=!bd.classList.contains('hidden'),back=modalReturnFocus;modalReturnFocus=null;bd.classList.add('hidden');$('modalBody').innerHTML='';if(was&&back&&document.contains(back)){try{back.focus({preventScroll:true})}catch(e){}}}
+  function openModal(title,html,onReady){const bd=$('modalBackdrop'),m=$('modal');if(bd.classList.contains('hidden'))modalReturnFocus=document.activeElement;bd.classList.remove('edit-programs-backdrop');m.className='modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-labelledby','modalTitle');m.setAttribute('tabindex','-1');$('modalTitle').textContent=title;$('modalBody').innerHTML=html;bd.classList.remove('hidden');setTimeout(()=>{onReady?.();if(!bd.contains(document.activeElement))m.focus({preventScroll:true})},0)}
+  function closeModal(){const bd=$('modalBackdrop'),was=!bd.classList.contains('hidden'),back=modalReturnFocus;modalReturnFocus=null;bd.classList.remove('edit-programs-backdrop');bd.classList.add('hidden');$('modalBody').innerHTML='';if(was&&back&&document.contains(back)){try{back.focus({preventScroll:true})}catch(e){}}}
   async function loadRuntimeHtml(spid,token){const u=`${cfg.SUPABASE_URL}/functions/v1/compass-student-program-runtime?assignment_id=${encodeURIComponent(spid)}&token=${encodeURIComponent(token)}&staff_id=${encodeURIComponent(state.user?.id||'')}`;const r=await fetch(u,{cache:'no-store'}),t=await r.text();if(!r.ok)throw new Error('Program runtime failed ('+r.status+')');let h=t;try{const j=JSON.parse(t);h=typeof j==='string'?j:(j.html||j.runner_html||j.data?.html||j.body||t)}catch{}return h}function openProgramAcquisitionData(assignmentId){
  const sp=state.studentPrograms.find(x=>x.id===assignmentId&&x.student_id===state.currentStudent?.id&&x.status!=='archived');
  if(!sp){toast('Assigned program not available.','error');return}
@@ -1895,14 +1974,14 @@ function activeStudentProgramsOrdered(){
     const body=rows.map((sp,i)=>{
       const p=programById(sp.program_id),name=p?.program_name||'Program',id=esc(sp.id);
       return '<div class="program-edit-row" data-program-edit-row="'+id+'">'+
-        '<label class="program-edit-checkbox"><input type="checkbox" data-select-assigned="'+id+'" aria-label="Select '+esc(name)+'"></label>'+
-        '<div class="program-edit-details"><strong>'+(i+1)+'. '+esc(name)+'</strong>'+
-        '<small>'+esc(programDomain(p))+' · '+esc(roleName(sp.status))+' · Goal '+Number(sp.goal_percentage??80)+'%</small></div>'+
         '<div class="program-edit-actions">'+
         '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="-1" '+(i===0?'disabled':'')+' title="Move up">↑</button>'+
         '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="1" '+(i===rows.length-1?'disabled':'')+' title="Move down">↓</button>'+
         '<button class="btn danger" type="button" data-remove-assigned="'+id+'">Remove</button></div></div>';
-    }).join('');
+    '<div class="program-edit-details"><strong>'+(i+1)+'. '+esc(name)+'</strong>'+
+        '<small>'+esc(programDomain(p))+' · '+esc(roleName(sp.status))+' · Goal '+Number(sp.goal_percentage??80)+'%</small></div>'+
+        '<label class="program-edit-checkbox"><input type="checkbox" data-select-assigned="'+id+'" aria-label="Select '+esc(name)+'"></label>'+
+        }).join('');
     const toolbar='<div class="program-bulk-toolbar" aria-label="Bulk program selection">'+
       '<button class="btn small" type="button" id="programSelectAll" '+(rows.length?'':'disabled')+'>Select All</button>'+
       '<button class="btn small" type="button" id="programClearSelection" disabled>Clear Selection</button>'+
@@ -1913,6 +1992,8 @@ function activeStudentProgramsOrdered(){
       (body||'<div class="empty-state compact">No assigned programs.</div>')+'</div>'+
       '<div class="program-edit-note">Select multiple programs to remove them together. Removing an assignment keeps all prior session, trial, and graph history. Use ↑ and ↓ to change order.</div>',
       ()=>{
+        $('modal').classList.add('edit-programs-modal');
+        $('modalBackdrop').classList.add('edit-programs-backdrop');
         const list=$('editProgramsList'),all=$('programSelectAll'),clear=$('programClearSelection');
         const counter=$('programSelectionCount'),bulk=$('programBulkRemove');
         if(!list||!all||!clear||!counter||!bulk)return;
