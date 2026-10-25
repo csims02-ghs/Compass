@@ -704,6 +704,81 @@ body{display:block!important;width:100%;min-width:0}
  #goalForm .compass-iep-select-row{grid-template-columns:1fr!important}
 }
 </style>
+
+<style id="compass-premium-profile-v1">
+#page-student-profile{background:#f3f8ff}
+#page-student-profile .compass-premium-top{padding:20px 22px 15px;max-width:1850px;margin:0 auto}
+#page-student-profile .compass-premium-toolbar{margin-bottom:12px}
+#page-student-profile .compass-premium-grid{display:grid;grid-template-columns:minmax(0,1.66fr) minmax(350px,1fr);gap:22px;align-items:stretch}
+#page-student-profile .compass-premium-left{min-width:0;display:flex;flex-direction:column;gap:17px}
+#page-student-profile .compass-premium-identity{overflow:visible;background:#fff;border-radius:20px;box-shadow:0 9px 30px rgba(14,52,92,.065)}
+#page-student-profile .compass-premium-hero{position:relative;display:flex;align-items:center;gap:28px;min-height:215px;padding:29px 34px;background:linear-gradient(127deg,#112e55 0%,#194578 49%,#2875d6 100%);border-radius:20px 20px 0 0;color:#fff;overflow:hidden}
+#page-student-profile .compass-premium-hero:after{content:"";position:absolute;width:65%;height:190%;right:-14%;bottom:-130%;border-radius:45% 0 0 0;background:rgba(80,154,255,.15);transform:rotate(-25deg);pointer-events:none}
+#page-student-profile .compass-premium-hero .avatar{width:137px;height:137px;min-width:137px;font-size:50px;background:#deebfc;color:#0f315e;border:6px solid #fff;box-shadow:0 0 0 2px #dce9f8;z-index:1}
+#page-student-profile .compass-premium-person{min-width:0;z-index:1;align-self:center;flex:1}
+#page-student-profile .compass-premium-person h1{margin:0;font-size:clamp(26px,2.5vw,41px);line-height:1.09;font-weight:860;color:#fff;overflow-wrap:anywhere;letter-spacing:-.035em}
+#page-student-profile .compass-premium-person .profile-meta{font-size:clamp(16px,1.45vw,22px);margin:12px 0 15px;color:#e1ebfb}
+#page-student-profile .compass-premium-person .status-pill{display:inline-flex;align-items:center;gap:9px;font-size:17px;padding:8px 19px;background:#0d9e69;color:#fff}
+#page-student-profile .compass-premium-person .status-pill:before{content:"";background:#fff;width:10px;height:10px;border-radius:50%}
+#page-student-profile .compass-premium-edit{position:absolute;right:24px;top:24px;z-index:2;border:1px solid #a7cdfa;color:#fff;background:rgba(4,31,71,.34);border-radius:12px;font-size:16px;font-weight:750;padding:11px 18px}
+#page-student-profile .compass-premium-edit:hover{background:rgba(255,255,255,.17)}
+#page-student-profile .compass-premium-tabs{position:relative;display:flex;justify-content:space-between;align-items:stretch;gap:3px;z-index:3;top:auto;padding:0 12px;overflow:visible;flex-wrap:nowrap;border:0;border-radius:0 0 20px 20px;background:#fff;min-height:88px}
+#page-student-profile .compass-premium-tabs>button{flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-width:0;white-space:normal;padding:13px 5px 10px;font-size:clamp(10px,.9vw,14px);font-weight:650;border-radius:13px 13px 0 0;border:0;border-bottom:3px solid transparent;background:transparent;line-height:1.1;text-align:center;color:#30445f}
+#page-student-profile .compass-premium-tabs>button svg{width:23px;height:23px}
+#page-student-profile .compass-premium-tabs>button.active{background:#edf5ff;color:#126bfa;border-bottom-color:#156ef4}
+#page-student-profile .compass-premium-tabs>button:hover:not(.active){background:#f3f7fc}
+#page-student-profile .compass-premium-more{position:relative;align-self:stretch;display:flex;align-items:stretch}
+#page-student-profile .compass-premium-more summary{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:56px;height:100%;padding:10px 4px;cursor:pointer;list-style:none;color:#344b6a;font-size:19px}
+#page-student-profile .compass-premium-more summary span{font-size:12px}
+#page-student-profile .compass-premium-more-menu{position:absolute;right:0;top:100%;z-index:50;min-width:180px;background:#fff;padding:8px;border:1px solid #dde8f4;border-radius:12px;box-shadow:0 14px 25px #112b4f20}
+#page-student-profile .compass-premium-more:not([open]) .compass-premium-more-menu{display:none}
+#page-student-profile .compass-premium-more-menu button{width:100%;display:flex;gap:8px;align-items:center;background:#fff;border:0;padding:11px;text-align:left;border-radius:9px;color:#163960;font-size:14px}
+#page-student-profile .compass-premium-more-menu button:hover,#page-student-profile .compass-premium-more-menu button.active{background:#eaf3ff;color:#076bf5}
+#page-student-profile .compass-premium-attention,#page-student-profile .compass-premium-information{border-radius:20px;box-shadow:0 9px 30px rgba(14,52,92,.065);background:#fff;border:0}
+#page-student-profile .compass-premium-attention{padding:21px 24px;min-height:200px}
+#page-student-profile .compass-premium-attention-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px}
+#page-student-profile .compass-premium-attention-head h2{display:flex;align-items:center;gap:12px;font-size:24px;margin:0;color:#0f2c58}
+#page-student-profile .compass-premium-bell{display:grid;place-items:center;background:#ffebed;color:#e93b55;width:44px;height:44px;border-radius:50%}
+#page-student-profile .compass-premium-view-all{border:0;background:transparent;color:#0066ec;font-weight:750;font-size:16px;white-space:nowrap}
+#page-student-profile #profileAlerts.profile-alert-items{max-height:unset;padding-right:0;gap:8px}
+#page-student-profile #profileAlerts.profile-alert-empty{min-height:85px}
+#page-student-profile .profile-alert-row{min-height:68px;display:flex;align-items:center;border:0;border-radius:14px;background:#f2f6fc;padding:12px 16px;color:#0e3159}
+#page-student-profile .profile-alert-row .profile-alert-sym{flex:none;display:grid;place-items:center;width:47px;height:47px;border-radius:11px;background:#ffe9e9;color:#ec3447;font-size:23px}
+#page-student-profile .profile-alert-row .profile-alert-text{flex:1}
+#page-student-profile .profile-alert-row .profile-alert-text strong{font-size:16px}
+#page-student-profile .profile-alert-row .profile-alert-text small{font-size:13px;color:#5c7291}
+#page-student-profile .compass-premium-days{white-space:nowrap;border-radius:30px;padding:7px 12px;color:#cc7500;background:#fff1d6;font-weight:850;font-size:15px}
+#page-student-profile .compass-premium-days.urgent{background:#ffe0e3;color:#d4293c}
+#page-student-profile .compass-premium-information{padding:23px 25px;display:flex;flex-direction:column;min-width:0}
+#page-student-profile .compass-premium-info-title{margin:0 0 17px;display:flex;gap:13px;align-items:center;color:#102f5b;font-size:clamp(23px,2vw,31px);font-weight:850;letter-spacing:-.03em}
+#page-student-profile .compass-premium-info-mark{display:grid;place-items:center;color:#fff;background:#123b73;width:37px;height:37px;border-radius:50%}
+#page-student-profile .compass-premium-info-mark svg{width:23px;height:23px}
+#page-student-profile #quickInfo{margin-top:0;gap:0;flex:1}
+#page-student-profile #quickInfo .quick-line{display:grid;grid-template-columns:65px minmax(0,1fr);align-items:center;gap:17px;padding:19px 0;border-bottom:1px solid #e1e9f5}
+#page-student-profile .profile-info-icon{min-height:61px;width:61px;font-size:28px;border-radius:14px;color:#126ae5;background:#eaf3ff}
+#page-student-profile .quick-line-school .profile-info-icon{background:#fff5e5;color:#e59000}
+#page-student-profile .quick-line-classroom .profile-info-icon{background:#e3f8ed;color:#08a05c}
+#page-student-profile .quick-line-enrollment .profile-info-icon{background:#f0ebff;color:#6845db}
+#page-student-profile .profile-info-data small{font-size:15px;color:#526b8d}
+#page-student-profile .profile-info-data strong{font-size:18px;color:#102f5b;line-height:1.35}
+#page-student-profile .compass-premium-next-wrap{padding-top:18px}
+#page-student-profile .compass-premium-next{display:grid;grid-template-columns:58px minmax(0,1fr) 20px;gap:11px;align-items:center;text-align:left;border:0;border-radius:14px;background:#edf5ff;width:100%;padding:16px 14px;color:#0e3159;min-height:108px}
+#page-student-profile .compass-premium-next:disabled{cursor:default;opacity:.8}
+#page-student-profile .compass-premium-next-icon{width:55px;height:55px;display:grid;place-items:center;background:#dcecff;color:#0765d9;border-radius:12px;font-size:29px}
+#page-student-profile .compass-premium-next small{display:block;color:#526e91;font-size:15px;margin-bottom:5px}
+#page-student-profile .compass-premium-next strong{display:block;font-size:18px}
+#page-student-profile .compass-premium-next em{display:block;font-style:normal;color:#516d92;font-size:15px;margin-top:5px}
+#page-student-profile .compass-premium-next-arrow{font-size:31px;color:#216ed0}
+#page-student-profile #profile-tab-notes.profile-tab.active{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:19px;align-items:start}
+#page-student-profile #profile-tab-notes .card.panel,#page-student-profile #profile-documents-section .card.panel{height:100%}
+#page-student-profile #profile-documents-section .two-col{display:grid;grid-template-columns:1fr;gap:12px}
+#page-student-profile #profile-documents-section .two-col .card.panel:first-child{order:2}
+#page-student-profile #profile-documents-section .two-col .card.panel:last-child{order:1}
+@media(max-width:1350px){#page-student-profile .compass-premium-grid{grid-template-columns:minmax(0,1fr) minmax(325px,.8fr);gap:15px}#page-student-profile .compass-premium-hero{padding:25px 22px;gap:16px}#page-student-profile .compass-premium-hero .avatar{width:98px;height:98px;min-width:98px;font-size:35px}#page-student-profile .compass-premium-edit{font-size:13px;padding:8px 11px}#page-student-profile .compass-premium-tabs{padding:0 5px}#page-student-profile .compass-premium-tabs>button{font-size:10.5px}}
+@media(max-width:1090px){#page-student-profile .compass-premium-grid{grid-template-columns:1fr}#page-student-profile .compass-premium-information{order:2}#page-student-profile .compass-premium-hero{min-height:186px}#page-student-profile .compass-premium-tabs>button{font-size:12px}}
+@media(max-width:680px){#page-student-profile .compass-premium-top{padding:12px}#page-student-profile .compass-premium-hero{display:flex;align-items:center;flex-wrap:wrap;padding:22px 15px;gap:13px}#page-student-profile .compass-premium-edit{position:static;margin-left:auto}#page-student-profile .compass-premium-tabs{overflow-x:auto;justify-content:flex-start;scrollbar-width:thin}#page-student-profile .compass-premium-tabs>button{min-width:95px;font-size:11px}#page-student-profile .compass-premium-more{position:sticky;right:0;background:#fff}#page-student-profile .compass-premium-person h1{font-size:24px}#page-student-profile .compass-premium-person .profile-meta{font-size:14px}#page-student-profile .compass-premium-information{padding:18px}#page-student-profile #profile-tab-notes.profile-tab.active{grid-template-columns:1fr}#page-student-profile .compass-premium-attention{padding:16px}#page-student-profile .compass-premium-attention-head h2{font-size:20px}}
+</style>
+
 </head>
 <body>
 
@@ -926,10 +1001,32 @@ body{display:block!important;width:100%;min-width:0}
       </section>
 
       <section id="page-student-profile" class="page">
-        <div class="profile-top"><div class="panel-head"><div class="breadcrumb">Students <span>›</span> Student Profile</div><button id="printProfileBtn" class="btn" type="button">Print Profile</button></div>
-          <div class="profile-summary-grid compass-clean-profile"><article class="card profile-card identity-card"><div class="profile-ident-main"><div id="profileAvatar" class="avatar">—</div><div class="profile-ident-copy"><h1 id="profileName">Student</h1><div id="profileMeta" class="profile-meta"></div><span id="profileStatus" class="status-pill">Active</span></div></div><div class="profile-ident-footer"><button id="editStudentBtn" class="btn small" type="button">✎ &nbsp; Edit Student</button></div></article><article class="card profile-card"><h2 class="profile-card-h">ⓘ &nbsp; Key Information</h2><div id="quickInfo" class="quick-list"></div></article><article class="card profile-card"><h2 class="profile-card-h">🔔 &nbsp; Alerts</h2><p class="profile-alert-desc">Student calendar dates and session notes</p><div id="profileAlerts" class="profile-alert-empty" aria-live="polite"></div></article></div>
+        <div class="profile-top compass-premium-top">
+          <div class="panel-head compass-premium-toolbar"><div class="breadcrumb">Students <span>›</span> Student Profile</div><button id="printProfileBtn" class="btn" type="button">Print Profile</button></div>
+          <div class="compass-premium-grid">
+            <div class="compass-premium-left">
+              <div class="compass-premium-identity">
+                <div class="compass-premium-hero">
+                  <div id="profileAvatar" class="avatar">—</div>
+                  <div class="compass-premium-person"><h1 id="profileName">Student</h1><div id="profileMeta" class="profile-meta"></div><span id="profileStatus" class="status-pill">Active</span></div>
+                  <button id="editStudentBtn" class="btn compass-premium-edit" type="button">✎ &nbsp; Edit Student</button>
+                </div>
+                <nav id="profileTabs" class="tabs compass-premium-tabs" aria-label="Student profile sections"><button type="button" data-tab="overview" class="active" aria-label="Overview"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v12h14V9M9 21v-7h6v7"/></svg><span>Overview</span></button><button type="button" data-tab="iepservices" class="" aria-label="IEP & Services"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg><span>IEP & Services</span></button><button type="button" data-tab="programs" class="" aria-label="Programs"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12"/><path d="m3.5 6 .7.7 1.3-1.5M3.5 12l.7.7 1.3-1.5M3.5 18l.7.7 1.3-1.5"/></svg><span>Programs</span></button><button type="button" data-tab="goals" class="" aria-label="Goals"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/><path d="m12 12 7-7"/></svg><span>Goals</span></button><button type="button" data-tab="assessments" class="" aria-label="Assessments"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9 10h6M9 14h6"/></svg><span>Assessments</span></button><button type="button" data-tab="behavior" class="" aria-label="Behavior"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 18H2z"/><path d="M12 9v5M12 18h.01"/></svg><span>Behavior</span></button><button type="button" data-tab="notes" class="" aria-label="Notes & Documents"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v13H7l-3 3z"/><path d="M8 9h8M8 13h5"/></svg><span>Notes & Documents</span></button><button type="button" data-tab="team" class="" aria-label="Team"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v1"/></svg><span>Team</span></button><details class="compass-premium-more"><summary aria-label="More student profile sections">•••<span>More</span></summary><div class="compass-premium-more-menu"><button type="button" data-tab="progress" class="" aria-label="Progress"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4M4 20h17M8 15l4-5 4 3 5-7"/></svg><span>Progress</span></button><button type="button" data-tab="history" class="" aria-label="History"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 3"/></svg><span>History</span></button></div></details></nav>
+              </div>
+              <article class="card compass-premium-attention">
+                <div class="compass-premium-attention-head"><h2><span class="compass-premium-bell"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9M10 21h4"/></svg></span>Needs Attention</h2><button id="profileViewAllBtn" type="button" class="compass-premium-view-all">View All →</button></div>
+                <div id="profileAlerts" class="profile-alert-empty" aria-live="polite"></div>
+              </article>
+            </div>
+            <aside class="card compass-premium-information">
+              <h2 class="compass-premium-info-title"><span class="compass-premium-info-mark"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7h.01"/></svg></span>Key Information</h2>
+              <div id="quickInfo" class="quick-list"></div>
+              <div class="compass-premium-next-wrap">
+                <button id="profileNextEvent" class="compass-premium-next" type="button" disabled><span class="compass-premium-next-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M8 18h3"/></svg></span><span><small>Next Scheduled Event</small><strong>No upcoming event scheduled</strong></span><span class="compass-premium-next-arrow">›</span></button>
+              </div>
+            </aside>
+          </div>
         </div>
-        <div id="profileTabs" class="tabs"><button class="active" data-tab="overview">Overview</button><button data-tab="iepservices">IEP &amp; Services</button><button data-tab="programs">Programs</button><button data-tab="goals">Goals</button><button data-tab="behavior">Behavior</button><button data-tab="notes">Observation &amp; Session Notes</button><button data-tab="assessments">Assessments</button><button data-tab="progress">Progress</button><button data-tab="docs">Documents</button><button data-tab="team">Team</button><button data-tab="history">History</button></div>
         <div class="content profile-content">
           <div id="profile-tab-overview" class="profile-tab active"><div class="overview-grid"><article class="card panel"><h2>Student Support Snapshot</h2><div id="supportSnapshot" class="snapshot-list"></div></article><article class="card panel"><div class="panel-head"><h2>Current Programs</h2><button class="link-btn" data-profile-tab="programs" type="button">View All Programs →</button></div><div id="overviewPrograms" class="program-stack"></div></article><article class="card panel"><div class="panel-head"><h2>Documents</h2><button class="btn small" data-profile-tab="docs" type="button">Upload / View</button></div><div id="overviewDocuments" class="empty-state compact"></div></article></div><div class="overview-bottom"><article class="card panel chart-panel"><div class="panel-head"><h2>IEP Goal Achievement by Student Program</h2><span id="overviewProgressLabel" class="muted"></span></div><div id="overviewChart" class="chart-area"></div></article><article class="card panel"><div class="panel-head"><h2>Goals Snapshot</h2><button class="btn small" data-profile-tab="goals" type="button">Connect IEP Goals</button></div><div id="overviewGoals" class="stack-list"></div></article></div></div>
           <div id="profile-tab-iepservices" class="profile-tab"><div class="two-col"><article class="card panel"><div class="panel-head"><h2>IEP Goals</h2><button class="btn primary small" data-action="add-goal" type="button">+ Add Goal</button></div><div id="serviceGoalsList" class="stack-list"></div></article><article class="card panel"><div class="panel-head"><h2>Service Requirements</h2><button id="addServiceRequirementBtn" class="btn primary small" type="button">+ Add Service</button></div><div id="serviceRequirementsList" class="stack-list"></div><div class="panel-separator"></div><div class="panel-head"><h2>Service Delivery</h2><button id="logServiceBtn" class="btn small" type="button">Log Minutes</button></div><div id="serviceDeliverySummary" class="stack-list"></div></article></div></div>
@@ -1473,13 +1570,29 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function renderProfileAlerts(){
     const el=$('profileAlerts'),st=state.currentStudent;if(!el||!st)return;
     const today=todayISO();
-    const cal=(state.events||[]).filter(e=>e.student_id===st.id&&e.start_at&&localISO(e.end_at||e.start_at)>=today).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at));
+    const dayIndex=(d)=>{const p=String(d).split('-').map(Number);return Date.UTC(p[0],p[1]-1,p[2])/86400000};
+    const todayIndex=dayIndex(today);
+    const upcoming=(state.events||[]).filter(e=>e.student_id===st.id&&e.start_at&&localISO(e.end_at||e.start_at)>=today).sort((a,b)=>new Date(a.start_at)-new Date(b.start_at));
+    const next=upcoming[0],nextEl=$('profileNextEvent');
+    if(nextEl){
+      nextEl.disabled=!next;
+      if(next){
+        const days=Math.max(0,Math.round(dayIndex(localISO(next.start_at))-todayIndex));
+        nextEl.dataset.eventId=next.id;
+        nextEl.innerHTML='<span class="compass-premium-next-icon" aria-hidden="true">▦</span><span><small>Next Scheduled Event</small><strong>'+esc(next.title||'Scheduled event')+'</strong><em>'+esc(fmtDate(next.start_at))+' ('+days+' day'+(days===1?'':'s')+')</em></span><span class="compass-premium-next-arrow">›</span>';
+      }else{
+        delete nextEl.dataset.eventId;
+        nextEl.innerHTML='<span class="compass-premium-next-icon" aria-hidden="true">▦</span><span><small>Next Scheduled Event</small><strong>No upcoming event scheduled</strong></span>';
+      }
+    }
+    const cal=upcoming.map(e=>({...e,days:Math.round(dayIndex(localISO(e.start_at))-todayIndex)})).filter(e=>e.days<=30);
     const notes=(state.notes||[]).filter(n=>n.student_id===st.id&&n.note_type==='session'&&!(state.noteAlertReads||[]).includes(n.id));
     const tasks=(state.tasks||[]).filter(t=>t.student_id===st.id&&['open','in_progress'].includes(t.status));
-    const a=notes.map(n=>'<button type="button" class="profile-alert-row profile-alert-note" data-review-student-note="'+esc(n.id)+'"><span class="profile-alert-sym" aria-hidden="true">📝</span><span class="profile-alert-text"><strong>'+esc(n.title||'Session note needs review')+'</strong><small>Session note · '+esc(fmtDate(n.note_date))+' · Review</small></span></button>').join('');
-    const b=cal.map(e=>'<button type="button" class="profile-alert-row" data-event-id="'+esc(e.id)+'"><span class="profile-alert-sym" aria-hidden="true">📅</span><span class="profile-alert-text"><strong>'+esc(e.title)+'</strong><small>Calendar · '+esc(fmtDateTime(e.start_at))+(e.end_at&&localISO(e.end_at)!==localISO(e.start_at)?' – '+esc(fmtDate(e.end_at)):'')+'</small></span></button>').join('');
+    const a=cal.map(e=>'<button type="button" class="profile-alert-row compass-premium-calendar-alert" data-event-id="'+esc(e.id)+'"><span class="profile-alert-sym" aria-hidden="true">▦</span><span class="profile-alert-text"><strong>'+esc(e.title||'Scheduled event')+'</strong><small>Due in '+e.days+' days · '+esc(fmtDate(e.start_at))+'</small></span><span class="compass-premium-days '+(e.days<=7?'urgent':'')+'">'+e.days+' Days</span></button>').join('');
+    const b=notes.map(n=>'<button type="button" class="profile-alert-row profile-alert-note" data-review-student-note="'+esc(n.id)+'"><span class="profile-alert-sym" aria-hidden="true">✎</span><span class="profile-alert-text"><strong>'+esc(n.title||'Session note needs review')+'</strong><small>Session note · '+esc(fmtDate(n.note_date))+' · Review</small></span></button>').join('');
     const c=tasks.map(t=>'<button type="button" class="profile-alert-row profile-alert-task" data-complete-task="'+esc(t.id)+'" title="Mark action completed"><span class="profile-alert-sym" aria-hidden="true">☑</span><span class="profile-alert-text"><strong>'+esc(t.title)+'</strong><small>Action item · '+(t.due_at?'Due '+esc(fmtDate(t.due_at)):'No due date')+' · Complete</small></span></button>').join('');
-    el.className=a+b+c?'profile-alert-items':'profile-alert-empty';el.innerHTML=a+b+c||'<span>✓ No upcoming dates or session notes to review.</span>';
+    el.className=a+b+c?'profile-alert-items':'profile-alert-empty';
+    el.innerHTML=a+b+c||'<span>✓ No calendar dates within 30 days or session notes requiring review.</span>';
   }
   function openStudentNoteReview(id){
     const n=(state.notes||[]).find(x=>String(x.id)===String(id)&&x.note_type==='session'&&x.student_id===state.currentStudent?.id);
@@ -1501,8 +1614,8 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     $('profileName').textContent=studentLabel(st);
     $('profileMeta').textContent='Student ID: '+(st.student_code||'—');
     $('profileStatus').textContent=roleName(st.status||'active');
-    const lines=[['🎓','Grade',st.grade_level||'—'],['🏫','School',r.school?.name||'—'],['▣','Classroom',r.classroom?.name||'—'],['▦','Enrollment',fmtDate(st.enrollment_date)]];
-    $('quickInfo').innerHTML=lines.map(x=>'<div class="quick-line"><span class="profile-info-icon" aria-hidden="true">'+x[0]+'</span><span class="profile-info-data"><small>'+esc(x[1])+'</small><strong>'+esc(x[2])+'</strong></span></div>').join('');
+    const lines=[['grade','Grade',st.grade_level||'—'],['school','School',r.school?.name||'—'],['classroom','Classroom',r.classroom?.name||'—'],['enrollment','Enrollment Date',fmtDate(st.enrollment_date)]];
+    $('quickInfo').innerHTML=lines.map(x=>'<div class="quick-line quick-line-'+x[0]+'"><span class="profile-info-icon" aria-hidden="true">'+({grade:'🎓',school:'🏫',classroom:'▣',enrollment:'▦'}[x[0]])+'</span><span class="profile-info-data"><small>'+esc(x[1])+'</small><strong>'+esc(x[2])+'</strong></span></div>').join('');
     renderProfileAlerts();renderBehaviorProfileSummary();renderSnapshot();renderOverviewPrograms();renderOverviewDocuments();renderGoals();renderPrograms();renderNotes();renderAssessments();renderDocuments();renderGoalAchievement();renderBehavior();renderServices();renderTeam();renderHistory();
   }
   function renderSnapshot(){const active=state.studentPrograms.filter(x=>x.status==='active').length,last=state.sessions.length?[...state.sessions].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]:null,next=state.goals.map(g=>g.review_date).filter(Boolean).sort()[0];$('supportSnapshot').innerHTML=[['Primary Service',state.services[0]?.service_name||'None entered'],['Active Programs',active],['IEP Goals Tracked',state.goals.filter(g=>g.status==='active').length],['Target Behaviors',((state.currentStudent.selected_behaviors||[]).length||'None')+' selected'],['Last Session',last?fmtDate(last.session_date):'—'],['Next Review',next?fmtDate(next):'—']].map(x=>`<div class="snapshot-row"><span>${esc(x[0])}</span><strong>${esc(x[1])}</strong></div>`).join('')}
@@ -1862,7 +1975,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function showTodayInHomeCalendar(){const g=$('homeCalendarGrid'),sc=g?g.parentElement:null;if(!sc||!sc.classList.contains('home-calendar-scroll')||sc.scrollWidth<=sc.clientWidth+1)return;const t=g.querySelector('.cal-day.today');if(!t)return;sc.scrollLeft=Math.max(0,t.getBoundingClientRect().left-g.getBoundingClientRect().left-(sc.clientWidth-t.offsetWidth)/2)}
   function renderCalendar(){renderCalendarInto('homeCalendarTitle','homeCalendarGrid');showTodayInHomeCalendar()}
   function showPage(name,push=true){if(name==='calendar')name='home';if(name==='student-search'||name==='student-directory')name='students';const p=$('page-'+name);if(!p)return;const siblings=p.parentElement?Array.from(p.parentElement.children).filter(el=>el.id&&el.id.startsWith('page-')):[];const candidates=new Set([...qsa('.page'),...siblings]);const home=$('page-home');if(home)candidates.add(home);candidates.forEach(page=>{const active=page===p;page.classList.toggle('active',active);page.hidden=!active;if(active){page.style.removeProperty('display')}else{page.style.setProperty('display','none','important')}});document.body.dataset.compassPage=name;document.body.classList.toggle('compass-home-active',name==='home');qsa('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));const additionalNav=$('compassAdditionalNav'),additionalToggle=$('compassAdditionalToggle');if(additionalNav&&['offline-programs','sessions','settings','admin-users'].includes(name)){additionalNav.hidden=false;if(additionalToggle)additionalToggle.setAttribute('aria-expanded','true')}if(push)location.hash=name;$('sidebar').classList.remove('open');window.scrollTo({top:0});if(name==='students')renderDirectory();if(name==='data-collection')loadDataCollection();if(name==='offline-programs')renderOfflinePage();if(name==='home')showTodayInHomeCalendar()}
-  function showProfileTab(name){if(name==='behavior'){openBehaviorSelection();return}qsa('#profileTabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));qsa('.profile-tab').forEach(p=>p.classList.remove('active'));$('profile-tab-'+name)?.classList.add('active')}
+  function showProfileTab(name){if(name==='docs')name='notes';if(name==='behavior'){openBehaviorSelection();return}qsa('#profileTabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));qsa('.profile-tab').forEach(p=>p.classList.remove('active'));$('profile-tab-'+name)?.classList.add('active')}
   let modalReturnFocus=null;
   function openModal(title,html,onReady){const bd=$('modalBackdrop'),m=$('modal');if(bd.classList.contains('hidden'))modalReturnFocus=document.activeElement;bd.classList.remove('edit-programs-backdrop');m.className='modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-labelledby','modalTitle');m.setAttribute('tabindex','-1');$('modalTitle').textContent=title;$('modalBody').innerHTML=html;bd.classList.remove('hidden');setTimeout(()=>{onReady?.();if(!bd.contains(document.activeElement))m.focus({preventScroll:true})},0)}
   function closeModal(){const bd=$('modalBackdrop'),was=!bd.classList.contains('hidden'),back=modalReturnFocus;modalReturnFocus=null;bd.classList.remove('edit-programs-backdrop');bd.classList.add('hidden');$('modalBody').innerHTML='';if(was&&back&&document.contains(back)){try{back.focus({preventScroll:true})}catch(e){}}}
@@ -2321,5 +2434,15 @@ if(removed.length){
 })();
 </script>
 
+<script id="compass-premium-profile-bootstrap">
+document.addEventListener('DOMContentLoaded',function(){
+  const notes=document.getElementById('profile-tab-notes');
+  const docs=document.getElementById('profile-tab-docs');
+  if(notes&&docs&&!notes.contains(docs)){docs.id='profile-documents-section';docs.classList.remove('profile-tab');notes.appendChild(docs)}
+  const view=document.getElementById('profileViewAllBtn');
+  if(view)view.addEventListener('click',function(){location.hash='home'});
+  document.addEventListener('click',function(e){if(e.target.closest('#profileTabs [data-tab]')){const more=document.querySelector('#profileTabs details');if(more)more.open=false}});
+});
+</script>
 </body>
 </html>
