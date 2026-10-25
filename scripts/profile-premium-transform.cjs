@@ -22,8 +22,9 @@ module.exports = function premiumStudentProfile(source){
     bell:svg('<path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9M10 21h4"/>')
   };
   const tab=(name,label,icon,active=false)=>'<button type="button" data-tab="'+name+'" class="'+(active?'active':'')+'" aria-label="'+label+'">'+icon+'<span>'+label+'</span></button>';
-  const tabs=tab('overview','Overview',ico.overview,true)+tab('iepservices','IEP & Services',ico.iepservices)+tab('programs','Programs',ico.programs)+tab('goals','Goals',ico.goals)+tab('assessments','Assessments',ico.assessments)+tab('behavior','Behavior',ico.behavior)+tab('notes','Notes & Documents',ico.notes)+tab('team','Team',ico.team)+
-    '<details class="compass-premium-more"><summary aria-label="More student profile sections">•••<span>More</span></summary><div class="compass-premium-more-menu">'+tab('progress','Progress',ico.progress)+tab('history','History',ico.history)+'</div></details>';
+  const tabs=tab('overview','Overview',ico.overview,true)+tab('iepservices','IEP Services',ico.iepservices)+tab('programs','Programs',ico.programs)+
+    '<button id="compassGraphsChartsTab" type="button" data-compass-graphs-tab="1" aria-label="Graphs">'+ico.progress+'<span>Graphs</span></button>'+
+    tab('notes','Notes & Documents',ico.notes)+tab('goals','Goals',ico.goals)+tab('assessments','Assessments',ico.assessments)+tab('behavior','Behavior',ico.behavior)+tab('team','Team',ico.team)+tab('history','History',ico.history);
   const markup=`      <section id="page-student-profile" class="page">
         <div class="profile-top compass-premium-top">
           <div class="panel-head compass-premium-toolbar"><div class="breadcrumb">Students <span>›</span> Student Profile</div><button id="printProfileBtn" class="btn" type="button">Print Profile</button></div>
@@ -53,6 +54,9 @@ module.exports = function premiumStudentProfile(source){
         </div>
 `;
   source=source.slice(0,begin)+markup+source.slice(end);
+  const previousGraphOrder="const order=['Overview','IEP & Services','Programs','Goals','Behavior','Graphs and Charts','Progress','Assessments','Observation & Session Notes','Documents','Team','History'];";
+  if(!source.includes(previousGraphOrder))throw Error('COMPASS existing Graphs tab ordering has changed');
+  source=source.replace(previousGraphOrder,"const order=['Overview','IEP Services','Programs','Graphs','Notes & Documents','Goals','Assessments','Behavior','Team','History'];");
   const alertsStart=source.indexOf('  function renderProfileAlerts(){');
   const alertsEnd=source.indexOf('  function openStudentNoteReview(',alertsStart);
   if(alertsStart<0||alertsEnd<alertsStart)throw Error("Profile calendar alert renderer anchor changed");
@@ -250,6 +254,58 @@ module.exports = function premiumStudentProfile(source){
   #page-student-profile .compass-premium-attention-head h2{font-size:17px}
   #page-student-profile .compass-premium-information{padding:13px}
   #page-student-profile #profile-tab-notes.profile-tab.active{grid-template-columns:1fr}
+}
+
+/* Ten visible destinations: two even rows, priority destinations first. */
+#page-student-profile #profileTabs.compass-premium-tabs,
+#page-student-profile #profileTabs.compass-premium-tabs.compass-profile-tabs-v7{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  grid-template-rows:repeat(2,minmax(54px,auto))!important;
+  grid-auto-flow:row!important;
+  align-items:stretch!important;
+  width:100%!important;
+  min-height:0!important;
+  gap:0!important;
+  padding:4px 7px 5px!important;
+  overflow:visible!important;
+}
+#page-student-profile #profileTabs.compass-premium-tabs>button,
+#page-student-profile #profileTabs.compass-premium-tabs.compass-profile-tabs-v7>button{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:54px!important;
+  margin:0!important;
+  padding:7px 5px 6px!important;
+  border-radius:9px!important;
+  border-bottom:2px solid transparent!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  font-size:11px!important;
+  line-height:1.12!important;
+  white-space:normal!important;
+  text-align:center!important;
+}
+#page-student-profile #profileTabs.compass-premium-tabs>button.active,
+#page-student-profile #profileTabs.compass-premium-tabs.compass-profile-tabs-v7>button.active{
+  border-bottom-color:#176cf1!important;
+}
+#page-student-profile #profileTabs.compass-premium-tabs>button svg{width:18px!important;height:18px!important;flex-shrink:0}
+#page-student-profile #profileTabs.compass-premium-tabs>button span{overflow-wrap:normal!important;hyphens:none!important}
+@media(max-width:680px){
+  #page-student-profile #profileTabs.compass-premium-tabs,
+  #page-student-profile #profileTabs.compass-premium-tabs.compass-profile-tabs-v7{
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    overflow:visible!important;
+    gap:0!important;
+    padding:3px 2px!important;
+  }
+  #page-student-profile #profileTabs.compass-premium-tabs>button{min-width:0!important;min-height:49px!important;padding:5px 2px!important;font-size:9px!important}
+  #page-student-profile #profileTabs.compass-premium-tabs>button svg{width:16px!important;height:16px!important}
 }
 </style>
 `;
