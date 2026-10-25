@@ -22,6 +22,12 @@ assert.equal((shell.match(/id="compass-caseload-dashboard-20261025"/g)||[]).leng
 assert.equal((casePage.match(/data-action="open-caseload-add"/g)||[]).length,1,'Add Student action must appear once on My Caseload');
 assert(casePage.indexOf('id="caseloadSearch"')<casePage.indexOf('class="caseload-action-row"'),'Add Student must be below search and filters');
 assert(casePage.includes('id="caseloadBody"'),'Student table missing');
+assert(!casePage.includes('data-case-sort="programs"'),'Programs table column must be removed from My Caseload');
+assert(!casePage.includes('id="caseProgramFilter"'),'Programs filter must not appear in My Caseload');
+assert.equal((casePage.match(/<th>/g)||[]).length,8,'My Caseload must have eight table columns');
+assert(shell.includes("readRows('student_compass_programs'"),'Program assignments remain available for target and prompt calculations');
+assert(shell.includes('data-case-sort="prompt"')&&shell.includes('data-case-sort="mastered"'),'Prompt and mastery columns must remain');
+
 assert(shell.includes('aria-label="Open student profile">Profile</button>'),'Profile-only button missing');
 assert(!shell.includes('id="review-only"'),'Unsafe old review-only patch shipped');
 assert(!shell.includes('Loading COMPASS 1/'),'Obsolete nested runtime loader shipped');
