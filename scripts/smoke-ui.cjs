@@ -87,6 +87,200 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
    assert(caseloadAudit.add.top>caseloadAudit.search.top,'Add Student must render below Search');
    assert(caseloadAudit.cardBounds.every(c=>c.x>=metrics.main.x-3&&c.right<=width+4),'Caseload metrics overflow the sidebar or viewport');
    console.log('CASELOAD_BROWSER_LAYOUT_PASS '+JSON.stringify({width,caseloadAudit}));
+   // Data-source regression: simulate authorized records in the actual caseload renderer.
+   // No write or fake student is sent to Supabase.
+   const casePopulation=await page.evaluate(async()=>{
+     const scripts=[...document.querySelectorAll('script:not([src])')];
+     const main=scripts.map(el=>el.textContent||'').find(t=>t.includes('let caseloadDetailRun=0;'));
+     if(!main)throw Error('Caseload data renderer missing');
+     const begin=main.indexOf('let caseloadDetailRun=0;'),end=main.indexOf('function renderDirectory(){',begin);
+     if(begin<0||end<=begin)throw Error('Caseload function boundaries missing');
+     const fixture=[
+       {id:'sA',display_label:'Fixture Student A',student_code:'Fixture-A',grade_level:'2',status:'active',school_name:'Demo Elementary'},
+       {id:'sB',display_label:'Fixture Student B',student_code:'Fixture-B',grade_level:'4',status:'active',school_name:'Demo Middle'}
+     ];
+     const after=new Date();after.setDate(after.getDate()+10);
+     const iso=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
+     const date=iso(after);
+     const source={
+       student_iep_goals:[{student_id:'sA',status:'active',review_date:date}],
+       calendar_events:[],
+       student_assessments:[{student_id:'sA',assessment_type:'fba',assessment_data:{status:'in_progress'}}],
+       student_compass_programs:[{id:'spA',student_id:'sA',status:'active'},{id:'spB',student_id:'sB',status:'hold'}],
+       student_compass_program_targets:[
+         {student_compass_program_id:'spA',status:'mastered'},
+         {student_compass_program_id:'spA',status:'acquisition'},
+         {student_compass_program_id:'spB',status:'not_introduced'}
+       ],
+       compass_trial_events:[
+         {student_compass_program_id:'spA',trial_type:'T',result:'prompted'},
+         {student_compass_program_id:'spA',trial_type:'T',result:'independent_correct'},
+         {student_compass_program_id:'spA',trial_type:'D',result:'prompted'}
+       ]
+     };
+     const db={from(table){
+       const filters=[];let min=0,max=499;
+       const builder={
+         select(){return this},
+         in(k,values){filters.push(row=>values.includes(row[k]));return this},
+         eq(k,v){filters.push(row=>row[k]===v);return this},
+         range(a,b){min=a;max=b;return this},
+         then(resolve,reject){
+           const found=(source[table]||[]).filter(r=>filters.every(f=>f(r))).slice(min,max+1);
+           return Promise.resolve({data:found,error:null}).then(resolve,reject);
+         }
+       };return builder;
+     }};
+     const state={user:{id:'fixture-provider'},offlineMode:false,caseloadStudents:fixture};
+     const root=id=>document.getElementById(id);
+     const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+     const factory=new Function('state','sb','
+
+   const nav=await page.evaluate(()=>{
+     const sidebar=document.querySelector('#sidebar'),scroll=document.querySelector('#compassSidebarScroll');
+     const toggle=document.querySelector('#compassAdditionalToggle'),additional=document.querySelector('#compassAdditionalNav');
+     if(!sidebar||!scroll||!toggle||!additional)return {exists:false};
+     const measure=()=>{const sr=sidebar.getBoundingClientRect(),tr=toggle.getBoundingClientRect();
+       return {sidebarTop:sr.top,sidebarBottom:sr.bottom,toggleTop:tr.top,toggleBottom:tr.bottom}};
+     const collapsed=additional.hidden;
+     const initial=measure();
+     toggle.click();
+     const expanded=!additional.hidden;
+     const items=[...additional.querySelectorAll('[data-page]')].map(x=>x.dataset.page);
+     const mainScroll=getComputedStyle(scroll).overflowY,sidebarScroll=getComputedStyle(sidebar).overflowY;
+     const nestedScroll=getComputedStyle(additional).overflowY;
+     scroll.scrollTop=scroll.scrollHeight;
+     const after=measure();
+     toggle.click();
+     return {exists:true,collapsed,expanded,items,initial,after,mainScroll,sidebarScroll,nestedScroll,
+       nestedConstrained:additional.scrollHeight>additional.clientHeight+3,
+       ownerOnlyAdminButton:!!sidebar.querySelector('#compassAdminNav'),
+       compactFont:parseFloat(getComputedStyle(sidebar.querySelector('.brand-title')).fontSize),
+       scrollHeight:scroll.scrollHeight,scrollClientHeight:scroll.clientHeight,
+       toggleExpandedAfterClose:toggle.getAttribute('aria-expanded')};
+   });
+   assert(nav.exists&&nav.collapsed&&nav.expanded,'Pinned Additional Tools must expand from a collapsed state');
+   assert.equal(nav.mainScroll,'auto','The entire navigation must share one scrolling area');
+   assert.equal(nav.sidebarScroll,'hidden','The sidebar itself must not create a second scrollbar');
+   assert.equal(nav.nestedConstrained,false,'Additional Tools must not have its own scrollbar');
+   assert(nav.items.includes('offline-programs')&&nav.items.includes('sessions')&&nav.items.includes('settings'),
+     'Offline lists, Session Notes and Settings must be in Additional Tools');
+   assert.equal(nav.ownerOnlyAdminButton,false,'Administration cannot be shown without owner authentication');
+   assert(nav.initial.toggleTop>=0&&nav.initial.toggleBottom<=950,'Additional Tools must initially be visible within the viewport');
+   assert(Math.abs(nav.initial.toggleTop-nav.after.toggleTop)<2,'Additional Tools must stay pinned while menu scrolls');
+   assert.equal(nav.toggleExpandedAfterClose,'false','Additional Tools must collapse');
+   assert(nav.compactFont<=32,'COMPASS sidebar title must use compact typography');
+   console.log('SIDEBAR_PINNED_SMOKE_PASS '+JSON.stringify({width,nav}));
+   // Verify the compact main menu fits without its own visible scrollbar at desktop heights,
+   // and that the two requested links are absent rather than deleting their underlying pages.
+   for(const compactHeight of [768,831,870]){
+     await page.setViewportSize({width,height:compactHeight});
+     const compact=await page.evaluate(()=>{
+       const scroll=document.querySelector('#compassSidebarScroll');
+       const additional=document.querySelector('#compassAdditionalNav');
+       const instruction=scroll.querySelector('[aria-label="Instruction"]');
+       return {
+         height:innerHeight,scrollHeight:scroll.scrollHeight,clientHeight:scroll.clientHeight,
+         additionalHidden:additional.hidden,
+         instructionLinks:[...instruction.querySelectorAll('[data-page]')].map(n=>n.dataset.page),
+         dataCollectionPageExists:!!document.querySelector('#page-data-collection'),
+         dataProgressPageExists:!!document.querySelector('#page-progress'),
+         dockVisible:document.querySelector('#compassAdditionalToggle').getBoundingClientRect().bottom<=innerHeight
+       };
+     });
+     assert(compact.scrollHeight<=compact.clientHeight+1,
+       'Collapsed sidebar should fit without vertical scrollbar at height '+compactHeight+': '+JSON.stringify(compact));
+     assert(compact.additionalHidden&&compact.dockVisible,'Pinned tools must remain collapsed and visible');
+     assert.deepEqual(compact.instructionLinks,['programs','assessments'],
+       'Instruction menu must omit Data Collection and Data & Progress links');
+     assert(compact.dataCollectionPageExists&&compact.dataProgressPageExists,
+       'Removing navigation must not delete the associated COMPASS modules');
+     console.log('COMPACT_SIDEBAR_FIT_PASS '+JSON.stringify({width,compact}));
+   }
+   await page.setViewportSize({width,height:950});
+
+
+   // Native Progress remains reachable within Graphs, with no extra top-level navigation button.
+   assert.equal(await page.locator('#progressChart,#progressProgramFilter,#studentSessionsBody').count(),0,
+     'Legacy Progress DOM must not be shipped');
+   assert.equal(await page.locator('#profile-tab-progress').count(),1,'Native Progress tab must exist');
+   await page.waitForFunction(()=>!!window.__compassProgressUIv1,{timeout:10000});
+   const progressCheck=await page.evaluate(()=>{
+     const profile=document.querySelector('#page-student-profile'),home=document.querySelector('#page-home');
+     home.classList.remove('active');home.hidden=true;home.style.display='none';
+     profile.classList.add('active');profile.hidden=false;profile.style.display='block';
+     window.__compassProgressSnapshot={
+       studentId:'local-demo-only',
+       programs:[{assignment:{id:'demo-assignment',program_id:'demo-program',goal_percentage:80,display_order:1},
+         definition:{program_name:'Test Reading Program',program_config:{targets:[{id:'demo-target',name:'Reading Task'}]}}}],
+       sessions:[{id:'demo-session',student_compass_program_id:'demo-assignment',
+         target_key:'demo-target',target_name:'Reading Task',
+         trials_total:5,targets_correct:4,prompted_correct:0,incorrect:1,no_response:0,
+         session_date:'2026-10-18',total_behaviors:0,source_record:{}}],
+       goals:[],goalLinks:[],trialEvents:[]
+     };
+     window.dispatchEvent(new Event('compass-progress-data'));
+     const profileNav=document.querySelector('#profileTabs');
+     const visibleTabs=Array.from(profileNav.querySelectorAll(':scope > button'));
+     const topFive=visibleTabs.slice(0,5).map(b=>b.getAttribute('aria-label'));
+     const actualOrder=visibleTabs.map(b=>b.getAttribute('aria-label'));
+     const navStyle=getComputedStyle(profileNav);
+     const columns=navStyle.gridTemplateColumns.trim().split(/\s+/).length;
+     const rows=navStyle.gridTemplateRows.trim().split(/\s+/).length;
+     if(visibleTabs.length!==10)throw Error('Expected exactly ten student profile tabs; found '+visibleTabs.length);
+     if(!document.querySelector('#compassGraphsChartsTab'))throw Error('Graphs tab missing');
+     // Exercise the new tenth navigation button without forging an authenticated student session.
+     const progressButton=profileNav.querySelector('[data-tab="progress"]');
+     if(!progressButton)throw Error('Progress navigation button missing');
+     progressButton.click();
+     const panel=document.querySelector('#profile-tab-progress');
+     const native=document.querySelector('#cpr-liveView');
+     return{newView:!!native, visible:!!native&&!!native.getBoundingClientRect().height,
+       nativeInTab:panel.contains(native),oldGraph:!!document.querySelector('#progressChart'),
+       controlCount:panel.querySelectorAll('#cpr-program,#cpr-target,#cpr-benchmark,#cpr-period').length,
+       svgCount:panel.querySelectorAll('svg').length,tabActive:panel.classList.contains('active'),
+       navCount:visibleTabs.length,topFive,actualOrder,columns,rows};
+   });
+   assert(progressCheck.newView&&progressCheck.visible&&progressCheck.nativeInTab,
+     'The redesigned Progress view must render immediately inside the native tab');
+   assert.equal(progressCheck.oldGraph,false,'Old graph cannot appear');
+   assert.equal(progressCheck.controlCount,4,'All four progress filters should display');
+   assert(progressCheck.tabActive,'Native Progress tab must be activated by the new navigation button');
+   assert.equal(progressCheck.navCount,10,'Two rows of five must have exactly ten tabs');
+   assert.deepEqual(progressCheck.topFive,['Overview','IEP Services','Programs','Graphs','Notes & Documents']);
+   assert.deepEqual(progressCheck.actualOrder,['Overview','IEP Services','Programs','Graphs','Notes & Documents','Goals','Assessments','Behavior','Team','Progress']);
+   assert.equal(progressCheck.columns,5,'The student profile must use five navigation columns');
+   assert.equal(progressCheck.rows,2,'The student profile must use two navigation rows');
+   assert.equal(errors.length,0,'No browser JavaScript errors permitted');
+   console.log('PROGRESS_SMOKE_PASS '+JSON.stringify({width,progressCheck}));
+   console.log('UI_SMOKE_PASS '+JSON.stringify({width,metrics,errors:errors.slice(0,3)}));
+   await page.screenshot({path:'compass-smoke-'+width+'.png',fullPage:false});
+   await page.close();
+  }
+ }finally{await browser.close()}
+})().catch(err=>{console.error('UI_SMOKE_FAIL',err.stack||err);process.exit(1)});
+,'todayISO','localISO','fmtDate','schoolForStudent','studentLabel','initials','esc','roleName',
+       main.slice(begin,end)+';return {updateCaseloadInsights,renderCaseload,filterCaseload};');
+     const app=factory(state,db,root,()=>iso(new Date()),iso,d=>d,s=>({school:{name:s.school_name}}),
+       s=>s.display_label,s=>s.display_label.split(' ').map(n=>n[0]).slice(-2).join(''),esc,s=>s);
+     for(const id of ['caseloadSearch','caseloadSchoolFilter','caseloadGradeFilter','caseloadTypeFilter','caseloadStatusFilter','caseProgramFilter','caseDataFilter'])root(id).value='';
+     await app.updateCaseloadInsights();
+     const text=root('caseloadBody').innerText;
+     const totals=['caseTotal','caseReviews','caseAssessments','casePlans'].map(id=>root(id).textContent);
+     const rows=[...root('caseloadBody').querySelectorAll('tr')].map(el=>el.innerText);
+     root('caseloadTypeFilter').value='iep-goals';app.filterCaseload();
+     const filtered=root('caseloadHeading').textContent;
+     root('caseloadTypeFilter').value='';app.filterCaseload();
+     return {totals,rows,filtered,table:text,promptA:rows[0]?.includes('50%'),masteryA:rows[0]?.includes('1 / 2'),
+       noDataB:rows[1]?.includes('—'),profiles:root('caseloadBody').querySelectorAll('[data-open-student]').length};
+   });
+   assert.deepEqual(casePopulation.totals,['2','1','1','1'],'Live renderer must populate all four cards from records');
+   assert(casePopulation.promptA&&casePopulation.masteryA,'Prompt % and target mastery must use recorded target data');
+   assert(casePopulation.noDataB,'Missing trial/mastery data must show a dash rather than invented values');
+   assert.equal(casePopulation.profiles,2,'One profile action per student row');
+   assert.equal(casePopulation.filtered,'Students (1)','IEP-goal filter must narrow the caseload');
+   console.log('CASELOAD_DATA_POPULATION_PASS '+JSON.stringify({width,totals:casePopulation.totals,filtered:casePopulation.filtered,profiles:casePopulation.profiles}));
+
 
    const nav=await page.evaluate(()=>{
      const sidebar=document.querySelector('#sidebar'),scroll=document.querySelector('#compassSidebarScroll');
