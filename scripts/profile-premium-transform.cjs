@@ -24,7 +24,7 @@ module.exports = function premiumStudentProfile(source){
   const tab=(name,label,icon,active=false)=>'<button type="button" data-tab="'+name+'" class="'+(active?'active':'')+'" aria-label="'+label+'">'+icon+'<span>'+label+'</span></button>';
   const tabs=tab('overview','Overview',ico.overview,true)+tab('iepservices','IEP Services',ico.iepservices)+tab('programs','Programs',ico.programs)+
     '<button id="compassGraphsChartsTab" type="button" data-compass-graphs-tab="1" aria-label="Graphs">'+ico.progress+'<span>Graphs</span></button>'+
-    tab('notes','Notes & Documents',ico.notes)+tab('goals','Goals',ico.goals)+tab('assessments','Assessments',ico.assessments)+tab('behavior','Behavior',ico.behavior)+tab('team','Team',ico.team)+tab('history','History',ico.history);
+    tab('notes','Notes & Documents',ico.notes)+tab('goals','Goals',ico.goals)+tab('assessments','Assessments',ico.assessments)+tab('behavior','Behavior',ico.behavior)+tab('team','Team',ico.team)+tab('progress','Progress',ico.progress);
   const markup=`      <section id="page-student-profile" class="page">
         <div class="profile-top compass-premium-top">
           <div class="panel-head compass-premium-toolbar"><div class="breadcrumb">Students <span>›</span> Student Profile</div><button id="printProfileBtn" class="btn" type="button">Print Profile</button></div>
@@ -56,7 +56,7 @@ module.exports = function premiumStudentProfile(source){
   source=source.slice(0,begin)+markup+source.slice(end);
   const previousGraphOrder="const order=['Overview','IEP & Services','Programs','Goals','Behavior','Graphs and Charts','Progress','Assessments','Observation & Session Notes','Documents','Team','History'];";
   if(!source.includes(previousGraphOrder))throw Error('COMPASS existing Graphs tab ordering has changed');
-  source=source.replace(previousGraphOrder,"const order=['Overview','IEP Services','Programs','Graphs','Notes & Documents','Goals','Assessments','Behavior','Team','History'];");
+  source=source.replace(previousGraphOrder,"const order=['Overview','IEP Services','Programs','Graphs','Notes & Documents','Goals','Assessments','Behavior','Team','Progress'];");
   const graphProgressNeedle="    if(!tab.dataset.compassBound){tab.dataset.compassBound='1';";
   const graphProgressCode="    // Keep the existing native Program Progress view reachable from the Graphs section.\n    if(pane&&!pane.querySelector('#compassGraphsProgressButton')){\n      const progressLink=document.createElement('button');\n      progressLink.id='compassGraphsProgressButton';\n      progressLink.type='button';\n      progressLink.className='btn small';\n      progressLink.textContent='Program Progress';\n      progressLink.addEventListener('click',function(){\n        leaveGraphs();\n        showProfileTab('progress');\n        tab.classList.add('active');\n        tab.setAttribute('aria-selected','true');\n      });\n      const chartHeader=pane.querySelector('.compass-program-chart-card > div');\n      if(chartHeader)chartHeader.appendChild(progressLink);else pane.prepend(progressLink);\n    }\n";
   if(!source.includes(graphProgressNeedle))throw Error('COMPASS Graphs binding has changed');
