@@ -140,6 +140,46 @@ body.hub-fullscreen{overflow:hidden}
 .sheet-grid .sheet-table thead th:first-child{width:auto;text-align:center;padding:7px 3px}
 .sheet-grid .sheet-table thead th{white-space:normal}
 .sheet-grid .sheet-table col{min-width:0}
+
+/* V2 benchmark accordion and width fit: no horizontal slide at iPad landscape sizes. */
+.sheet,.sheet-page,.sheet-grid-scroll,.sheet-grid{min-width:0;max-width:100%}
+.sheet-grid-scroll{width:100%;overflow-x:hidden;overflow-y:visible;scrollbar-gutter:auto}
+.sheet-grid{min-width:0;width:100%;max-width:100%}
+.sheet-grid .sheet-table{width:100%;min-width:0;max-width:100%;table-layout:fixed}
+.sheet-grid .sheet-table th,.sheet-grid .sheet-table td{
+ min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:normal;
+}
+.sheet-grid .sheet-table thead th{padding:7px 1px;font-size:clamp(8px,.86vw,11px);line-height:1.16}
+.sheet-grid .sheet-table tbody td{padding:7px 1px;font-size:clamp(8px,.83vw,10px);line-height:1.2}
+.sheet-grid .sheet-table tbody th{font-size:clamp(9px,.9vw,11px);line-height:1.3}
+.sheet-grid .sheet-table .sheet-row-number{text-align:center;padding:6px 0}
+.sheet-grid .sheet-table .sheet-row-skill{padding:6px 3px}
+.sheet-grid .sheet-table .sheet-notes{padding:5px 3px}
+.sheet-benchmark>summary{width:100%;min-width:0;gap:9px;padding:10px 12px}
+.sheet-benchmark>summary .bench-chevron{order:-1;margin:0;display:grid;place-items:center;
+ width:22px;height:22px;flex:0 0 22px;color:#165889;font-size:19px;line-height:1;transform:none;transition:transform .15s ease}
+.sheet-benchmark:not([open])>summary .bench-chevron{transform:none}
+.sheet-benchmark[open]>summary .bench-chevron{transform:rotate(90deg)}
+.sheet-benchmark>summary strong{min-width:0;flex:1 1 auto;overflow-wrap:anywhere}
+.sheet-benchmark>summary .bench-count{margin-left:auto;flex:0 0 auto;white-space:nowrap}
+.sheet-benchmark>summary .bench-goal{margin-left:auto;min-width:0;max-width:45%;overflow-wrap:anywhere}
+@media (max-width:1200px){
+ .sheet-grid .sheet-table col.sheet-col-num{width:4%}
+ .sheet-grid .sheet-table col.sheet-col-skill{width:28%}
+ .sheet-grid .sheet-table col.sheet-col-small{width:6%}
+ .sheet-grid .sheet-table col.sheet-col-maint{width:7%}
+ .sheet-grid .sheet-table col.sheet-col-notes{width:16%}
+}
+@media (max-width:850px){
+ .sheet-grid .sheet-table thead th{font-size:9px}
+ .sheet-grid .sheet-table tbody td{font-size:9px}
+ .sheet-grid .sheet-table tbody th{font-size:10px}
+}
+@media print{
+ .sheet-benchmark:not([open])>.sheet-table{display:table}
+ .sheet-grid-scroll{overflow:visible}
+}
+
 </style></head><body><div class="app"><aside><div class="brand"><h1 id="studentName">Student Programs</h1><small>COMPASS Student Program Hub</small></div><div class="meta"><strong id="studentMeta">Loading student…</strong><small id="programCount">Loading assigned programs…</small><div id="behaviorPills" class="pills"></div></div><input id="search" class="search" type="search" placeholder="Search programs…"><div id="programList" class="list"></div></aside><main><div class="top"><div class="title"><h2 id="runnerTitle">Program Hub</h2><p id="runnerSubtitle">Choose a program from the left.</p></div><div class="actions"><button id="prevBtn" class="btn" disabled>← Previous</button><button id="nextBtn" class="btn primary" disabled>Next Program →</button><button id="fullscreenBtn" class="btn" type="button" aria-pressed="false" title="Expand the program workspace">⛶ Full Screen</button><button id="closeBtn" class="btn">Close Hub</button></div></div><div class="card"><div class="framewrap"><div id="empty" class="empty"><div><strong>Select a program</strong><br>Choose one of this student's assigned programs.</div></div><div id="loading" class="loading" hidden>Loading program…</div><section id="programSheet" class="sheet" aria-label="Program benchmark and acquisition progress"><div class="sheet-message">Select a program to view its benchmark progress sheet. Choose Full Screen to run the program.</div></section><iframe id="runnerFrame" class="runner" title="COMPASS Program Runner" scrolling="auto" hidden></iframe></div><div class="bottom"><button id="bottomPrevBtn" class="btn" disabled>← Previous Program</button><button id="bottomNextBtn" class="btn primary" disabled>Next Program →</button></div></div><div id="status" class="status">Connecting to COMPASS…</div></main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -226,7 +266,13 @@ function sheetColgroup(){
   '<col class="sheet-col-maint"><col class="sheet-col-maint">'+
   '<col class="sheet-col-notes"></colgroup>';
 }
-function sheetValueDate(v){return v?formatSheetDate(v):null}
+function sheetValueDate(v){
+ if(!v)return null;
+ const iso=String(v).slice(0,10);
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(iso))return null;
+ const [y,m,d]=iso.split('-');
+ return Number(m)+'/'+Number(d)+'/'+y.slice(-2);
+}
 function recordedValue(metadata,keys){
  for(const k of keys)if(metadata?.[k]!==undefined&&metadata[k]!==null&&String(metadata[k]).trim()!=='')return metadata[k];
  return null;
@@ -305,9 +351,9 @@ function sheetContents(sp,targets,hasStudentTargets){
   const goal=g.goal?'<span class="bench-goal">Goal: '+esc(g.goal)+'</span>':'';
   const count=g.goal?'':'<span class="bench-count">'+g.items.length+' targets</span>';
   const color=['bench-blue','bench-green','bench-gold','bench-rose'][i%4];
-  return '<details class="sheet-benchmark '+color+'" data-benchmark-key="'+esc(g.key)+'" open>'+
+  return '<details class="sheet-benchmark '+color+'" name="compass-benchmark" data-benchmark-key="'+esc(g.key)+'">'+
    '<summary aria-label="Toggle '+esc(benchTitle)+'">'+
-   '<strong>'+esc(benchTitle)+'</strong>'+goal+count+'<span class="bench-chevron" aria-hidden="true">▾</span></summary>'+
+   '<span class="bench-chevron" aria-hidden="true">▸</span><strong>'+esc(benchTitle)+'</strong>'+goal+count+'</summary>'+
    '<table class="sheet-table" aria-label="'+esc(benchTitle)+' skill progress">'+colgroup+'<tbody>'+rows+'</tbody></table></details>';
  }).join('');
  const criteria=program.program_code==='CP-1TO1-COUNT'?
@@ -425,6 +471,17 @@ async function openAt(i){
   else void loadRunner(next,seq);
  }else{$('programSheet').hidden=false;$('runnerFrame').hidden=true;$('loading').hidden=true}
 }
+
+// Accordion fallback for older browsers: one benchmark expanded at a time.
+// Native details name="compass-benchmark" also provides exclusive-open behavior.
+$('programSheet').addEventListener('toggle',event=>{
+ const selected=event.target;
+ if(!selected.matches?.('details.sheet-benchmark')||!selected.open)return;
+ for(const item of $('programSheet').querySelectorAll('details.sheet-benchmark')){
+  if(item!==selected&&item.open)item.open=false;
+ }
+},true);
+
 $('programList').onclick=e=>{const b=e.target.closest('[data-index]');if(b)openAt(Number(b.dataset.index))};$('search').oninput=renderList;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index-1));['nextBtn','bottomNextBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index+1));$('fullscreenBtn').onclick=toggleFullscreen;$('closeBtn').onclick=closeHub;
 const v25SavesInFlight=new Set(),v25SavesConfirmed=new Set();
 async function sendV25Context(sp){
