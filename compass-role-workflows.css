@@ -1,0 +1,55 @@
+/* COMPASS role-aware professional review tools, October 2026.
+   All styles are scoped to SPED/BCBA UI and do not change RBT runner. */
+#compassRoleFocus[hidden],#iepEvidenceReviewPanel[hidden],#clinicalReadinessPanel[hidden],#compassRoleViewSwitch[hidden]{display:none!important}
+#page-home .compass-role-focus{margin-top:17px;border:1px solid #deeaf5;border-radius:15px;padding:20px;min-width:0;background:#fff;box-shadow:0 4px 16px rgba(20,52,92,.045)}
+#page-home .crf-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+#page-home .crf-eyebrow{font-size:10px;letter-spacing:.095em;color:#4674ad;font-weight:850}
+#page-home .crf-head h2{font-size:19px;letter-spacing:-.3px;color:#123961;margin:3px 0 4px;font-weight:850}
+#page-home .crf-head p{font-size:12px;color:#637f9c;margin:0}
+#page-home .crf-switch{display:flex;background:#edf3fc;border-radius:10px;padding:3px;gap:2px;border:1px solid #dce8f3}
+#page-home .crf-switch button{border:0;border-radius:8px;background:transparent;color:#527494;padding:8px 15px;font-size:12px;font-weight:800;cursor:pointer}
+#page-home .crf-switch button.active{background:#fff;color:#155bbb;box-shadow:0 2px 8px rgba(15,45,88,.1)}
+#page-home .crf-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+#page-home .crf-metric{display:flex;flex-direction:column;gap:4px;border:1px solid #e0eaf5;border-radius:11px;background:#f7faff;padding:15px;min-width:0}
+#page-home .crf-metric small{font-size:11px;color:#23476d;font-weight:750}
+#page-home .crf-metric strong{font-size:28px;color:#0b3769;line-height:1.15;font-weight:850}
+#page-home .crf-metric span{font-size:10px;color:#7089a4;line-height:1.3}
+#page-home .crf-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:15px}
+#page-home .crf-item{display:grid;grid-template-columns:auto 1fr;gap:4px 13px;text-align:left;align-items:center;padding:12px;border:1px solid #dce9f5;border-radius:10px;background:white;color:#143c6c}
+#page-home .crf-item:hover{background:#f0f6ff;border-color:#a9c7ee}
+#page-home .crf-item strong{font-size:11px;color:#0f4786}
+#page-home .crf-item span{font-size:12px;font-weight:730;overflow-wrap:anywhere}
+#page-home .crf-item small{font-size:10px;color:#69829e;grid-column:1/-1}
+#page-home .crf-empty{font-size:12px;color:#67809e;grid-column:1/-1;border:1px dashed #d7e7f2;border-radius:9px;padding:16px;background:#fcfdff}
+#page-home .crf-caveat{margin:12px 0 0;font-size:11px;line-height:1.45;color:#657f9b}
+#iepEvidenceReviewPanel{margin-top:18px}
+#iepEvidenceReviewPanel>.panel-head{align-items:flex-start;gap:12px;flex-wrap:wrap}
+#iepEvidenceReviewPanel .panel-head p{font-size:12px;line-height:1.4;margin:5px 0 0}
+#iepEvidenceReviewPanel .iep-evidence-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+#iepEvidenceReviewPanel .crf-metric{border-radius:11px;padding:12px;background:#f5f9fe;border:1px solid #dee9f5;display:flex;flex-direction:column;gap:5px}
+#iepEvidenceReviewPanel .crf-metric small{color:#385b81;font-size:11px}
+#iepEvidenceReviewPanel .crf-metric strong{color:#123c6b;font-size:26px}
+#iepEvidenceReviewPanel .crf-metric span{font-size:10px;color:#6f83a0}
+#iepEvidenceReviewPanel .iep-evidence-rows{display:grid;gap:8px}
+#iepEvidenceReviewPanel .iep-evidence-row{display:grid;grid-template-columns:minmax(170px,2fr) minmax(108px,1fr) minmax(64px,.65fr) minmax(130px,1fr) minmax(105px,1fr) minmax(85px,.8fr);gap:10px;align-items:center;border:1px solid #dfe9f5;border-radius:10px;padding:11px 12px;background:#fff;color:#315471;font-size:11px}
+#iepEvidenceReviewPanel .iep-evidence-row>div>strong{font-size:12px;color:#113f70;display:block}
+#iepEvidenceReviewPanel .iep-evidence-row>div>small{color:#67819b;font-size:10px;display:block;margin-top:4px;line-height:1.4}
+#iepEvidenceReviewPanel .iep-evidence-flag{display:inline-block;font-weight:750;border-radius:7px;background:#eef4fd;color:#3266a7;padding:6px}
+#iepEvidenceReviewPanel .iep-evidence-note{font-size:11px;margin-top:12px}
+#iepEvidenceReviewPanel .crf-empty{color:#6f86a3;padding:14px}
+#page-assessments .clinical-readiness{margin-top:19px;background:#f8fbff;border:1px solid #dce8f4;border-radius:14px;padding:16px}
+#page-assessments .clinical-readiness-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#page-assessments .clinical-readiness-head strong{font-size:17px;color:#123b6b;display:block}
+#page-assessments .clinical-readiness-head p{font-size:11px;color:#6c829d;line-height:1.45;margin:5px 0 0;max-width:490px}
+#page-assessments .clinical-review-status{display:inline-flex;align-items:center;border:1px solid #cfdbeb;border-radius:100px;color:#3b658c;background:#edf4fd;font-weight:800;font-size:10px;padding:6px 10px}
+#page-assessments .clinical-check-list{display:grid;gap:6px;margin:14px 0}
+#page-assessments .clinical-check{border:1px solid #e2eaf4;border-radius:9px;padding:9px 10px;font-size:11px;color:#4f6685;background:#fff}
+#page-assessments .clinical-check.missing{background:#fffbf0;border-color:#f1e4c8;color:#846134}
+#page-assessments .clinical-check.ok{background:#eefaf4;border-color:#d4eddc;color:#206945}
+#page-assessments .clinical-review-note{font-size:11px;line-height:1.5;color:#617d9c}
+#page-assessments #clinicalFinalizeBtn{margin-top:9px;font-size:12px}
+#page-assessments #clinicalFinalizeBtn[disabled]{opacity:.5;cursor:not-allowed}
+#page-assessments #clinicalFinalizeBtn[hidden]{display:none!important}
+@media(max-width:1240px){#page-home .crf-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#iepEvidenceReviewPanel .iep-evidence-row{grid-template-columns:minmax(145px,1.5fr) repeat(3,minmax(65px,1fr));gap:7px}}
+@media(max-width:760px){#page-home .crf-items{grid-template-columns:1fr}#iepEvidenceReviewPanel .iep-evidence-summary{grid-template-columns:1fr 1fr}#iepEvidenceReviewPanel .iep-evidence-row{grid-template-columns:1fr 1fr}#iepEvidenceReviewPanel .iep-evidence-row>div{grid-column:1/-1}}
+@media(max-width:480px){#page-home .crf-metrics{grid-template-columns:1fr 1fr}#page-home .crf-metric{padding:10px}#page-home .crf-metric strong{font-size:22px}#iepEvidenceReviewPanel .iep-evidence-summary{grid-template-columns:1fr}}
