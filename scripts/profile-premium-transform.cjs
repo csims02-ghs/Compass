@@ -330,5 +330,218 @@ document.addEventListener('DOMContentLoaded',function(){
   if(closingBody<0)throw Error('COMPASS closing body tag missing');
   source=source.slice(0,closingBody)+bootstrap+source.slice(closingBody);
   for(const marker of ['compass-premium-grid','profileNextEvent','compass-premium-profile-bootstrap','Notes & Documents'])if(!source.includes(marker))throw Error('Premium profile verification: '+marker);
+  source=patchCompassOverview(source);
   return source;
 };
+
+function patchCompassOverview(source){
+  const begin=source.indexOf('          <div id="profile-tab-overview" class="profile-tab active">');
+  const end=source.indexOf('          <div id="profile-tab-iepservices" class="profile-tab">',begin);
+  const already=source.includes('id="compassOverviewProgress"');
+  if(!already){
+    if(begin<0||end<0||end<=begin)throw Error('Overview HTML anchors missing');
+    const replacement=String.raw`          <div id="profile-tab-overview" class="profile-tab active">
+            <div class="overview-grid compass-overview-three">
+              <article class="card panel compass-overview-snapshot">
+                <h2>Student Support Snapshot</h2>
+                <div id="supportSnapshot" class="snapshot-list"></div>
+              </article>
+              <article id="compassOverviewProgress" class="card panel compass-overview-progress">
+                <div class="compass-overview-head"><div><h2>Student Progress Overview</h2><p>Academic, behavioral, and IEP performance at a glance</p></div><button type="button" class="link-btn" data-profile-tab="progress">View Full Progress →</button></div>
+                <div class="compass-overview-kpis">
+                  <div class="compass-overview-kpi goal"><span class="compass-kpi-icon">◎</span><div><small>IEP Goal Progress</small><strong id="compassIepSummaryValue">—</strong></div><div class="compass-kpi-bar"><span id="compassIepSummaryBar"></span></div></div>
+                  <div class="compass-overview-kpi accuracy"><span class="compass-kpi-icon">▥</span><div><small>Program Accuracy</small><strong id="compassAccuracySummaryValue">—</strong></div><div class="compass-kpi-bar"><span id="compassAccuracySummaryBar"></span></div></div>
+                  <div class="compass-overview-kpi behavior"><span class="compass-kpi-icon">♧</span><div><small>Behavior Trend</small><strong id="compassBehaviorSummaryValue">—</strong><em id="compassBehaviorSummaryNote">Insufficient comparison data</em></div></div>
+                </div>
+                <div class="compass-overview-domain-head"><h3>Progress by Domain</h3><div><button type="button" class="link-btn" data-profile-tab="progress">View More →</button><label class="sr-only" for="compassOverviewWeeks">Reporting window</label><select id="compassOverviewWeeks" aria-label="Reporting window"><option value="4">Last 4 Weeks</option><option value="8">Last 8 Weeks</option><option value="12">Last 12 Weeks</option></select></div></div>
+                <div id="compassOverviewDomains" class="compass-overview-domains" aria-live="polite"><p class="muted">Loading instructional data…</p></div>
+                <div class="compass-overview-bottom">
+                  <article class="compass-overview-summary mastery"><span class="compass-summary-icon" aria-hidden="true">🏆</span><div><small>Targets Mastered</small><strong id="compassMasteredValue">—</strong><span id="compassMasteredNote">Recorded mastered targets</span><button type="button" data-profile-tab="progress" class="compass-summary-link">View target progress →</button></div></article>
+                  <article class="compass-overview-summary prompt"><span class="compass-summary-icon" aria-hidden="true">☝</span><div><small>Prompt %</small><strong id="compassPromptValue">—</strong><span id="compassPromptNote">Checking recorded prompt data</span><button id="compassPromptProgramsButton" type="button" class="compass-summary-link" aria-expanded="false" aria-controls="compassPromptPrograms">Programs with prompting →</button></div></article>
+                </div>
+                <div id="compassPromptPrograms" class="compass-overview-prompt-list" hidden></div>
+              </article>
+              <article class="card panel compass-overview-documents">
+                <div class="panel-head"><h2>Documents</h2><button class="btn small" data-profile-tab="notes" type="button">Upload / View</button></div>
+                <div id="overviewDocuments" class="compass-overview-document-list"></div>
+                <button type="button" class="link-btn compass-overview-docs-link" data-profile-tab="notes">View All Documents →</button>
+              </article>
+            </div>
+            <div class="overview-bottom compass-legacy-overview-data" hidden><article class="card panel chart-panel"><div class="panel-head"><h2>IEP Goal Achievement by Student Program</h2><span id="overviewProgressLabel" class="muted"></span></div><div id="overviewChart" class="chart-area"></div></article><article class="card panel"><div class="panel-head"><h2>Goals Snapshot</h2><button class="btn small" data-profile-tab="goals" type="button">Connect IEP Goals</button></div><div id="overviewGoals" class="stack-list"></div></article></div>
+          </div>
+`;
+    source=source.slice(0,begin)+replacement+source.slice(end);
+  }
+  const call='renderSnapshot();renderOverviewPrograms();renderOverviewDocuments();';
+  const newCall='renderSnapshot();renderCompassOverview();renderOverviewDocuments();';
+  if(source.includes(call))source=source.replace(call,newCall);
+  else if(!source.includes(newCall))throw Error('Overview renderer invocation not found');
+  const oldReview="['Next Review',next?fmtDate(next):'—']";
+  if(source.includes(oldReview))source=source.replace(oldReview,"['Data Review',next?fmtDate(next):'—']");
+  else if(!source.includes("['Data Review',next?fmtDate(next):'—']"))throw Error('Review label anchor not found');
+  const docsStart=source.indexOf('  function renderOverviewDocuments(){');
+  const docsEnd=source.indexOf('  const linkedIds=gid=>',docsStart);
+  if(docsStart<0||docsEnd<0)throw Error('Documents renderer anchors missing');
+  const docsCode=String.raw`  function renderOverviewDocuments(){
+    const box=$('overviewDocuments');if(!box)return;
+    const docs=(state.documents||[]).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+    box.innerHTML=docs.length?docs.map(d=>'<button type="button" class="compass-doc-entry" data-profile-tab="notes"><span class="compass-doc-icon" aria-hidden="true">'+(String(d.file_name||'').match(/\.pdf$/i)?'PDF':'DOC')+'</span><span class="compass-doc-filename">'+esc(d.file_name||'Student document')+'</span><span class="compass-doc-date">'+esc(fmtDate(d.created_at))+'</span></button>').join(''):'<div class="compass-doc-empty">No connected student documents are available on this profile yet.</div>';
+  }
+  function renderCompassOverview(){
+    const root=$('compassOverviewProgress'),st=state.currentStudent;if(!root||!st)return;
+    const sid=st.id;
+    const active=state.studentPrograms.filter(p=>p.status==='active');
+    const assignments=new Map(state.studentPrograms.map(p=>[p.id,p]));
+    const weeks=Number(window.compassOverviewWeeks)||4;
+    const dropdown=$('compassOverviewWeeks');
+    if(dropdown){dropdown.value=String(weeks);dropdown.onchange=function(){window.compassOverviewWeeks=Number(this.value)||4;renderCompassOverview()}}
+    const end=Date.now(),currentStart=end-weeks*7*86400000,prevStart=end-weeks*14*86400000;
+    const dateMs=s=>new Date(String(s.session_date||s.created_at||'').slice(0,10)+'T12:00:00').getTime();
+    const valid=state.sessions.filter(s=>assignments.has(s.student_compass_program_id)&&Number.isFinite(dateMs(s)));
+    const recent=valid.filter(s=>dateMs(s)>=currentStart&&dateMs(s)<=end);
+    const previous=valid.filter(s=>dateMs(s)>=prevStart&&dateMs(s)<currentStart);
+    const pct=(num,den)=>den>0?Math.max(0,Math.min(100,Math.round(num/den*100))):null;
+    const setVal=(id,value)=>{const e=$(id);if(e)e.textContent=value==null?'—':String(value)};
+    const setBar=(id,value)=>{const e=$(id);if(e)e.style.width=(value==null?0:value)+'%'};
+    const goals=state.goals.filter(g=>g.status==='active'&&g.current_percent!=null&&Number.isFinite(Number(g.current_percent)));
+    const goalAvg=goals.length?Math.round(goals.reduce((v,g)=>v+Math.min(100,Number(g.current_percent)/Math.max(1,Number(g.target_percent)||80)*100),0)/goals.length):null;
+    setVal('compassIepSummaryValue',goalAvg==null?'—':goalAvg+'%');setBar('compassIepSummaryBar',goalAvg);
+    const activeIds=new Set(active.map(a=>a.id));
+    const instructional=recent.filter(s=>activeIds.has(s.student_compass_program_id));
+    const sum=(a,key)=>a.reduce((v,s)=>v+Math.max(0,Number(s[key])||0),0);
+    const avg=pct(sum(instructional,'targets_correct'),sum(instructional,'trials_total'));
+    setVal('compassAccuracySummaryValue',avg==null?'—':avg+'%');setBar('compassAccuracySummaryBar',avg);
+    const rate=(a)=>{const t=sum(a,'trials_total');return t>0?sum(a,'total_behaviors')/t:null};
+    const currRate=rate(instructional),prevRate=rate(previous.filter(s=>activeIds.has(s.student_compass_program_id)));
+    const trend=currRate!==null&&prevRate!==null&&prevRate>0?Math.round((currRate-prevRate)/prevRate*100):null;
+    const trendEl=$('compassBehaviorSummaryValue');if(trendEl){trendEl.textContent=trend==null?'—':(trend<0?'↓ ':trend>0?'↑ ':'→ ')+Math.abs(trend)+'%';trendEl.className=trend==null?'':trend<0?'compass-trend-good':trend>0?'compass-trend-bad':''}
+    setVal('compassBehaviorSummaryNote',trend==null?'Insufficient comparison data':'vs. previous '+weeks+' weeks');
+    const domains=[
+      {label:'Reading Comprehension',pattern:/reading|comprehension|sight word|phonics/i,icon:'▤',theme:'blue'},
+      {label:'Number Identification',pattern:/number|count|math|addition|subtraction/i,icon:'123',theme:'purple'},
+      {label:'Communication',pattern:/communication|language|echoic|aac|speech|conversation/i,icon:'◉',theme:'orange'},
+      {label:'Adaptive / Daily Living',pattern:/adaptive|living|hygiene|dressing|functional|independen/i,icon:'⚙',theme:'green'}
+    ];
+    $('compassOverviewDomains').innerHTML=domains.map(d=>{
+      const matching=instructional.filter(s=>{const p=assignments.get(s.student_compass_program_id);const def=p?programById(p.program_id):null;return d.pattern.test(String(def?.program_name||s.program_name||'')+' '+String(def?programDomain(def):''))});
+      const amount=pct(sum(matching,'targets_correct'),sum(matching,'trials_total'));
+      return '<div class="compass-domain-row"><span class="compass-domain-icon '+d.theme+'">'+d.icon+'</span><span class="compass-domain-name">'+esc(d.label)+'</span><div class="compass-domain-track"><span class="'+d.theme+'" style="width:'+(amount==null?0:amount)+'%"></span></div><strong>'+(amount==null?'—':amount+'%')+'</strong></div>';
+    }).join('');
+    // Mastery is retrieved from the target records; a zero means no mastery recorded, not an inferred clinical conclusion.
+    const masteredEl=$('compassMasteredValue');if(masteredEl){masteredEl.textContent='—';$('compassMasteredNote').textContent='Checking saved target status'}
+    const ids=state.studentPrograms.map(p=>p.id);
+    if(ids.length){
+      sb.from('student_compass_program_targets').select('id',{count:'exact',head:true}).in('student_compass_program_id',ids).or('status.eq.mastered,mastered_at.not.is.null').then(({count,error})=>{
+        if(state.currentStudent?.id!==sid||!$('compassMasteredValue'))return;
+        if(error){console.warn('COMPASS mastery count unavailable',error);setVal('compassMasteredValue','—');setVal('compassMasteredNote','Mastery records unavailable')}
+        else{setVal('compassMasteredValue',count??0);setVal('compassMasteredNote','Recorded mastered targets')}
+      }).catch(()=>{if(state.currentStudent?.id===sid){setVal('compassMasteredValue','—');setVal('compassMasteredNote','Mastery records unavailable')}});
+    }else{setVal('compassMasteredValue','—');setVal('compassMasteredNote','No assigned target data')}
+    // Prompting uses target-trial records only. Incomplete sessions must not be presented as 0% prompted.
+    const bySession=new Map();
+    (state.trialEvents||[]).forEach(ev=>{if(!bySession.has(ev.session_id))bySession.set(ev.session_id,[]);bySession.get(ev.session_id).push(ev)});
+    let observed=0,prompted=0,complete=recent.length>0;
+    for(const s of recent){
+      const targets=(bySession.get(s.id)||[]).filter(ev=>ev.trial_type==='T');
+      if(!Number(s.trials_total)||targets.length!==Number(s.trials_total)||targets.some(ev=>!ev.result)){complete=false;continue}
+      observed+=targets.length;
+      prompted+=targets.filter(ev=>ev.result==='prompted'||(ev.prompt_level&& !/^(none|independent|no prompt)$/i.test(ev.prompt_level))).length;
+      if(Number(s.prompted_correct||0)>prompted&&targets.filter(ev=>ev.result==='prompted').length===0)complete=false;
+    }
+    const promptPct=complete&&observed?pct(prompted,observed):null;
+    setVal('compassPromptValue',promptPct==null?'—':promptPct+'%');
+    setVal('compassPromptNote',promptPct==null?'Prompt-level data incomplete':prompted+' prompted / '+observed+' target trials');
+    const promptedByProgram=new Map();
+    for(const s of recent){
+      const targetEv=(bySession.get(s.id)||[]).filter(ev=>ev.trial_type==='T');
+      const observedPromptCount=targetEv.filter(ev=>ev.result==='prompted'||(ev.prompt_level&&!/^(none|independent|no prompt)$/i.test(ev.prompt_level))).length;
+      const promptCount=Math.max(Number(s.prompted_correct)||0,observedPromptCount);
+      if(promptCount>0){
+        const program=assignments.get(s.student_compass_program_id),def=program?programById(program.program_id):null;
+        const key=program?.id||s.student_compass_program_id;
+        const prior=promptedByProgram.get(key)||{name:def?.program_name||s.program_name||'Program',count:0};
+        prior.count+=promptCount;promptedByProgram.set(key,prior);
+      }
+    }
+    const promptList=$('compassPromptPrograms'),promptButton=$('compassPromptProgramsButton');
+    if(promptList){promptList.hidden=true;promptList.innerHTML=promptedByProgram.size?'<h4>Programs with recorded prompting</h4>'+Array.from(promptedByProgram.values()).map(p=>'<div><span>'+esc(p.name)+'</span><strong>'+p.count+' recorded</strong></div>').join(''):'<p>No prompted-correct responses were recorded in this reporting window. Prompt-level data may be incomplete.</p>'}
+    if(promptButton){promptButton.setAttribute('aria-expanded','false');promptButton.onclick=function(){if(!promptList)return;promptList.hidden=!promptList.hidden;this.setAttribute('aria-expanded',String(!promptList.hidden))}}
+  }
+`;
+  source=source.slice(0,docsStart)+docsCode+source.slice(docsEnd);
+  if(!source.includes('id="compass-overview-progress-v1"')){
+    const css=String.raw`<style id="compass-overview-progress-v1">
+#page-student-profile .profile-content{max-width:none;padding:16px 20px 24px}
+#page-student-profile .overview-grid.compass-overview-three{display:grid;grid-template-columns:minmax(230px,.83fr) minmax(430px,1.7fr) minmax(250px,1fr);gap:16px;align-items:stretch}
+#page-student-profile .compass-overview-three>.card{min-width:0;border:1px solid #d8e4f2;border-radius:19px;background:#fff;padding:22px;box-shadow:0 7px 19px rgba(18,64,115,.045);overflow:hidden}
+#page-student-profile .compass-overview-three h2{font-size:clamp(20px,1.5vw,27px);line-height:1.16;margin:0;font-weight:830;color:#082c55;letter-spacing:-.028em}
+#page-student-profile .compass-overview-snapshot .snapshot-list{margin-top:25px}
+#page-student-profile .compass-overview-snapshot .snapshot-row{padding:18px 0;gap:14px;align-items:center;font-size:clamp(13px,1.06vw,17px)}
+#page-student-profile .compass-overview-snapshot .snapshot-row strong{max-width:47%;text-align:right;color:#072a52}
+#page-student-profile .compass-overview-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+#page-student-profile .compass-overview-head p{margin:8px 0 0;color:#607792;font-size:14px}
+#page-student-profile .compass-overview-three .link-btn{border:0;background:transparent;color:#146aef;font-weight:750;font-size:14px;cursor:pointer;white-space:nowrap}
+#page-student-profile .compass-overview-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:23px 0 21px}
+#page-student-profile .compass-overview-kpi{display:grid;grid-template-columns:32px minmax(0,1fr);gap:4px 6px;align-content:center;min-height:112px;border:1px solid #e2ebf8;border-radius:12px;padding:14px 10px;background:#f3f2ff}
+#page-student-profile .compass-overview-kpi.accuracy{background:#f0fafe}
+#page-student-profile .compass-overview-kpi.behavior{background:#fff8f2}
+#page-student-profile .compass-kpi-icon{font-weight:850;font-size:30px;color:#8044ef;grid-row:1/3}
+#page-student-profile .accuracy .compass-kpi-icon{color:#16a46c}
+#page-student-profile .behavior .compass-kpi-icon{color:#f48115}
+#page-student-profile .compass-overview-kpi small,#page-student-profile .compass-overview-summary small{display:block;font-size:12px;font-weight:780;color:#0d305a}
+#page-student-profile .compass-overview-kpi strong{display:block;font-size:clamp(22px,1.9vw,33px);color:#082d57;line-height:1.2;margin-top:4px}
+#page-student-profile .compass-overview-kpi.behavior strong.compass-trend-good{color:#0b9d61}
+#page-student-profile .compass-overview-kpi.behavior strong.compass-trend-bad{color:#d84442}
+#page-student-profile .compass-overview-kpi em{display:block;font-size:10px;color:#657d9b;font-style:normal;margin-top:6px}
+#page-student-profile .compass-kpi-bar{height:7px;background:#d6dfeb;border-radius:9px;overflow:hidden;grid-column:1/-1;margin-top:6px}
+#page-student-profile .compass-kpi-bar span{display:block;height:100%;background:#8644ec;border-radius:9px}
+#page-student-profile .accuracy .compass-kpi-bar span{background:#0bba79}
+#page-student-profile .compass-overview-domain-head{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid #e6edf5;padding-top:17px;margin-bottom:9px}
+#page-student-profile .compass-overview-domain-head h3{font-size:19px;margin:0;color:#0d315e}
+#page-student-profile .compass-overview-domain-head>div{display:flex;align-items:center;gap:12px}
+#page-student-profile #compassOverviewWeeks{border:1px solid #d7e3f1;border-radius:9px;background:white;color:#15375e;padding:8px 7px;font-size:12px}
+#page-student-profile .compass-domain-row{display:grid;grid-template-columns:25px minmax(105px,1fr) minmax(70px,1.1fr) 48px;gap:9px;align-items:center;min-height:45px}
+#page-student-profile .compass-domain-icon{font-size:20px;font-weight:850}
+#page-student-profile .compass-domain-icon.blue{color:#0871ef}
+#page-student-profile .compass-domain-icon.purple{color:#803bec}
+#page-student-profile .compass-domain-icon.orange{color:#f5890d}
+#page-student-profile .compass-domain-icon.green{color:#14a45e}
+#page-student-profile .compass-domain-name{font-size:13px;color:#10345d;overflow-wrap:anywhere}
+#page-student-profile .compass-domain-track{height:12px;background:#dce4ed;border-radius:10px;overflow:hidden}
+#page-student-profile .compass-domain-track span{display:block;height:100%;border-radius:10px}
+#page-student-profile .compass-domain-track .blue{background:#0871f7}
+#page-student-profile .compass-domain-track .purple{background:#8244e9}
+#page-student-profile .compass-domain-track .orange{background:#fc8e10}
+#page-student-profile .compass-domain-track .green{background:#0cba76}
+#page-student-profile .compass-domain-row strong{text-align:right;color:#0e345e;font-size:14px}
+#page-student-profile .compass-overview-bottom{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:18px}
+#page-student-profile .compass-overview-summary{display:grid;grid-template-columns:42px 1fr;align-items:center;gap:10px;min-height:124px;border-radius:12px;padding:16px;background:#f1f0fe}
+#page-student-profile .compass-overview-summary.prompt{background:#eafaf5}
+#page-student-profile .compass-summary-icon{font-size:31px;color:#7e44e7}
+#page-student-profile .compass-overview-summary.prompt .compass-summary-icon{color:#0caa70}
+#page-student-profile .compass-overview-summary strong{display:block;margin:5px 0;font-size:34px;color:#0c305d;line-height:1}
+#page-student-profile .compass-overview-summary span:not(.compass-summary-icon){display:block;font-size:11px;color:#516c8d;line-height:1.35}
+#page-student-profile .compass-summary-link{border:0;background:transparent;color:#176ae5;font-size:11px;font-weight:750;text-align:left;cursor:pointer;margin-top:7px;padding:0}
+#page-student-profile .compass-overview-prompt-list{margin-top:10px;border:1px solid #dbe5f0;border-radius:11px;padding:12px;background:#f8fbff;font-size:12px}
+#page-student-profile .compass-overview-prompt-list h4{margin:0 0 9px}
+#page-student-profile .compass-overview-prompt-list>div{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-top:1px solid #e6edf5}
+#page-student-profile .compass-overview-documents .panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+#page-student-profile .compass-overview-documents .panel-head .btn{font-size:12px;line-height:1.15;padding:10px}
+#page-student-profile .compass-overview-document-list{margin-top:18px}
+#page-student-profile .compass-doc-entry{display:grid;grid-template-columns:37px minmax(0,1fr) auto;align-items:center;gap:8px;width:100%;padding:16px 1px;border:0;border-bottom:1px solid #e4ecf5;background:transparent;text-align:left;cursor:pointer}
+#page-student-profile .compass-doc-icon{display:flex;align-items:center;justify-content:center;border-radius:5px;background:#edf4fc;color:#1d6ad9;height:35px;font-size:10px;font-weight:850}
+#page-student-profile .compass-doc-filename{font-size:12px;color:#11355e;font-weight:720;overflow-wrap:anywhere}
+#page-student-profile .compass-doc-date{font-size:11px;color:#66809e}
+#page-student-profile .compass-doc-empty{padding:45px 3px;text-align:center;font-size:14px;line-height:1.5;color:#66809a}
+#page-student-profile .compass-overview-docs-link{display:block;margin-top:16px}
+#page-student-profile .compass-legacy-overview-data{display:none!important}
+@media(max-width:1270px){#page-student-profile .overview-grid.compass-overview-three{grid-template-columns:minmax(195px,.9fr) minmax(360px,1.7fr);gap:12px}#page-student-profile .compass-overview-documents{grid-column:1/-1}#page-student-profile .compass-overview-document-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:22px}}
+@media(max-width:950px){#page-student-profile .overview-grid.compass-overview-three{grid-template-columns:minmax(0,1fr)}#page-student-profile .compass-overview-documents{grid-column:auto}}
+@media(max-width:570px){#page-student-profile .profile-content{padding:10px}#page-student-profile .compass-overview-three>.card{padding:15px}#page-student-profile .compass-overview-kpis{grid-template-columns:1fr 1fr}#page-student-profile .compass-overview-kpi.behavior{grid-column:1/-1}#page-student-profile .compass-overview-head{flex-wrap:wrap}#page-student-profile .compass-domain-row{grid-template-columns:23px minmax(95px,1fr) 65px 43px;gap:4px}#page-student-profile .compass-overview-domain-head{flex-wrap:wrap}#page-student-profile .compass-overview-bottom{grid-template-columns:1fr}}
+</style>
+`;
+    source=source.replace('</head>',css+'\n</head>');
+  }
+  for(const marker of ['compassOverviewProgress','compassMasteredValue','compassPromptValue','renderCompassOverview();','Data Review'])if(!source.includes(marker))throw Error('Missing overview marker '+marker);
+  return source;
+}
