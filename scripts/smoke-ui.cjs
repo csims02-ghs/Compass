@@ -125,7 +125,7 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
    await page.setViewportSize({width,height:950});
 
 
-   // Progress is now one native view. The legacy graph must not exist even momentarily.
+   // Native Progress remains reachable within Graphs, with no extra top-level navigation button.
    assert.equal(await page.locator('#progressChart,#progressProgramFilter,#studentSessionsBody').count(),0,
      'Legacy Progress DOM must not be shipped');
    assert.equal(await page.locator('#profile-tab-progress').count(),1,'Native Progress tab must exist');
@@ -145,21 +145,35 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
        goals:[],goalLinks:[],trialEvents:[]
      };
      window.dispatchEvent(new Event('compass-progress-data'));
-     const tab=document.querySelector('[data-tab="progress"]');
-     if(!tab)throw Error('Progress tab button missing');
-     tab.click();
+     const profileNav=document.querySelector('#profileTabs');
+     const visibleTabs=Array.from(profileNav.querySelectorAll(':scope > button'));
+     const topFive=visibleTabs.slice(0,5).map(b=>b.getAttribute('aria-label'));
+     const actualOrder=visibleTabs.map(b=>b.getAttribute('aria-label'));
+     const navStyle=getComputedStyle(profileNav);
+     const columns=navStyle.gridTemplateColumns.trim().split(/\\s+/).length;
+     const rows=navStyle.gridTemplateRows.trim().split(/\\s+/).length;
+     if(visibleTabs.length!==10)throw Error('Expected exactly ten student profile tabs; found '+visibleTabs.length);
+     if(!document.querySelector('#compassGraphsChartsTab'))throw Error('Graphs tab missing');
+     // Signed-out test harness: show native Progress directly without forging an authenticated student session.
+     document.querySelectorAll('.profile-tab').forEach(p=>p.classList.remove('active'));
      const panel=document.querySelector('#profile-tab-progress');
+     panel.classList.add('active');
      const native=document.querySelector('#cpr-liveView');
      return{newView:!!native, visible:!!native&&!!native.getBoundingClientRect().height,
        nativeInTab:panel.contains(native),oldGraph:!!document.querySelector('#progressChart'),
        controlCount:panel.querySelectorAll('#cpr-program,#cpr-target,#cpr-benchmark,#cpr-period').length,
-       svgCount:panel.querySelectorAll('svg').length,tabActive:panel.classList.contains('active')};
+       svgCount:panel.querySelectorAll('svg').length,tabActive:panel.classList.contains('active'),
+       navCount:visibleTabs.length,topFive,actualOrder,columns,rows};
    });
    assert(progressCheck.newView&&progressCheck.visible&&progressCheck.nativeInTab,
      'The redesigned Progress view must render immediately inside the native tab');
    assert.equal(progressCheck.oldGraph,false,'Old graph cannot appear');
    assert.equal(progressCheck.controlCount,4,'All four progress filters should display');
-   assert(progressCheck.tabActive,'Progress tab must become active');
+   assert(progressCheck.tabActive,'Native Progress view must remain usable from the Graphs section');
+   assert.equal(progressCheck.navCount,10,'Two rows of five must have exactly ten tabs');
+   assert.deepEqual(progressCheck.topFive,['Overview','IEP Services','Programs','Graphs','Notes & Documents']);
+   assert.equal(progressCheck.columns,5,'The student profile must use five navigation columns');
+   assert.equal(progressCheck.rows,2,'The student profile must use two navigation rows');
    assert.equal(errors.length,0,'No browser JavaScript errors permitted');
    console.log('PROGRESS_SMOKE_PASS '+JSON.stringify({width,progressCheck}));
    console.log('UI_SMOKE_PASS '+JSON.stringify({width,metrics,errors:errors.slice(0,3)}));
