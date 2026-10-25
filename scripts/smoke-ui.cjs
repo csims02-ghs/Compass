@@ -76,7 +76,19 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
        oldCards:[...view.querySelectorAll('#caseServices,#caseSessionsToday,#caseAttention')].length,
        styleIds:document.querySelectorAll('#compass-caseload-dashboard-20261025').length,
        headerLabels:[...view.querySelectorAll('.compass-caseload-table th')].map(th=>th.textContent.trim()),
-       hasProgramsFilter:!!view.querySelector('#caseProgramFilter')
+       hasProgramsFilter:!!view.querySelector('#caseProgramFilter'),
+       sidebarWidth:rect(document.getElementById('sidebar')).width,
+       progressHeaderWidths:[...view.querySelectorAll('.compass-caseload-table th')].slice(3,5).map(th=>rect(th).width),
+       actionHeaderWidth:rect(view.querySelector('.compass-caseload-table th:last-child')).width,
+       profileButton:(()=>{
+         const tbody=view.querySelector('#caseloadBody');
+         const fixture=document.createElement('tr');
+         fixture.innerHTML='<td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><button type="button" class="btn small case-profile-button">Profile</button></td>';
+         tbody.appendChild(fixture);
+         const b=fixture.querySelector('button'),style=getComputedStyle(b),r=b.getBoundingClientRect();
+         const result={width:Math.round(r.width),height:Math.round(r.height),whiteSpace:style.whiteSpace,scrollWidth:b.scrollWidth,clientWidth:b.clientWidth};
+         fixture.remove();return result;
+       })()
      };
      view.classList.remove('active');view.hidden=true;view.style.display='none';
      home.classList.add('active');home.hidden=false;home.style.display='block';
@@ -87,6 +99,13 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
    assert.equal(caseloadAudit.oldCards,0,'Old summary cards are still mounted');
    assert.equal(caseloadAudit.styleIds,1,'Duplicate or missing caseload CSS');
    assert.equal(caseloadAudit.hasProgramsFilter,false,'Programs filter must not appear on My Caseload');
+   assert(Math.abs(caseloadAudit.sidebarWidth-248)<=2,'Desktop sidebar should be slightly narrower at 248px');
+   assert(caseloadAudit.progressHeaderWidths.every(w=>w>0),'Prompt and mastery headers must remain visible');
+   assert(caseloadAudit.actionHeaderWidth>caseloadAudit.progressHeaderWidths[0]*0.55,'Profile action column must have enough width');
+   assert.equal(caseloadAudit.profileButton.whiteSpace,'nowrap','Profile must stay on one line');
+   assert(caseloadAudit.profileButton.scrollWidth<=caseloadAudit.profileButton.clientWidth+1,'Profile label must not be clipped');
+   assert(caseloadAudit.profileButton.height<=38,'Profile button should be a compact single-line action');
+
    assert.deepEqual(caseloadAudit.headerLabels,['Student ↕','School ↕','Grade ↕','Prompt % ↕','Targets Mastered ↕','Status ↕','Next Review ↕','Action'],'My Caseload headers must omit Programs while preserving progress');
 
    assert(caseloadAudit.add.top>caseloadAudit.search.top,'Add Student must render below Search');
