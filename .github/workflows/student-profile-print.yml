@@ -1,0 +1,33 @@
+name: COMPASS Student Profile Print Stress Test
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'student-profile-print.js'
+      - 'scripts/test-student-profile-print.cjs'
+      - '.github/workflows/student-profile-print.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  print-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install report test dependencies
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          python3 -m pip install --user --quiet pypdf
+          google-chrome --version
+      - name: Verify script syntax
+        run: |
+          node --check student-profile-print.js
+          node --check scripts/test-student-profile-print.cjs
+      - name: Browser-test the portrait report
+        run: node scripts/test-student-profile-print.cjs
