@@ -48,6 +48,7 @@ function fixture(){
    const report=await page.evaluate(d=>window.CompassStudentPrint.render(d),input);
    const print=await browser.newPage({viewport:{width:1200,height:1250}});
    await print.setContent(report,{waitUntil:'domcontentloaded'});
+   if(process.env.PRINT_STAGE==='html'){assert.ok(report.includes('Academic Development'));assert.ok(report.includes('Technology &amp; Transition Readiness')||report.includes('Technology & Transition Readiness'));console.log('PASS html generated');await page.close();await print.close();continue;}
    const out=await print.evaluate(()=>{
      const dom=[...document.querySelectorAll('.domain-row')];
      const sheet=document.querySelector('.sheet');
@@ -59,10 +60,12 @@ function fixture(){
    assert.equal(out.domains,8,label+': print all eight agreed domains');
    assert.equal(new Set(out.names).size,8,label+': unique domains');
    assert.equal(out.portrait,true,label+': portrait layout');
+   if(process.env.PRINT_STAGE==='layout'){assert.ok(out.domains===8&&out.portrait);console.log('PASS basic layout',out.contentH,out.sheetH);await page.close();await print.close();continue;}
    assert.ok(out.contentH<=out.sheetH+2,label+': no clipped report content, '+out.contentH+' vs '+out.sheetH);
    assert.equal(out.injection,0,label+': escape unsafe student name');
    assert.equal(out.imageNodes,0,label+': print report should contain no student photos');
    for(const target of required)assert.ok(out.text.includes(target),label+': missing '+target);
+   if(process.env.PRINT_STAGE==='content'){console.log('PASS content');await page.close();await print.close();continue;}
    const pdf=path.join(os.tmpdir(),'compass-print-'+label+'.pdf');
    await print.pdf({path:pdf,printBackground:true,preferCSSPageSize:true});
    const pages=Number(execFileSync('python3',['-c','import sys;from pypdf import PdfReader;print(len(PdfReader(sys.argv[1]).pages))',pdf],{encoding:'utf8'}).trim());
