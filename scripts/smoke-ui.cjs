@@ -154,10 +154,11 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
      const rows=navStyle.gridTemplateRows.trim().split(/\s+/).length;
      if(visibleTabs.length!==10)throw Error('Expected exactly ten student profile tabs; found '+visibleTabs.length);
      if(!document.querySelector('#compassGraphsChartsTab'))throw Error('Graphs tab missing');
-     // Signed-out test harness: show native Progress directly without forging an authenticated student session.
-     document.querySelectorAll('.profile-tab').forEach(p=>p.classList.remove('active'));
+     // Exercise the new tenth navigation button without forging an authenticated student session.
+     const progressButton=profileNav.querySelector('[data-tab="progress"]');
+     if(!progressButton)throw Error('Progress navigation button missing');
+     progressButton.click();
      const panel=document.querySelector('#profile-tab-progress');
-     panel.classList.add('active');
      const native=document.querySelector('#cpr-liveView');
      return{newView:!!native, visible:!!native&&!!native.getBoundingClientRect().height,
        nativeInTab:panel.contains(native),oldGraph:!!document.querySelector('#progressChart'),
@@ -169,9 +170,10 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
      'The redesigned Progress view must render immediately inside the native tab');
    assert.equal(progressCheck.oldGraph,false,'Old graph cannot appear');
    assert.equal(progressCheck.controlCount,4,'All four progress filters should display');
-   assert(progressCheck.tabActive,'Native Progress view must remain usable from the Graphs section');
+   assert(progressCheck.tabActive,'Native Progress tab must be activated by the new navigation button');
    assert.equal(progressCheck.navCount,10,'Two rows of five must have exactly ten tabs');
    assert.deepEqual(progressCheck.topFive,['Overview','IEP Services','Programs','Graphs','Notes & Documents']);
+   assert.deepEqual(progressCheck.actualOrder,['Overview','IEP Services','Programs','Graphs','Notes & Documents','Goals','Assessments','Behavior','Team','Progress']);
    assert.equal(progressCheck.columns,5,'The student profile must use five navigation columns');
    assert.equal(progressCheck.rows,2,'The student profile must use two navigation rows');
    assert.equal(errors.length,0,'No browser JavaScript errors permitted');
