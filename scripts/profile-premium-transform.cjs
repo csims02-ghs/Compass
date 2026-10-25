@@ -57,6 +57,10 @@ module.exports = function premiumStudentProfile(source){
   const previousGraphOrder="const order=['Overview','IEP & Services','Programs','Goals','Behavior','Graphs and Charts','Progress','Assessments','Observation & Session Notes','Documents','Team','History'];";
   if(!source.includes(previousGraphOrder))throw Error('COMPASS existing Graphs tab ordering has changed');
   source=source.replace(previousGraphOrder,"const order=['Overview','IEP Services','Programs','Graphs','Notes & Documents','Goals','Assessments','Behavior','Team','History'];");
+  const graphProgressNeedle="    if(!tab.dataset.compassBound){tab.dataset.compassBound='1';";
+  const graphProgressCode="    // Keep the existing native Program Progress view reachable from the Graphs section.\n    if(pane&&!pane.querySelector('#compassGraphsProgressButton')){\n      const progressLink=document.createElement('button');\n      progressLink.id='compassGraphsProgressButton';\n      progressLink.type='button';\n      progressLink.className='btn small';\n      progressLink.textContent='Program Progress';\n      progressLink.addEventListener('click',function(){\n        leaveGraphs();\n        showProfileTab('progress');\n        tab.classList.add('active');\n        tab.setAttribute('aria-selected','true');\n      });\n      const chartHeader=pane.querySelector('.compass-program-chart-card > div');\n      if(chartHeader)chartHeader.appendChild(progressLink);else pane.prepend(progressLink);\n    }\n";
+  if(!source.includes(graphProgressNeedle))throw Error('COMPASS Graphs binding has changed');
+  source=source.replace(graphProgressNeedle,graphProgressCode+graphProgressNeedle);
   const alertsStart=source.indexOf('  function renderProfileAlerts(){');
   const alertsEnd=source.indexOf('  function openStudentNoteReview(',alertsStart);
   if(alertsStart<0||alertsEnd<alertsStart)throw Error("Profile calendar alert renderer anchor changed");
