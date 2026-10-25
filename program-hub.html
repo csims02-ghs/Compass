@@ -134,6 +134,12 @@ body.hub-fullscreen{overflow:hidden}
 @media(max-width:700px){.sheet{padding:7px}.sheet-hero{padding:12px}.sheet-hero-fields{grid-template-columns:auto 1fr;gap:4px 8px}.sheet-hero-fields .sheet-label{text-align:left}.sheet-bottom{grid-template-columns:1fr}.sheet-bottom>section+section,.sheet-bottom>section:last-child{border-left:0;border-top:1px solid #c2d6e7;grid-column:auto}}
 @media print{.sheet-grid-scroll{overflow:visible}.sheet-grid{min-width:0}.sheet-benchmark:not([open])>.sheet-table{display:table}.sheet-benchmark:not([open])>summary .bench-chevron{display:none}.sheet-benchmark{break-inside:avoid}.sheet-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 
+
+/* Alignment guard for the original generic table header rules:
+   the # column must stay 4% in the color-coded 11-column grid. */
+.sheet-grid .sheet-table thead th:first-child{width:auto;text-align:center;padding:7px 3px}
+.sheet-grid .sheet-table thead th{white-space:normal}
+.sheet-grid .sheet-table col{min-width:0}
 </style></head><body><div class="app"><aside><div class="brand"><h1 id="studentName">Student Programs</h1><small>COMPASS Student Program Hub</small></div><div class="meta"><strong id="studentMeta">Loading student…</strong><small id="programCount">Loading assigned programs…</small><div id="behaviorPills" class="pills"></div></div><input id="search" class="search" type="search" placeholder="Search programs…"><div id="programList" class="list"></div></aside><main><div class="top"><div class="title"><h2 id="runnerTitle">Program Hub</h2><p id="runnerSubtitle">Choose a program from the left.</p></div><div class="actions"><button id="prevBtn" class="btn" disabled>← Previous</button><button id="nextBtn" class="btn primary" disabled>Next Program →</button><button id="fullscreenBtn" class="btn" type="button" aria-pressed="false" title="Expand the program workspace">⛶ Full Screen</button><button id="closeBtn" class="btn">Close Hub</button></div></div><div class="card"><div class="framewrap"><div id="empty" class="empty"><div><strong>Select a program</strong><br>Choose one of this student's assigned programs.</div></div><div id="loading" class="loading" hidden>Loading program…</div><section id="programSheet" class="sheet" aria-label="Program benchmark and acquisition progress"><div class="sheet-message">Select a program to view its benchmark progress sheet. Choose Full Screen to run the program.</div></section><iframe id="runnerFrame" class="runner" title="COMPASS Program Runner" scrolling="auto" hidden></iframe></div><div class="bottom"><button id="bottomPrevBtn" class="btn" disabled>← Previous Program</button><button id="bottomNextBtn" class="btn primary" disabled>Next Program →</button></div></div><div id="status" class="status">Connecting to COMPASS…</div></main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -295,8 +301,7 @@ function sheetContents(sp,targets,hasStudentTargets){
     '<td>'+sheetCell(m2.score)+'</td>'+
     '<td class="sheet-notes">'+sheetCell(note)+'</td></tr>';
   }).join('');
-  const benchTitle=g.name.startsWith('Benchmark ')||g.name.startsWith('Target range')||g.name.startsWith('Targets without')
-    ?g.name:('Benchmark '+(i+1)+': '+g.name);
+  const benchTitle=g.name.startsWith('Benchmark ')?g.name:('Benchmark '+(i+1)+': '+g.name.replace(/^Target range /,'Targets '));
   const goal=g.goal?'<span class="bench-goal">Goal: '+esc(g.goal)+'</span>':'';
   const count=g.goal?'':'<span class="bench-count">'+g.items.length+' targets</span>';
   const color=['bench-blue','bench-green','bench-gold','bench-rose'][i%4];
@@ -306,12 +311,12 @@ function sheetContents(sp,targets,hasStudentTargets){
    '<table class="sheet-table" aria-label="'+esc(benchTitle)+' skill progress">'+colgroup+'<tbody>'+rows+'</tbody></table></details>';
  }).join('');
  const criteria=program.program_code==='CP-1TO1-COUNT'?
-  ['One complete DTI chain per run','Mastery: at least 80% on 3 distinct qualifying instructional dates','Probe results are excluded from teaching mastery']:
+  ['One complete DTI chain per run','Default mastery: 80% across 3 separate qualifying instructional dates (editable in Program Setup)','Probe results are excluded from teaching mastery']:
   ['Mastery criteria follow this program’s configured teaching plan','Do not interpret missing dates as unsuccessful performance'];
  const criteriaHtml=criteria.map(c=>'<li><span class="sheet-criteria-box" aria-hidden="true"></span><span>'+esc(c)+'</span></li>').join('');
  const note=recordedValue(sp.instance_config||{},['progress_notes','notes'])||'';
  return '<div class="sheet-page">'+
-  '<header class="sheet-hero"><div><h2>'+esc(programTitle)+'</h2><p class="sheet-hero-sub">COMPASS · Gross motor / instructional skill progress tracking</p></div>'+
+  '<header class="sheet-hero"><div><h2>'+esc(programTitle)+'</h2><p class="sheet-hero-sub">COMPASS · Instructional Skill Progress Tracking</p></div>'+
    '<div class="sheet-hero-fields">'+
    '<span class="sheet-label">Student:</span><span class="sheet-value">'+esc(S.student?.display_label||S.student?.student_code||'Student')+'</span>'+
    '<span class="sheet-label">Date Range:</span><span class="sheet-value">'+esc(range)+'</span>'+
