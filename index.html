@@ -556,6 +556,58 @@ body{display:block!important;width:100%;min-width:0}
 }
 
 </style>
+
+<style id="compass-acquisition-data-modal-styles">
+/* Responsive single-assignment acquisition sheet: never scroll horizontally. */
+#modal.acquisition-data-modal{
+ width:min(1120px,calc(100vw - 24px))!important;max-width:calc(100vw - 24px);
+ max-height:94dvh;min-width:0;display:flex;flex-direction:column;overflow:hidden
+}
+#modal.acquisition-data-modal .modal-head{flex:0 0 auto;padding:12px 18px}
+#modal.acquisition-data-modal #modalTitle{font-size:clamp(19px,2vw,24px)}
+#modal.acquisition-data-modal .modal-body{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto!important;overflow-x:hidden!important;padding:12px!important}
+#modal.acquisition-data-modal .cpr-bench-sheet{width:100%;min-width:0;max-width:100%;margin:0}
+#modal.acquisition-data-modal .cpr-bench-scroll{width:100%;max-width:100%;min-width:0;overflow-x:hidden!important}
+#modal.acquisition-data-modal .cpr-bench-cols{width:100%;min-width:0;table-layout:fixed}
+#modal.acquisition-data-modal .cpr-bench-cols th,#modal.acquisition-data-modal .cpr-bench-cols td{white-space:normal;overflow-wrap:anywhere;padding:7px 2px;line-height:1.2}
+#modal.acquisition-data-modal .cpr-bench-group{max-width:100%;min-width:0}
+#profile-tab-programs .programs-table .program-acquisition-btn{width:100%;max-width:100%;white-space:normal;overflow-wrap:anywhere;font-size:12px;line-height:1.2;min-height:40px;padding:7px 5px}
+@media(min-width:1251px){
+ #profile-tab-programs .programs-table th:nth-child(1),#profile-tab-programs .programs-table td:nth-child(1){width:20%}
+ #profile-tab-programs .programs-table th:nth-child(2),#profile-tab-programs .programs-table td:nth-child(2){width:16%}
+ #profile-tab-programs .programs-table th:nth-child(3),#profile-tab-programs .programs-table td:nth-child(3){width:17%}
+ #profile-tab-programs .programs-table th:nth-child(4),#profile-tab-programs .programs-table td:nth-child(4){width:15%}
+ #profile-tab-programs .programs-table th:nth-child(5),#profile-tab-programs .programs-table td:nth-child(5){width:10%}
+ #profile-tab-programs .programs-table th:nth-child(6),#profile-tab-programs .programs-table td:nth-child(6){width:5%}
+ #profile-tab-programs .programs-table th:nth-child(7),#profile-tab-programs .programs-table td:nth-child(7){width:17%}
+}
+@media(min-width:761px) and (max-width:1250px){
+ #profile-tab-programs .programs-table th:nth-child(1),#profile-tab-programs .programs-table td:nth-child(1){width:22%}
+ #profile-tab-programs .programs-table th:nth-child(2),#profile-tab-programs .programs-table td:nth-child(2){width:16%}
+ #profile-tab-programs .programs-table th:nth-child(3),#profile-tab-programs .programs-table td:nth-child(3){width:16%}
+ #profile-tab-programs .programs-table th:nth-child(4),#profile-tab-programs .programs-table td:nth-child(4){width:20%}
+ #profile-tab-programs .programs-table th:nth-child(5),#profile-tab-programs .programs-table td:nth-child(5){width:10%}
+ #profile-tab-programs .programs-table th:nth-child(7),#profile-tab-programs .programs-table td:nth-child(7){width:16%}
+}
+@media(max-width:760px){
+ #profile-tab-programs .programs-table th:nth-child(1),#profile-tab-programs .programs-table td:nth-child(1){width:38%}
+ #profile-tab-programs .programs-table th:nth-child(4),#profile-tab-programs .programs-table td:nth-child(4){width:23%}
+ #profile-tab-programs .programs-table th:nth-child(5),#profile-tab-programs .programs-table td:nth-child(5){width:15%}
+ #profile-tab-programs .programs-table th:nth-child(7),#profile-tab-programs .programs-table td:nth-child(7){width:24%}
+}
+@media(max-width:700px){
+ #modal.acquisition-data-modal{width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px);max-height:96dvh}
+ #modal.acquisition-data-modal .modal-body{padding:7px!important}
+ #modal.acquisition-data-modal .cpr-bench-scroll>table.cpr-bench-cols{display:none}
+ #modal.acquisition-data-modal .cpr-bench-group .cpr-bench-cols,#modal.acquisition-data-modal .cpr-bench-group tbody{display:block;width:100%;min-width:0}
+ #modal.acquisition-data-modal .cpr-bench-group tbody tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;border-bottom:1px solid #bfd1e4;padding:4px}
+ #modal.acquisition-data-modal .cpr-bench-group tbody tr td{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px;text-align:left;padding:7px 4px;border:0;border-bottom:1px solid rgba(150,178,205,.24);min-width:0;font-size:11px}
+ #modal.acquisition-data-modal .cpr-bench-group tbody tr td:before{content:attr(data-field);font-size:10px;font-weight:800;color:#47698a;max-width:55%}
+ #modal.acquisition-data-modal .cpr-bench-group tbody tr td:nth-child(1),
+ #modal.acquisition-data-modal .cpr-bench-group tbody tr td:nth-child(2),
+ #modal.acquisition-data-modal .cpr-bench-group tbody tr td:last-child{grid-column:1/-1}
+}
+</style>
 </head>
 <body>
 
