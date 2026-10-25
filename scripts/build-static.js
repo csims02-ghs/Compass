@@ -130,7 +130,7 @@ async function main(){
   const linkedModule='<script src="./assigned-program-iep-links.js?v=1"></scr'+'ipt>\n';  const progressModule='<script src="./progress-profile-live-v1.js?v=3"></scr'+'ipt>\n';
 
   source=source.slice(0,docEnd)+linkedModule+progressModule+source.slice(docEnd);
-  // The browser treats every literal </script> as an end tag, including strings.
+  // Apply the shared premium student profile layout at build time.\n  source=require('./profile-premium-transform.cjs')(source);\n  // The browser treats every literal </script> as an end tag, including strings.
   // Parse all inline blocks now; refuse to publish syntactically broken login/runner code.
   const scripts=[...source.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)]
     .filter(m=>!(/\bsrc\s*=/.test(m[1])||/text\/plain/.test(m[1])));
