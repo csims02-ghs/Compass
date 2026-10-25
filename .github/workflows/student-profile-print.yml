@@ -29,6 +29,12 @@ jobs:
         run: |
           node --check student-profile-print.js
           node --check scripts/test-student-profile-print.cjs
+      - name: Diagnose HTML generation
+        run: PRINT_SCENARIO=populated PRINT_STAGE=html node scripts/test-student-profile-print.cjs
+      - name: Diagnose report layout
+        run: PRINT_SCENARIO=populated PRINT_STAGE=layout node scripts/test-student-profile-print.cjs
+      - name: Diagnose displayed report values
+        run: PRINT_SCENARIO=populated PRINT_STAGE=content node scripts/test-student-profile-print.cjs
       - name: Stress test populated student profile
         run: PRINT_SCENARIO=populated node scripts/test-student-profile-print.cjs
       - name: Stress test empty student data
