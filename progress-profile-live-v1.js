@@ -29,6 +29,7 @@ const tag=d.createElement("style");tag.id="cpr-styles";tag.textContent=
 '.cpr-line{display:inline-block;width:20px;height:4px;vertical-align:middle;margin-right:7px}.cpr-scroll{max-width:100%;overflow-x:auto;overflow-y:hidden}.cpr-scroll svg{display:block;max-width:none}.cpr-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.cpr-stat{border:1px solid #e0e7f0;background:#fafcff;border-radius:9px;padding:10px}.cpr-stat strong{font-size:18px;display:block}.cpr-stat small{color:#68798d}' +
 '.cpr-tablewrap{overflow:auto;border:1px solid #dbe4ef;border-radius:10px;margin:12px 0}.cpr-table{border-collapse:collapse;width:100%;font-size:12px}.cpr-table th,.cpr-table td{padding:9px 10px;border-bottom:1px solid #e8eef5;text-align:left;white-space:nowrap}.cpr-table th{background:#f2f6fb;color:#637b96;font-size:11px;text-transform:uppercase}.cpr-table td:first-child{font-weight:650;color:#17365d}.cpr-sec-title{font-size:20px;font-weight:800;margin:22px 0 5px}.cpr-warning{background:#fff9eb;color:#8a5611;padding:12px;border-radius:9px;font-size:13px}.cpr-suppressed{display:none!important}.cpr-panel[hidden]{display:none!important}' +
 '@media(max-width:1050px){.cpr-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.cpr-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.cpr-controls,.cpr-row,.cpr-phases .cpr-row,.cpr-stats{grid-template-columns:1fr}}';
+tag.textContent+="\n/* Progress tab: color-coded benchmark progress replaces compact Acquisition Summary. */\n.cpr-bench-sheet{margin:18px 0 10px;font:12px Arial,Helvetica,sans-serif;color:#133b65;min-width:0}\n.cpr-bench-head{background:linear-gradient(105deg,#07365b,#064e7c);color:white;border-radius:12px;padding:15px 18px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}\n.cpr-bench-head h2{font-size:clamp(20px,2.2vw,30px);margin:0;color:white}\n.cpr-bench-head p{font-size:12px;color:#deebf7;margin:6px 0 0}\n.cpr-bench-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}\n.cpr-bench-meta label{font-weight:700;font-size:11px;color:#eef6ff}\n.cpr-bench-meta span{background:white;color:#123d68;border-radius:5px;padding:6px 10px;font-size:11px;display:inline-block}\n.cpr-bench-scroll{overflow-x:hidden;max-width:100%;width:100%;min-width:0}\n.cpr-bench-cols{width:100%;table-layout:fixed;min-width:0;border-collapse:collapse}\n.cpr-bench-cols col.cpr-col-num{width:4%}\n.cpr-bench-cols col.cpr-col-skill{width:28%}\n.cpr-bench-cols col.cpr-col-date{width:6%}\n.cpr-bench-cols col.cpr-col-maint{width:7%}\n.cpr-bench-cols col.cpr-col-notes{width:16%}\n.cpr-bench-cols th,.cpr-bench-cols td{border:1px solid #b9d1e7;padding:6px 2px;overflow-wrap:anywhere;min-width:0;line-height:1.2;font-size:clamp(8px,.85vw,11px);text-align:center;white-space:normal}\n.cpr-bench-cols th:first-child{font-weight:850}\n.cpr-bench-cols .cpr-left{text-align:left;padding-left:7px;font-weight:750}\n.cpr-bench-cols .cpr-topmain{background:#08395d;color:#fff}\n.cpr-bench-cols .cpr-intro{background:#a8d9fa}\n.cpr-bench-cols .cpr-mastered{background:#a9ebc5}\n.cpr-bench-cols .cpr-maint1{background:#ffe5a7}\n.cpr-bench-cols .cpr-maint2{background:#ffd9b8}\n.cpr-bench-cols .cpr-subintro{background:#e6f5ff}\n.cpr-bench-cols .cpr-submastered{background:#e5f9ed}\n.cpr-bench-cols .cpr-submaint1{background:#fff3d9}\n.cpr-bench-cols .cpr-submaint2{background:#fff0e3}\n.cpr-bench-group{margin:9px 0 0;border:1px solid var(--bench-border);border-radius:10px;overflow:hidden;background:var(--bench-bg)}\n.cpr-bench-group.blue{--bench-head:#cceaff;--bench-border:#91cafa;--bench-bg:#eff8ff}\n.cpr-bench-group.green{--bench-head:#c7efda;--bench-border:#87d9af;--bench-bg:#effcf5}\n.cpr-bench-group.gold{--bench-head:#ffebbe;--bench-border:#f2c064;--bench-bg:#fff9ea}\n.cpr-bench-group.rose{--bench-head:#ffdade;--bench-border:#f7a1ab;--bench-bg:#fff2f4}\n.cpr-bench-group summary{list-style:none;display:flex;align-items:center;gap:10px;background:var(--bench-head);padding:12px;min-height:44px;cursor:pointer;touch-action:manipulation}\n.cpr-bench-group summary::-webkit-details-marker{display:none}\n.cpr-bench-group summary:focus-visible{outline:3px solid #2477de;outline-offset:-3px}\n.cpr-bench-arrow{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;font-weight:900;font-size:18px;color:#1a5f9c}\n.cpr-bench-group[open] .cpr-bench-arrow{transform:rotate(90deg)}\n.cpr-bench-title{font-weight:900;font-size:13px;flex:1;min-width:0}\n.cpr-bench-number{font-size:11px;color:#376181;font-weight:800;white-space:nowrap}\n.cpr-bench-group .cpr-bench-cols{background:var(--bench-bg)}\n.cpr-bench-group .cpr-bench-cols tr:nth-child(even){background:rgba(255,255,255,.4)}\n.cpr-bench-key{border:1px solid #d3e0ee;border-radius:9px;background:#f0f6fc;padding:12px;margin-top:11px;font-size:11px;color:#395b7d;line-height:1.55}\n.cpr-bench-empty{color:#9bb3c8}\n@media(max-width:850px){.cpr-bench-cols th,.cpr-bench-cols td{font-size:8px;padding:5px 1px}.cpr-bench-head{padding:12px}.cpr-bench-meta{gap:4px}}\n";
 d.head.appendChild(tag);
 }
 function programs(){
@@ -61,16 +62,17 @@ if(verified){
  const source=s.source_record||{},phase=String(source.phase||source.session_type||source.scoring_phase||'').toLowerCase();
  let firstTarget=true;
  return raw.map(ev=>{
-   const maintenance=ev.trial_type==='D';
-   const first=!maintenance&&firstTarget;if(first)firstTarget=false;
+   const distractor=ev.trial_type==='D';
+   const explicitMaintenance=/maintenance/.test(phase);
+   const first=!distractor&&firstTarget;if(first)firstTarget=false;
    const name=String(ev.target_name||s.target_name||'Unspecified target').trim();
    const key=String(ev.target_key||s.target_key||name).trim();
    return {date:dt(ev.occurred_at||s.session_date),program:s.student_compass_program_id,key,name,
      benchmark:ev.benchmark_key||source.benchmark||source.benchmark_name||null,
      valid:true,trial:1,correct:ev.result==='independent_correct'?1:0,prompt:ev.result==='prompted'?1:0,
      beh:first?Number(s.total_behaviors||0):0,raw:s,
-     probe:/probe|baseline/.test(phase),maintenance:maintenance||/maintenance|distractor/.test(phase),
-     hasBehavior:!maintenance};
+     probe:/probe|baseline/.test(phase)||source.v25_run?.probe===true,maintenance:distractor||explicitMaintenance,
+     hasBehavior:!distractor,explicitMaintenance:!distractor&&explicitMaintenance};
  });
 }
 const t=n(s.trials_total),correct=n(s.targets_correct),prompt=n(s.prompted_correct),beh=n(s.total_behaviors),src=s.source_record||{};
@@ -80,7 +82,7 @@ const mark=src.benchmark||src.benchmark_name||src.benchmark_label||src.benchmark
 const phase=String(src.phase||src.session_type||src.scoring_phase||"").toLowerCase();
 return {date:dt(s.session_date||s.started_at||s.created_at),program:s.student_compass_program_id,key:key,name:named||key||"Unspecified target",benchmark:mark!=null?String(mark):null,
  valid,trial:valid?t:0,correct:valid?correct:0,prompt:valid?(prompt||0):0,beh:beh!=null&&beh>=0?beh:null,raw:s,
- probe:/probe|baseline/.test(phase),maintenance:/maintenance|distractor/.test(phase),hasBehavior:beh!=null&&beh>=0};
+ probe:/probe|baseline/.test(phase)||src.v25_run?.probe===true,maintenance:/maintenance/.test(phase),hasBehavior:beh!=null&&beh>=0,explicitMaintenance:/maintenance/.test(phase)};
 }).filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
 }
 function currentEvents(){
@@ -220,33 +222,83 @@ const byday=new Map();base.forEach(e=>{let o=byday.get(e.date)||{date:e.date,tri
 let qualifying=[],mastered=null;
 for(const o of [...byday.values()].sort((a,b)=>a.date.localeCompare(b.date))){
 const pass=(crit.percent!=null&&o.trials>0&&(100*o.correct/o.trials)>=crit.percent)&&(crit.probes==null||o.trials>=crit.probes);
-qualifying=pass?[...qualifying,o.date]:[];
+if(pass&&!qualifying.includes(o.date))qualifying.push(o.date);
 if(crit.days!=null&&qualifying.length>=crit.days){mastered=o.date;break}
 }
-const maintenance=mastered?all.find(e=>e.maintenance&&e.date>mastered):null;
-return {name:t.name,key:t.key,probe:probes.length?probes[0].date:null,introduced:base.length?base[0].date:null,mastered,maintenance:maintenance&&maintenance.date,qualifying:qualifying.length,criterion:crit.days&&crit.percent!=null,bench:(t.metadata&&t.metadata.benchmark)||base.find(e=>e.benchmark)?.benchmark||null};
+const maint=mastered?all.filter(e=>e.explicitMaintenance&&e.date>mastered).sort((a,b)=>a.date.localeCompare(b.date)):[];
+const maintDays=[...new Set(maint.map(e=>e.date))].slice(0,2).map(date=>{const day=maint.filter(e=>e.date===date),trial=day.reduce((a,x)=>a+x.trial,0),correct=day.reduce((a,x)=>a+x.correct,0);return {date,score:trial?(100*correct/trial).toFixed(0)+"%":null}});
+return {name:t.name,key:t.key,probe:probes.length?probes[0].date:null,introduced:base.length?base[0].date:null,mastered,maintenance:maintDays[0]?.date||null,maintenance1:maintDays[0]||null,maintenance2:maintDays[1]||null,
+ metadata:t.metadata||{},qualifying:qualifying.length,criterion:crit.days&&crit.percent!=null,
+ bench:t.metadata?.benchmark_name||t.metadata?.benchmark||t.metadata?.number_band||base.find(e=>e.benchmark)?.benchmark||null};
 });
 }
 function acquisition(){
-const ps=programs(),chosen=picks.program==="all"?ps:ps.filter(p=>p.id===picks.program),all=[];
-for(const p of chosen){
-let rows=calculateTargets(p),withDates=rows.filter(r=>r.introduced),intro=withDates.map(r=>r.introduced).sort()[0]||null;
-let complete=rows.length>0&&rows.every(t=>!!t.mastered&&t.criterion),end=complete?rows.map(t=>t.mastered).sort().at(-1):null;
-let byBench=new Map();for(const t of rows){let key=t.bench||"Benchmark not recorded",list=byBench.get(key)||[];list.push(t);byBench.set(key,list)}
-all.push({p,rows,intro,end,byBench,complete});
-}
-sel("acquisition").innerHTML='<div class="cpr-sec-title">Acquisition Summary</div><div class="cpr-muted">Derived from the same recorded sessions as the graph. Mastery dates appear only when the required criteria are stored and satisfied; maintenance requires separately identifiable maintenance data.</div>'+
-(chosen.length===0?'<div class="cpr-warning">No programs are assigned to this student.</div>':all.map(z=>{
-let title='<div class="cpr-sec-title" style="font-size:16px">'+E(z.p.name)+'</div><div class="cpr-muted">Program introduced: '+E(shortDate(z.intro||z.p.start))+' · Complete: '+(z.complete?E(shortDate(z.end)):"Not verified")+' · '+z.rows.length+' targets</div>';
-let bench=[...z.byBench].map(([key,rows])=>{
- const introduced=rows.map(x=>x.introduced).filter(Boolean).sort()[0],complete=rows.length>0&&rows.every(x=>x.mastered),end=complete?rows.map(x=>x.mastered).sort().at(-1):null;
- return '<tr><td><strong>'+E(key)+'</strong></td><td>'+E(shortDate(introduced))+'</td><td>'+E(shortDate(end))+'</td><td>'+rows.filter(t=>t.mastered).length+'/'+rows.length+'</td></tr>';
-}).join("");
-let body=z.rows.map(x=>'<tr><td>'+E(x.name)+'</td><td>'+E(shortDate(x.probe))+'</td><td>'+E(shortDate(x.introduced))+'</td><td>'+E(shortDate(x.mastered))+'</td><td>'+E(shortDate(x.maintenance))+'</td><td>'+(x.criterion?(x.mastered?'Verified':'In progress'):'Criteria not recorded')+'</td></tr>').join("");
-return title+'<div class="cpr-tablewrap"><table class="cpr-table"><thead><tr><th>Benchmark</th><th>Introduced</th><th>Mastered</th><th>Targets mastered</th></tr></thead><tbody>'+bench+'</tbody></table></div>'+
-'<div class="cpr-tablewrap"><table class="cpr-table"><thead><tr><th>Target</th><th>Probe</th><th>Introduced</th><th>Mastered</th><th>Maintenance</th><th>Mastery evidence</th></tr></thead><tbody>'+body+'</tbody></table></div>';
-}).join(""))+
-'<div class="cpr-warning">Probe and maintenance status is shown only when the runner explicitly labels those sessions. When Program Setup does not specify mastery days or thresholds, the sheet leaves mastery unverified rather than inventing clinical evidence. Manual phase lines in this preview are not saved to the database.</div>';
+ const ps=programs(),chosen=picks.program==="all"?ps:ps.filter(p=>p.id===picks.program);
+ const colgroup='<colgroup><col class="cpr-col-num"><col class="cpr-col-skill">'+
+  Array(4).fill('<col class="cpr-col-date">').join('')+
+  Array(4).fill('<col class="cpr-col-maint">').join('')+
+  '<col class="cpr-col-notes"></colgroup>';
+ // Accurate, source-derived tracking, not fabricated dates/initials.
+ function cell(v){return v!=null&&String(v).trim()?E(String(v)):'<span class="cpr-bench-empty">—</span>'}
+ function compact(v){if(!v)return null;const a=String(v).slice(0,10).split('-');return a.length===3?(Number(a[1])+'/'+Number(a[2])+'/'+a[0].slice(-2)):null}
+ const all=chosen.map(p=>{
+  const rows=calculateTargets(p),grouped=new Map();
+  for(const row of rows){
+   let key=String(row.bench||"Unassigned benchmark"),m=/^\d+\s*-\s*\d+$/.exec(key),
+    label=m?('Targets '+key):key;
+   if(!grouped.has(label))grouped.set(label,[]);
+   grouped.get(label).push(row);
+  }
+  return {p,rows,grouped};
+ });
+ const tables=all.map(z=>{
+  let counter=0;
+  const allDates=z.rows.flatMap(x=>[x.introduced,x.mastered,x.maintenance1?.date,x.maintenance2?.date]).filter(Boolean).sort();
+  const range=allDates.length?shortDate(allDates[0])+' – '+shortDate(allDates.at(-1)):'Not recorded';
+  const title='<header class="cpr-bench-head"><div><h2>'+E(z.p.name)+'</h2><p>COMPASS · Benchmark Skills & Acquisition Progress</p></div>'+
+   '<div class="cpr-bench-meta"><label>Student:</label><span>'+E(snap?.studentName||'Selected student')+'</span>'+
+   '<label>Date Range:</label><span>'+E(range)+'</span></div></header>';
+  const head='<table class="cpr-bench-cols" aria-label="Progress tracking column names">'+colgroup+
+   '<thead><tr><th rowspan="2" class="cpr-topmain">#</th><th rowspan="2" class="cpr-topmain">Skill / Target</th>'+
+   '<th colspan="2" class="cpr-intro">Introduced</th><th colspan="2" class="cpr-mastered">Mastered</th>'+
+   '<th colspan="2" class="cpr-maint1">Maintenance 1</th><th colspan="2" class="cpr-maint2">Maintenance 2</th>'+
+   '<th rowspan="2" class="cpr-topmain">Notes</th></tr>'+
+   '<tr><th class="cpr-subintro">Date</th><th class="cpr-subintro">Initials</th>'+
+   '<th class="cpr-submastered">Date</th><th class="cpr-submastered">Initials</th>'+
+   '<th class="cpr-submaint1">Date</th><th class="cpr-submaint1">Score</th>'+
+   '<th class="cpr-submaint2">Date</th><th class="cpr-submaint2">Score</th></tr></thead></table>';
+  let sections=[...z.grouped].map(([key,rows],i)=>{
+    const rowHTML=rows.map(t=>{
+      counter++;const m=t.metadata||{};
+      const introInitial=m.introduced_initials||m.introduced_by_initials||null,
+       masteryInitial=m.mastered_initials||m.mastered_by_initials||null;
+      const note=m.progress_note||m.tracking_note||m.notes||null;
+      return '<tr><td>'+counter+'</td><td class="cpr-left">'+E(t.name)+'</td>'+
+       '<td>'+cell(compact(t.introduced))+'</td><td>'+cell(introInitial)+'</td>'+
+       '<td>'+cell(compact(t.mastered))+'</td><td>'+cell(masteryInitial)+'</td>'+
+       '<td>'+cell(compact(t.maintenance1?.date))+'</td><td>'+cell(t.maintenance1?.score)+'</td>'+
+       '<td>'+cell(compact(t.maintenance2?.date))+'</td><td>'+cell(t.maintenance2?.score)+'</td>'+
+       '<td class="cpr-left">'+cell(note)+'</td></tr>';
+    }).join('');
+    const benchTitle=/^Benchmark\b/i.test(key)?key:'Benchmark '+(i+1)+': '+key;
+    return '<details class="cpr-bench-group '+['blue','green','gold','rose'][i%4]+'" name="cpr-acquisition-bench">'+
+      '<summary><span class="cpr-bench-arrow" aria-hidden="true">▸</span>'+
+      '<span class="cpr-bench-title">'+E(benchTitle)+'</span><span class="cpr-bench-number">'+rows.length+' targets</span></summary>'+
+      '<table class="cpr-bench-cols" aria-label="'+E(benchTitle)+'">'+colgroup+'<tbody>'+rowHTML+'</tbody></table></details>';
+  }).join('');
+  return '<div class="cpr-bench-sheet">'+title+'<div class="cpr-bench-scroll">'+head+sections+'</div>'+
+    '<div class="cpr-bench-key">I = Introduced · M = Mastered · M1 = Maintenance 1 · M2 = Maintenance 2. '+
+    'Only supported session and target evidence is shown. Distractor responses never count as maintenance. '+
+    'Blank dates and initials mean not recorded. Mastery requires distinct qualifying instructional dates and recorded criteria.</div></div>';
+ }).join('');
+ sel("acquisition").innerHTML=tables||'<div class="cpr-warning">No programs are assigned to this student.</div>';
+ // Exclusive-open fallback for browsers without native shared details groups.
+ sel("acquisition").querySelectorAll('details.cpr-bench-group').forEach(group=>{
+  group.addEventListener('toggle',()=>{
+   if(!group.open)return;
+   sel("acquisition").querySelectorAll('details.cpr-bench-group').forEach(other=>{if(other!==group&&other.open)other.open=false});
+  });
+ });
 }
 function redraw(){if(!sel("chart"))return;graph();acquisition();sel("acquisition").hidden=picks.record==="graph";sel("view").value=picks.record}
 function scaffold(){
