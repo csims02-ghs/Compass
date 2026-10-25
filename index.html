@@ -862,6 +862,58 @@ body{display:block!important;width:100%;min-width:0}
   #page-student-profile .compass-premium-information{padding:13px}
   #page-student-profile #profile-tab-notes.profile-tab.active{grid-template-columns:1fr}
 }
+
+/* Ten visible destinations: two even rows, priority destinations first. */
+#page-student-profile #profileTabs.compass-premium-tabs,
+#page-student-profile #profileTabs.compass-premium-tabs.compass-profile-tabs-v7{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  grid-template-rows:repeat(2,minmax(54px,auto))!important;
+  grid-auto-flow:row!important;
+  align-items:stretch!important;
+  width:100%!important;
+  min-height:0!important;
+  gap:0!important;
+  padding:4px 7px 5px!important;
+  overflow:visible!important;
+}
+#page-student-profile #profileTabs.compass-premium-tabs>button,
+#page-student-profile #profileTabs.compass-premium-tabs.compass-profile-tabs-v7>button{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:54px!important;
+  margin:0!important;
+  padding:7px 5px 6px!important;
+  border-radius:9px!important;
+  border-bottom:2px solid transparent!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  font-size:11px!important;
+  line-height:1.12!important;
+  white-space:normal!important;
+  text-align:center!important;
+}
+#page-student-profile #profileTabs.compass-premium-tabs>button.active,
+#page-student-profile #profileTabs.compass-premium-tabs.compass-profile-tabs-v7>button.active{
+  border-bottom-color:#176cf1!important;
+}
+#page-student-profile #profileTabs.compass-premium-tabs>button svg{width:18px!important;height:18px!important;flex-shrink:0}
+#page-student-profile #profileTabs.compass-premium-tabs>button span{overflow-wrap:normal!important;hyphens:none!important}
+@media(max-width:680px){
+  #page-student-profile #profileTabs.compass-premium-tabs,
+  #page-student-profile #profileTabs.compass-premium-tabs.compass-profile-tabs-v7{
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    overflow:visible!important;
+    gap:0!important;
+    padding:3px 2px!important;
+  }
+  #page-student-profile #profileTabs.compass-premium-tabs>button{min-width:0!important;min-height:49px!important;padding:5px 2px!important;font-size:9px!important}
+  #page-student-profile #profileTabs.compass-premium-tabs>button svg{width:16px!important;height:16px!important}
+}
 </style>
 
 </head>
@@ -1096,7 +1148,7 @@ body{display:block!important;width:100%;min-width:0}
                   <div class="compass-premium-person"><h1 id="profileName">Student</h1><div id="profileMeta" class="profile-meta"></div><span id="profileStatus" class="status-pill">Active</span></div>
                   <button id="editStudentBtn" class="btn compass-premium-edit" type="button">✎ &nbsp; Edit Student</button>
                 </div>
-                <nav id="profileTabs" class="tabs compass-premium-tabs" aria-label="Student profile sections"><button type="button" data-tab="overview" class="active" aria-label="Overview"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v12h14V9M9 21v-7h6v7"/></svg><span>Overview</span></button><button type="button" data-tab="iepservices" class="" aria-label="IEP & Services"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg><span>IEP & Services</span></button><button type="button" data-tab="programs" class="" aria-label="Programs"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12"/><path d="m3.5 6 .7.7 1.3-1.5M3.5 12l.7.7 1.3-1.5M3.5 18l.7.7 1.3-1.5"/></svg><span>Programs</span></button><button type="button" data-tab="goals" class="" aria-label="Goals"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/><path d="m12 12 7-7"/></svg><span>Goals</span></button><button type="button" data-tab="assessments" class="" aria-label="Assessments"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9 10h6M9 14h6"/></svg><span>Assessments</span></button><button type="button" data-tab="behavior" class="" aria-label="Behavior"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 18H2z"/><path d="M12 9v5M12 18h.01"/></svg><span>Behavior</span></button><button type="button" data-tab="notes" class="" aria-label="Notes & Documents"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v13H7l-3 3z"/><path d="M8 9h8M8 13h5"/></svg><span>Notes & Documents</span></button><button type="button" data-tab="team" class="" aria-label="Team"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v1"/></svg><span>Team</span></button><details class="compass-premium-more"><summary aria-label="More student profile sections">•••<span>More</span></summary><div class="compass-premium-more-menu"><button type="button" data-tab="progress" class="" aria-label="Progress"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4M4 20h17M8 15l4-5 4 3 5-7"/></svg><span>Progress</span></button><button type="button" data-tab="history" class="" aria-label="History"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 3"/></svg><span>History</span></button></div></details></nav>
+                <nav id="profileTabs" class="tabs compass-premium-tabs" aria-label="Student profile sections"><button type="button" data-tab="overview" class="active" aria-label="Overview"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v12h14V9M9 21v-7h6v7"/></svg><span>Overview</span></button><button type="button" data-tab="iepservices" class="" aria-label="IEP Services"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 12h7M9 16h7"/></svg><span>IEP Services</span></button><button type="button" data-tab="programs" class="" aria-label="Programs"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12"/><path d="m3.5 6 .7.7 1.3-1.5M3.5 12l.7.7 1.3-1.5M3.5 18l.7.7 1.3-1.5"/></svg><span>Programs</span></button><button type="button" id="compassGraphsChartsTab" data-compass-graphs-tab="1" aria-label="Graphs"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4M4 20h17M8 15l4-5 4 3 5-7"/></svg><span>Graphs</span></button><button type="button" data-tab="notes" class="" aria-label="Notes & Documents"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v13H7l-3 3z"/><path d="M8 9h8M8 13h5"/></svg><span>Notes & Documents</span></button><button type="button" data-tab="goals" class="" aria-label="Goals"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/><path d="m12 12 7-7"/></svg><span>Goals</span></button><button type="button" data-tab="assessments" class="" aria-label="Assessments"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M9 10h6M9 14h6"/></svg><span>Assessments</span></button><button type="button" data-tab="behavior" class="" aria-label="Behavior"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 10 18H2z"/><path d="M12 9v5M12 18h.01"/></svg><span>Behavior</span></button><button type="button" data-tab="team" class="" aria-label="Team"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v1"/></svg><span>Team</span></button><button type="button" data-tab="history" class="" aria-label="History"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 3"/></svg><span>History</span></button></nav>
               </div>
               <article class="card compass-premium-attention">
                 <div class="compass-premium-attention-head"><h2><span class="compass-premium-bell"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9M10 21h4"/></svg></span>Needs Attention</h2><button id="profileViewAllBtn" type="button" class="compass-premium-view-all">View All →</button></div>
@@ -1761,7 +1813,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     if(!overviewButton||!overviewButton.parentElement)return;
     const nav=overviewButton.parentElement;
     nav.classList.add('compass-profile-tabs-v7');
-    const order=['Overview','IEP & Services','Programs','Goals','Behavior','Graphs and Charts','Progress','Assessments','Observation & Session Notes','Documents','Team','History'];
+    const order=['Overview','IEP Services','Programs','Graphs','Notes & Documents','Goals','Assessments','Behavior','Team','History'];
     const norm=function(v){return String(v||'').trim().toLowerCase()};
     order.forEach(function(label){
       const key=norm(label);
