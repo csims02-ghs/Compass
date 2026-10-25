@@ -181,7 +181,9 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 `;
-  source=source.replace('</body>',bootstrap+'</body>');
+  const closingBody=source.toLowerCase().lastIndexOf('</body>');
+  if(closingBody<0)throw Error('COMPASS closing body tag missing');
+  source=source.slice(0,closingBody)+bootstrap+source.slice(closingBody);
   for(const marker of ['compass-premium-grid','profileNextEvent','compass-premium-profile-bootstrap','Notes & Documents'])if(!source.includes(marker))throw Error('Premium profile verification: '+marker);
   return source;
 };
