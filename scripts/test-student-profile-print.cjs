@@ -42,7 +42,7 @@ function fixture(){
    ['partial-prompts',{...data,trialEvents:data.trialEvents.filter(e=>e.session_id!=='s0')},['Insufficient verified prompt data']],
    ['unsafe-name',{...data,student:{...data.student,display_label:'<img src=x onerror=alert(1)> & Name'}},['& Name']]
   ];
-  for(const [label,input,required] of scenarios){
+  for(const [label,input,required] of scenarios.filter(([label])=>!process.env.PRINT_SCENARIO||process.env.PRINT_SCENARIO===label)){
    const page=await browser.newPage({viewport:{width:1100,height:1300}});
    await page.addScriptTag({content:code});
    const report=await page.evaluate(d=>window.CompassStudentPrint.render(d),input);
