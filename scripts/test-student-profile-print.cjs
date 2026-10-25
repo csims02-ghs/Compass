@@ -36,7 +36,7 @@ function fixture(){
  try{
   const data=fixture();
   const scenarios=[
-   ['populated',data,['Targets Mastered','Prompt %','20%','7','80%','AAC Navigation']],
+   ['populated',data,['Targets Mastered','Prompt %','20%','7','80%','Academic Development']],
    ['empty',{...data,goals:[],programs:[],sessions:[],trialEvents:[],masteredCount:null},['Targets Mastered','Prompt %','—']],
    ['long-name',{...data,student:{...data.student,display_label:'Very Long Student Label '.repeat(6)},school:'Dr. Very Long Regional Integrated Elementary and Secondary Educational Campus '.repeat(2),classroom:'Individualized Intensive Transition Learning Resource Classroom '.repeat(2)},['Targets Mastered','20%']],
    ['partial-prompts',{...data,trialEvents:data.trialEvents.filter(e=>e.session_id!=='s0')},['Insufficient verified prompt data']],
