@@ -1975,13 +1975,14 @@ function activeStudentProgramsOrdered(){
       const p=programById(sp.program_id),name=p?.program_name||'Program',id=esc(sp.id);
       return '<div class="program-edit-row" data-program-edit-row="'+id+'">'+
         '<div class="program-edit-actions">'+
-        '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="-1" '+(i===0?'disabled':'')+' title="Move up">↑</button>'+
-        '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="1" '+(i===rows.length-1?'disabled':'')+' title="Move down">↓</button>'+
-        '<button class="btn danger" type="button" data-remove-assigned="'+id+'">Remove</button></div></div>';
-    '<div class="program-edit-details"><strong>'+(i+1)+'. '+esc(name)+'</strong>'+
+        '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="-1" '+(i===0?'disabled':'')+' title="Move up" aria-label="Move '+esc(name)+' up">↑</button>'+
+        '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="1" '+(i===rows.length-1?'disabled':'')+' title="Move down" aria-label="Move '+esc(name)+' down">↓</button>'+
+        '<button class="btn danger" type="button" data-remove-assigned="'+id+'" aria-label="Remove '+esc(name)+'">Remove</button></div>'+
+        '<div class="program-edit-details"><strong>'+(i+1)+'. '+esc(name)+'</strong>'+
         '<small>'+esc(programDomain(p))+' · '+esc(roleName(sp.status))+' · Goal '+Number(sp.goal_percentage??80)+'%</small></div>'+
         '<label class="program-edit-checkbox"><input type="checkbox" data-select-assigned="'+id+'" aria-label="Select '+esc(name)+'"></label>'+
-        }).join('');
+        '</div>';
+    }).join('');
     const toolbar='<div class="program-bulk-toolbar" aria-label="Bulk program selection">'+
       '<button class="btn small" type="button" id="programSelectAll" '+(rows.length?'':'disabled')+'>Select All</button>'+
       '<button class="btn small" type="button" id="programClearSelection" disabled>Clear Selection</button>'+
