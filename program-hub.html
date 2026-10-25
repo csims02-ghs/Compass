@@ -15,212 +15,65 @@ body.hub-fullscreen{overflow:hidden}
 .app.hub-expanded .framewrap{flex:1;height:auto;min-height:0}
 .app.hub-expanded .bottom,.app.hub-expanded .status{display:none}
 @media(max-width:700px){.app.hub-expanded .top{gap:6px;padding:7px}.app.hub-expanded .title{display:none}.app.hub-expanded .actions{width:100%;justify-content:space-between;gap:5px}.app.hub-expanded .btn{padding:8px 7px;font-size:12px}}
-/* Normal Hub: benchmark sheet. Full Screen: teaching runner. */
-.app{grid-template-columns:clamp(330px,31%,440px) minmax(0,1fr)}
-.program{grid-template-columns:36px minmax(0,1fr) auto;gap:8px}
-.program strong,.program small{white-space:normal;overflow-wrap:anywhere;display:block}
-.program-stage{margin-top:5px;display:inline-block;font-size:10px;padding:3px 7px;border-radius:999px;font-weight:800;background:#eef3fa;color:#526680;border:1px solid #d8e4f0}
-.program-stage.mastered{background:#dbf7e8;color:#13734b}
-.program-stage.introduction,.program-stage.reintroduced{background:#e4f1ff;color:#155da7}
-.program-stage.probe{background:#fff3d7;color:#885800}
-.framewrap{min-height:0;height:calc(100dvh - 176px);overflow:hidden;background:#f7faff}
-.sheet{height:100%;overflow:auto;padding:16px;scrollbar-gutter:stable;color:#193b62}
-.sheet[hidden],.runner[hidden]{display:none!important}
-.sheet-page{max-width:1260px;margin:0 auto;padding:24px;background:#fff;border:1px solid #d5e3f2;border-radius:15px;box-shadow:0 3px 14px rgba(16,51,90,.06)}
-.sheet-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid #e8f0f9}
-.sheet-kicker{font-size:11px;color:#22639f;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
-.sheet-header h2{margin:4px 0;font-size:clamp(22px,2.1vw,30px);line-height:1.16;color:#103960}
-.sheet-desc{color:#617a98;font-size:13px;max-width:650px;line-height:1.5}
-.sheet-tag{border:1px solid #d6e6f8;border-radius:8px;padding:8px 10px;color:#245789;font-size:12px;font-weight:750;background:#f1f7ff;white-space:nowrap}
-.sheet-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:15px 0}
-.sheet-field{background:#f8fbff;border:1px solid #dae8f7;border-radius:9px;padding:9px 11px}
-.sheet-field .lab{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:#59799c;font-weight:900}
-.sheet-field .val{font-size:13px;color:#143d67;font-weight:800;margin-top:4px;overflow-wrap:anywhere}
-.sheet-legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:12px 0 16px}
-.stage-tag{display:inline-block;padding:4px 8px;border:1px solid #dce7f2;border-radius:999px;background:#f4f8fd;color:#496581;font-weight:800;font-size:10px}
-.stage-tag.probe{background:#fff2d0;color:#98610a}
-.stage-tag.introduction{background:#e6f2ff;color:#2468aa}
-.stage-tag.mastered{background:#dcf9e9;color:#147345}
-.stage-tag.reintroduced{background:#f0e7ff;color:#7045a5}
-.sheet-message{padding:18px;border-radius:10px;border:1px dashed #b9d0e8;background:#f6faff;text-align:center;color:#537291;line-height:1.6;font-size:13px}
-.sheet-benchmark{margin:15px 0 19px;border:1px solid #d8e5f2;border-radius:11px;overflow:hidden}
-.sheet-benchmark-head{display:flex;align-items:center;justify-content:space-between;background:#e8f4ff;color:#134a7c;padding:11px 13px;gap:10px}
-.sheet-benchmark-head h3{font-size:14px;margin:0;font-weight:900}
-.sheet-benchmark-head small{font-size:11px;color:#496e90;font-weight:700}
-.sheet-table-scroll{width:100%;overflow-x:auto}
-.sheet-table{width:100%;min-width:0;border-collapse:collapse;font-size:11px;table-layout:fixed}
-.sheet-table thead th{text-align:center;background:#f3f8fd;border-bottom:1px solid #cfdeec;border-right:1px solid #e2ebf5;padding:7px 5px;font-weight:850;color:#2a567f}
-.sheet-table thead th:first-child{width:35%;text-align:left;padding-left:12px}
-.sheet-table tbody th,.sheet-table tbody td{padding:10px 7px;border-bottom:1px solid #e1eaf5;border-right:1px solid #edf1f6;vertical-align:middle}
-.sheet-table tbody th{text-align:left;font-weight:750;color:#1b4067;overflow-wrap:anywhere}
-.sheet-table tbody tr:last-child th,.sheet-table tbody tr:last-child td{border-bottom:0}
-.sheet-table tbody tr:nth-child(even){background:#fbfdff}
-.sheet-table td{text-align:center;color:#496885}
-.sheet-table .empty-cell{color:#91a5b9}
-.sheet-footnote{color:#69839e;font-size:11px;line-height:1.5;border-top:1px solid #e1eaf4;margin-top:18px;padding-top:11px}
-.sheet-banner{padding:14px;margin:12px 0;border:1px solid #cce0f5;border-radius:10px;background:#f1f7ff;color:#275984;line-height:1.5;font-size:12px;text-align:center}
-.sheet-banner strong{display:block;margin-bottom:4px;color:#113d6a;font-size:15px}
-.app.hub-expanded .framewrap{height:auto;background:#fff}
-.app.hub-expanded .runner{height:100%}
-@media(max-width:1000px) and (min-width:701px){.app{grid-template-columns:34% minmax(0,1fr)}.sheet{padding:8px}.sheet-page{padding:13px}.sheet-meta{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px){.app{display:block}.sheet{height:65dvh;padding:8px}.sheet-page{padding:13px}.sheet-meta{grid-template-columns:1fr 1fr}.sheet-header{flex-direction:column}.framewrap{height:65dvh;min-height:0}}
-@media print{body{overflow:visible!important;background:#fff}.app{display:block!important}aside,.top,.bottom,.status{display:none!important}main,.card,.framewrap,.sheet{display:block!important;width:100%!important;max-width:none!important;min-height:0!important;height:auto!important;overflow:visible!important;border:0!important;margin:0!important;padding:0!important}.sheet-page{box-shadow:none!important;border:0!important}.sheet-benchmark{break-inside:avoid}.sheet-table-scroll{overflow:visible!important}}
 
-/* COMPASS professional benchmark sheet v2 — approved color-coded reference. */
-.sheet{padding:10px;background:#f3f7fb}
-.sheet-page{padding:0;border:0;background:transparent;box-shadow:none;max-width:1400px}
-.sheet-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;background:linear-gradient(115deg,#08385d,#07507c);border:1px solid #c7e0f2;border-radius:13px;padding:16px 18px;color:#fff;box-shadow:0 3px 9px rgba(8,52,92,.12)}
-.sheet-hero h2{font-size:clamp(23px,2.3vw,34px);margin:0;line-height:1.1;letter-spacing:-.025em;color:#fff}
-.sheet-hero-sub{font-size:11px;opacity:.88;margin:7px 0 0;line-height:1.45}
-.sheet-hero-fields{display:grid;grid-template-columns:auto minmax(100px,180px) auto minmax(78px,120px);gap:7px 9px;align-items:center}
-.sheet-hero-fields .sheet-label{font-size:11px;color:#e6f3ff;font-weight:800;text-align:right;white-space:nowrap}
-.sheet-hero-fields .sheet-value{display:block;padding:7px 9px;min-height:30px;border:1px solid #c9dcec;background:#fff;color:#193857;border-radius:6px;font-size:11px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sheet-context{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:9px 2px;font-size:11px;color:#55728e}
-.sheet-context strong{color:#153e68}
-.sheet-grid-scroll{overflow-x:hidden;overflow-y:visible;max-width:100%;border-radius:10px}
-.sheet-grid{min-width:0;width:100%;max-width:100%}
-.sheet-table{min-width:0;width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px;line-height:1.25;color:#173b63}
-.sheet-table col.sheet-col-num{width:4%}
-.sheet-table col.sheet-col-skill{width:26%}
-.sheet-table col.sheet-col-small{width:6%}
-.sheet-table col.sheet-col-maint{width:7%}
-.sheet-table col.sheet-col-notes{width:18%}
-.sheet-table thead th{border:1px solid #bad3ec;color:#0e3256;padding:7px 3px;text-align:center;vertical-align:middle;font-weight:900}
-.sheet-table thead .sheet-header-main{background:#083b65;color:#fff}
-.sheet-table thead .sheet-header-intro{background:#a8d9fa}
-.sheet-table thead .sheet-header-mastered{background:#a6ecc4}
-.sheet-table thead .sheet-header-maint1{background:#ffe6a3}
-.sheet-table thead .sheet-header-maint2{background:#ffd4ad}
-.sheet-table thead .sheet-header-sub-intro{background:#e2f3ff}
-.sheet-table thead .sheet-header-sub-mastered{background:#ddf8e8}
-.sheet-table thead .sheet-header-sub-maint1{background:#fff3d4}
-.sheet-table thead .sheet-header-sub-maint2{background:#ffeedf}
-.sheet-benchmark{margin:0 0 10px;border:1px solid var(--bench-border,#b7d9f2);border-radius:10px;overflow:hidden;background:var(--bench-soft,#eef7ff)}
-.sheet-benchmark.bench-blue{--bench-h:#cceaff;--bench-border:#80c7fc;--bench-soft:#edf8ff}
-.sheet-benchmark.bench-green{--bench-h:#c3f2db;--bench-border:#7ed7aa;--bench-soft:#effcf5}
-.sheet-benchmark.bench-gold{--bench-h:#ffecbe;--bench-border:#f5bc59;--bench-soft:#fff9e9}
-.sheet-benchmark.bench-rose{--bench-h:#ffdade;--bench-border:#fa9ca9;--bench-soft:#fff2f3}
-.sheet-benchmark>summary{display:flex;align-items:center;gap:9px;background:var(--bench-h,#d9efff);color:#102f4f;padding:11px 13px;cursor:pointer;list-style:none;min-height:44px;touch-action:manipulation}
-.sheet-benchmark>summary::-webkit-details-marker{display:none}
-.sheet-benchmark>summary:focus-visible{outline:3px solid #236ee3;outline-offset:-3px}
-.sheet-benchmark>summary strong{font-size:12px;font-weight:900;flex:0 1 auto}
-.sheet-benchmark>summary .bench-goal{margin-left:auto;font-size:10px;font-weight:650;line-height:1.3;max-width:50%;text-align:right}
-.sheet-benchmark>summary .bench-goal:empty{display:none}
-.sheet-benchmark>summary .bench-count{font-size:10px;font-weight:850;white-space:nowrap;margin-left:auto;color:#3b637f}
-.sheet-benchmark>summary .bench-chevron{font-size:16px;flex:0 0 auto;transition:transform .15s}
-.sheet-benchmark:not([open])>summary .bench-chevron{transform:rotate(-90deg)}
-.sheet-benchmark .sheet-table{background:var(--bench-soft,#f5fbff)}
-.sheet-benchmark .sheet-table th,.sheet-benchmark .sheet-table td{height:35px;padding:7px 5px;border:1px solid rgba(58,100,137,.24);vertical-align:middle;background:transparent;overflow-wrap:anywhere}
-.sheet-benchmark .sheet-table th{text-align:left;font-size:11px;font-weight:700}
-.sheet-benchmark .sheet-table td{text-align:center;font-weight:600;font-size:10px}
-.sheet-benchmark .sheet-table tbody tr:nth-child(even){background:rgba(255,255,255,.38)}
-.sheet-benchmark .sheet-table th.sheet-row-number{text-align:center;font-weight:900}
-.sheet-benchmark .sheet-table th.sheet-row-skill{padding-left:9px}
-.sheet-benchmark .sheet-table td.sheet-notes{text-align:left;color:#476887}
-.sheet-benchmark .sheet-table td .empty-cell{color:#b4c2d0}
-.sheet-benchmark .sheet-table tbody tr:last-child th,.sheet-benchmark .sheet-table tbody tr:last-child td{border-bottom:0}
-.sheet-bottom{display:grid;grid-template-columns:1.2fr .7fr 1.2fr;gap:0;background:#e9f1f9;border:1px solid #cee0ee;border-radius:10px;margin-top:12px;overflow:hidden}
-.sheet-bottom>section{padding:13px 15px;min-height:105px}
-.sheet-bottom>section+section{border-left:1px solid #c2d6e7}
-.sheet-bottom h3{margin:0 0 7px;font-size:13px;color:#10395d}
-.sheet-bottom p,.sheet-bottom li{font-size:10px;color:#395b7c;line-height:1.55;margin:0}
-.sheet-bottom ul{list-style:none;margin:0;padding:0}
-.sheet-bottom li{display:flex;align-items:start;gap:7px;margin:2px 0}
-.sheet-criteria-box{display:inline-block;width:12px;height:12px;border:1.5px solid #6d86a0;border-radius:2px;flex:0 0 auto;margin-top:1px}
-.sheet-bottom .sheet-key-row{display:grid;grid-template-columns:28px 1fr;font-size:10px;line-height:1.6;color:#395b7c}
-.sheet-notes-rule{height:22px;border-bottom:1px solid #a1b7cd}
-.sheet-sourceline{padding:10px 4px;color:#627e96;font-size:10px;line-height:1.5}
-@media(max-width:1150px){.sheet-hero{grid-template-columns:1fr;gap:10px}.sheet-hero-fields{grid-template-columns:auto minmax(90px,1fr) auto minmax(80px,1fr)}.sheet-bottom{grid-template-columns:1fr 1fr}.sheet-bottom>section:last-child{grid-column:1/-1;border-left:0;border-top:1px solid #c2d6e7}.sheet-hero h2{font-size:24px}}
-@media(max-width:700px){.sheet{padding:7px}.sheet-hero{padding:12px}.sheet-hero-fields{grid-template-columns:auto 1fr;gap:4px 8px}.sheet-hero-fields .sheet-label{text-align:left}.sheet-bottom{grid-template-columns:1fr}.sheet-bottom>section+section,.sheet-bottom>section:last-child{border-left:0;border-top:1px solid #c2d6e7;grid-column:auto}}
-@media print{.sheet-grid-scroll{overflow:visible}.sheet-grid{min-width:0}.sheet-benchmark:not([open])>.sheet-table{display:table}.sheet-benchmark:not([open])>summary .bench-chevron{display:none}.sheet-benchmark{break-inside:avoid}.sheet-hero{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-
-
-/* Alignment guard for the original generic table header rules:
-   the # column must stay 4% in the color-coded 11-column grid. */
-.sheet-grid .sheet-table thead th:first-child{width:auto;text-align:center;padding:7px 3px}
-.sheet-grid .sheet-table thead th{white-space:normal}
-.sheet-grid .sheet-table col{min-width:0}
-
-/* V2 benchmark accordion and width fit: no horizontal slide at iPad landscape sizes. */
-.sheet,.sheet-page,.sheet-grid-scroll,.sheet-grid{min-width:0;max-width:100%}
-.sheet-grid-scroll{width:100%;overflow-x:hidden;overflow-y:visible;scrollbar-gutter:auto}
-.sheet-grid{min-width:0;width:100%;max-width:100%}
-.sheet-grid .sheet-table{width:100%;min-width:0;max-width:100%;table-layout:fixed}
-.sheet-grid .sheet-table th,.sheet-grid .sheet-table td{
- min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:normal;
-}
-.sheet-grid .sheet-table thead th{padding:7px 1px;font-size:clamp(8px,.86vw,11px);line-height:1.16}
-.sheet-grid .sheet-table tbody td{padding:7px 1px;font-size:clamp(8px,.83vw,10px);line-height:1.2}
-.sheet-grid .sheet-table tbody th{font-size:clamp(9px,.9vw,11px);line-height:1.3}
-.sheet-grid .sheet-table .sheet-row-number{text-align:center;padding:6px 0}
-.sheet-grid .sheet-table .sheet-row-skill{padding:6px 3px}
-.sheet-grid .sheet-table .sheet-notes{padding:5px 3px}
-.sheet-benchmark>summary{width:100%;min-width:0;gap:9px;padding:10px 12px}
-.sheet-benchmark>summary .bench-chevron{order:-1;margin:0;display:grid;place-items:center;
- width:22px;height:22px;flex:0 0 22px;color:#165889;font-size:19px;line-height:1;transform:none;transition:transform .15s ease}
-.sheet-benchmark:not([open])>summary .bench-chevron{transform:none}
-.sheet-benchmark[open]>summary .bench-chevron{transform:rotate(90deg)}
-.sheet-benchmark>summary strong{min-width:0;flex:1 1 auto;overflow-wrap:anywhere}
-.sheet-benchmark>summary .bench-count{margin-left:auto;flex:0 0 auto;white-space:nowrap}
-.sheet-benchmark>summary .bench-goal{margin-left:auto;min-width:0;max-width:45%;overflow-wrap:anywhere}
-@media (max-width:1200px){
- .sheet-grid .sheet-table col.sheet-col-num{width:4%}
- .sheet-grid .sheet-table col.sheet-col-skill{width:28%}
- .sheet-grid .sheet-table col.sheet-col-small{width:6%}
- .sheet-grid .sheet-table col.sheet-col-maint{width:7%}
- .sheet-grid .sheet-table col.sheet-col-notes{width:16%}
-}
-@media (max-width:850px){
- .sheet-grid .sheet-table thead th{font-size:9px}
- .sheet-grid .sheet-table tbody td{font-size:9px}
- .sheet-grid .sheet-table tbody th{font-size:10px}
-}
-@media print{
- .sheet-benchmark:not([open])>.sheet-table{display:table}
- .sheet-grid-scroll{overflow:visible}
-}
-
-</style></head><body><div class="app"><aside><div class="brand"><h1 id="studentName">Student Programs</h1><small>COMPASS Student Program Hub</small></div><div class="meta"><strong id="studentMeta">Loading student…</strong><small id="programCount">Loading assigned programs…</small><div id="behaviorPills" class="pills"></div></div><input id="search" class="search" type="search" placeholder="Search programs…"><div id="programList" class="list"></div></aside><main><div class="top"><div class="title"><h2 id="runnerTitle">Program Hub</h2><p id="runnerSubtitle">Choose a program from the left.</p></div><div class="actions"><button id="prevBtn" class="btn" disabled>← Previous</button><button id="nextBtn" class="btn primary" disabled>Next Program →</button><button id="fullscreenBtn" class="btn" type="button" aria-pressed="false" title="Expand the program workspace">⛶ Full Screen</button><button id="closeBtn" class="btn">Close Hub</button></div></div><div class="card"><div class="framewrap"><div id="empty" class="empty"><div><strong>Select a program</strong><br>Choose one of this student's assigned programs.</div></div><div id="loading" class="loading" hidden>Loading program…</div><section id="programSheet" class="sheet" aria-label="Program benchmark and acquisition progress"><div class="sheet-message">Select a program to view its benchmark progress sheet. Choose Full Screen to run the program.</div></section><iframe id="runnerFrame" class="runner" title="COMPASS Program Runner" scrolling="auto" hidden></iframe></div><div class="bottom"><button id="bottomPrevBtn" class="btn" disabled>← Previous Program</button><button id="bottomNextBtn" class="btn primary" disabled>Next Program →</button></div></div><div id="status" class="status">Connecting to COMPASS…</div></main></div>
+/* Program-first COMPASS Hub: full-size program and horizontal slide-out menu. */
+html,body{height:100%;overflow:hidden}
+.app,.app.hub-expanded{display:grid;grid-template-columns:minmax(0,1fr);height:100dvh;min-height:0}
+.app main,.app.hub-expanded main{height:100dvh;min-height:0;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.app aside,.app.hub-expanded aside{display:flex;position:fixed;inset:0 auto 0 0;top:0;left:0;width:min(440px,88vw);height:100dvh;max-height:100dvh;transform:translateX(-105%);visibility:hidden;opacity:0;pointer-events:none;z-index:51;transition:transform .23s ease,opacity .23s ease,visibility .23s;box-shadow:8px 0 28px rgba(13,46,76,.18);overflow:hidden;background:#fff;border-right:1px solid #bbd3eb}
+.app.drawer-open aside,.app.hub-expanded.drawer-open aside{transform:translateX(0);visibility:visible;opacity:1;pointer-events:auto}
+.hub-backdrop{position:fixed;inset:0;background:rgba(9,33,63,.34);z-index:50;border:0;display:block;opacity:0;pointer-events:none;transition:opacity .23s ease;cursor:pointer}
+.app.drawer-open .hub-backdrop{opacity:1;pointer-events:auto}
+.hub-menu-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hub-menu-close{min-width:44px;min-height:44px;border:1px solid #bfcee0;border-radius:9px;background:#fff;color:#1b5f9d;font-size:22px;cursor:pointer}
+.hub-menu-toggle{white-space:nowrap;min-height:44px;min-width:120px}
+.app .top,.app.hub-expanded .top{position:relative;top:auto;z-index:3;flex:0 0 auto;flex-wrap:nowrap;min-width:0;padding:8px 12px;gap:8px}
+.app .top .title{flex:1 1 auto;min-width:0}
+.app .top .actions{flex:0 0 auto;justify-content:flex-end;gap:7px;min-width:0}
+.app .card,.app.hub-expanded .card{flex:1 1 auto;display:flex;flex-direction:column;margin:0;border:0;border-radius:0;min-height:0;overflow:hidden}
+.app .framewrap,.app.hub-expanded .framewrap{position:relative;flex:1 1 auto;width:100%;height:auto;min-height:0;background:white;overflow:hidden}
+.app .runner,.app.hub-expanded .runner{display:block;width:100%;height:100%;border:0}
+.app .runner[hidden],.app.hub-expanded .runner[hidden]{display:none!important}
+.app .bottom,.app.hub-expanded .bottom{display:none}
+.app .status{display:none}
+.app .status.error{display:block;flex:0 0 auto;margin:0;padding:7px 12px;border-radius:0;font-size:12px}
+.app.hub-expanded .status{display:none}
+.app .list{flex:1 1 auto;min-height:0;overflow-y:auto;max-height:none;padding:0 12px 15px}
+.app .program{width:100%;grid-template-columns:36px minmax(0,1fr) 18px;gap:8px;border:1px solid #e0e9f2;padding:12px 10px;margin:5px 0 8px}
+.app .program strong,.app .program small{white-space:normal;overflow-wrap:anywhere}
+.app .program.active{background:#e8f3ff;border-color:#85b9ef}
+@media(max-width:850px){.app,.app.hub-expanded{display:grid;grid-template-columns:minmax(0,1fr)}.app aside,.app.hub-expanded aside{position:fixed;inset:0 auto 0 0;height:100dvh;max-height:100dvh;width:min(390px,88vw);border-right:1px solid #bbd3eb;border-bottom:0}.app .top,.app.hub-expanded .top{flex-wrap:nowrap;gap:5px;padding:6px 8px}.app .top .title h2{font-size:clamp(14px,2vw,19px)}.app .top .title p{font-size:10px}.app .top .actions{width:auto;gap:4px}.app .top .actions .btn{padding:8px;font-size:12px;min-height:44px}.app .framewrap,.app.hub-expanded .framewrap{height:auto;min-height:0}}
+@media(max-width:610px){.app .top .title{display:none}.app .top .actions{flex:1 1 auto;justify-content:space-between}.hub-menu-toggle{min-width:0}.app .top .actions .btn{font-size:11px;padding:7px 5px}}
+@media(prefers-reduced-motion:reduce){.app aside,.app .hub-backdrop{transition:none}}
+</style></head><body><div class="app"><button id="hubBackdrop" class="hub-backdrop" aria-label="Close Program Hub menu" type="button" tabindex="-1"></button><aside id="hubDrawer" aria-label="Assigned programs" aria-hidden="true"><div class="brand"><div class="hub-menu-head"><h1 id="studentName">Student Programs</h1><button class="hub-menu-close" id="hubMenuClose" type="button" aria-label="Close program menu">×</button></div><small>COMPASS Student Program Hub</small></div><div class="meta"><strong id="studentMeta">Loading student…</strong><small id="programCount">Loading assigned programs…</small><div id="behaviorPills" class="pills"></div></div><input id="search" class="search" type="search" placeholder="Search programs…"><div id="programList" class="list"></div></aside><main><div class="top"><div class="title"><h2 id="runnerTitle">Program Hub</h2><p id="runnerSubtitle">Choose a program from the left.</p></div><div class="actions"><button id="hubMenuBtn" class="btn hub-menu-toggle" type="button" aria-controls="hubDrawer" aria-expanded="false">☰ Program Hub</button><button id="prevBtn" class="btn" disabled>← Previous</button><button id="nextBtn" class="btn primary" disabled>Next Program →</button><button id="fullscreenBtn" class="btn" type="button" aria-pressed="false" title="Expand the program workspace">⛶ Full Screen</button><button id="closeBtn" class="btn">Close Hub</button></div></div><div class="card"><div class="framewrap"><div id="empty" class="empty"><div><strong>Select a program</strong><br>Choose one of this student's assigned programs.</div></div><div id="loading" class="loading" hidden>Loading program…</div><iframe id="runnerFrame" class="runner" title="COMPASS Program Runner" scrolling="auto" hidden></iframe></div><div class="bottom"><button id="bottomPrevBtn" class="btn" disabled>← Previous Program</button><button id="bottomNextBtn" class="btn primary" disabled>Next Program →</button></div></div><div id="status" class="status">Connecting to COMPASS…</div></main></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (async()=>{
 const SUPABASE_URL='https://ykkexfsbnnxgncnyaksr.supabase.co',KEY='sb_publishable_3qkWcBut_bVwI6mlhOQOzA_50z_46cY',sb=supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}),$=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),q=new URLSearchParams(location.search),studentId=q.get('student_id'),initial=q.get('assignment_id'),S={session:null,student:null,programs:[],index:-1,busy:false,blobUrl:null,runnerAssignmentId:null,loadSeq:0,isPlatformAdmin:false};
 const status=(m,c='')=>{$('status').textContent=m;$('status').className='status '+c},nav=()=>{const a=S.index<=0,b=S.index<0||S.index>=S.programs.length-1;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).disabled=a);['nextBtn','bottomNextBtn'].forEach(x=>$(x).disabled=b)};
+function setHubMenu(open){
+ const app=document.querySelector('.app');app.classList.toggle('drawer-open',!!open);
+ $('hubMenuBtn').setAttribute('aria-expanded',String(!!open));$('hubDrawer').setAttribute('aria-hidden',String(!open));
+ if(open)$('search').focus({preventScroll:true});
+}
 function setExpandedView(expanded){
  const app=document.querySelector('.app');app.classList.toggle('hub-expanded',expanded);document.body.classList.toggle('hub-fullscreen',expanded);
- const b=$('fullscreenBtn');b.textContent=expanded?'↙ Restore View':'⛶ Full Screen';b.setAttribute('aria-pressed',String(expanded));
- b.title=expanded?'Return to the Program Hub progress sheet':'Open the selected teaching program in Full Screen';
- $('programSheet').hidden=expanded;
- if(!expanded){$('runnerFrame').hidden=true;$('loading').hidden=true;$('empty').hidden=true}
- else {$('runnerFrame').hidden=S.runnerAssignmentId!==S.programs[S.index]?.id||!S.blobUrl}
+ const b=$('fullscreenBtn');b.textContent=expanded?'↙ Restore View':'⛶ Full Screen';
+ b.setAttribute('aria-pressed',String(expanded));b.title=expanded?'Return to regular program view':'Expand instructional program';
 }
 async function toggleFullscreen(){
  if(S.index<0||!S.programs[S.index])return;
- const expanded=!document.querySelector('.app').classList.contains('hub-expanded');
- if(expanded){
-  setExpandedView(true);
-  const seq=S.loadSeq,sp=S.programs[S.index];
-  try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen()}catch(e){}
-  if(S.runnerAssignmentId!==sp.id)void loadRunner(sp,seq);
-  else {$('runnerFrame').hidden=false;status('Teaching program ready.','ok')}
- }else{
-  setExpandedView(false);
-  if(document.fullscreenElement){try{await document.exitFullscreen()}catch(e){}}
- }
+ const expanding=!document.querySelector('.app').classList.contains('hub-expanded');
+ setHubMenu(false);setExpandedView(expanding);
+ if(expanding){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen()}catch(e){}}
+ else if(document.fullscreenElement){try{await document.exitFullscreen()}catch(e){}}
 }
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.querySelector('.app').classList.contains('hub-expanded'))setExpandedView(false)});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.fullscreenElement&&document.querySelector('.app').classList.contains('hub-expanded'))setExpandedView(false)});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(document.querySelector('.app').classList.contains('drawer-open')){setHubMenu(false);return}if(!document.fullscreenElement&&document.querySelector('.app').classList.contains('hub-expanded'))setExpandedView(false)});
 function closeHub(){if(S.blobUrl){window.URL.revokeObjectURL(S.blobUrl);S.blobUrl=null}try{window.close()}catch(_){}setTimeout(()=>{if(!window.closed)location.assign('./')},80)}
 function renderStudent(){const s=S.student||{},p=(Array.isArray(s.selected_behaviors)?s.selected_behaviors:[]).slice(0,5);$('studentName').textContent=s.display_label||s.student_code||'Student Programs';$('studentMeta').textContent=[s.grade_level&&('Grade '+s.grade_level),s.student_code].filter(Boolean).join(' · ')||'Assigned COMPASS Programs';$('programCount').textContent=`${S.programs.length} active assigned program${S.programs.length===1?'':'s'}`;$('behaviorPills').innerHTML=p.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}
 const lifecycle=p=>p?.program_status==='on_hold'?'on_hold':'active';
-function acquisitionStage(sp){
- const cfg=sp?.instance_config||{};
- const raw=String(cfg.acquisition_status||cfg.acquisition_stage||cfg.current_stage||'').toLowerCase().trim();
- const map={probe:'Probe',introduction:'Introduction',introduced:'Introduction',acquisition:'Introduction',mastered:'Mastered',reintroduced:'Reintroduced',maintenance:'Maintenance'};
- return map[raw]|| (sp?.status==='mastered'?'Mastered':'Not recorded');
-}
-function stageClass(stage){return stage==='Not recorded'?'':stage.toLowerCase().replace(/[^a-z]/g,'')}
-function renderList(){const z=$('search').value.trim().toLowerCase();$('programList').innerHTML=S.programs.map((x,i)=>{const n=x.program?.program_name||'Program',d=x.program?.program_config?.domain||x.program?.program_config?.category||x.program?.description||'';if(z&&!(`${n} ${d}`.toLowerCase().includes(z)))return'';const hold=lifecycle(x.program)==='on_hold',locked=hold&&!S.isPlatformAdmin;return `<button class="program${i===S.index?' active':''}" data-index="${i}"${locked?' disabled aria-label="Program On Hold"':''}><span class="num">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(n)}</strong><small>${esc(d)}</small><span class="program-stage ${stageClass(acquisitionStage(x))}">${esc(acquisitionStage(x))}</span></span><span>${locked?'⏸':'›'}</span></button>`}).join('')||'<div style="padding:12px;color:#64748b">No matching programs.</div>'}
+function renderList(){const z=$('search').value.trim().toLowerCase();$('programList').innerHTML=S.programs.map((x,i)=>{const n=x.program?.program_name||'Program',d=x.program?.program_config?.domain||x.program?.program_config?.category||x.program?.description||'';if(z&&!(`${n} ${d}`.toLowerCase().includes(z)))return'';const hold=lifecycle(x.program)==='on_hold',locked=hold&&!S.isPlatformAdmin;return `<button class="program${i===S.index?' active':''}" data-index="${i}"${locked?' disabled aria-label="Program On Hold"':''}><span class="num">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(n)}</strong><small>${esc(d)}</small></span><span>${locked?'⏸':'›'}</span></button>`}).join('')||'<div style="padding:12px;color:#64748b">No matching programs.</div>'}
 const V25_COUNT_CODE='CP-1TO1-COUNT';
 function usesV25Counting(sp){return sp?.program?.program_code===V25_COUNT_CODE}
 function runtimeEndpoint(sp){
@@ -228,194 +81,6 @@ function runtimeEndpoint(sp){
  return `${SUPABASE_URL}/functions/v1/compass-student-program-runtime?assignment_id=${encodeURIComponent(sp.id)}&token=${encodeURIComponent(sp.view_token||'')}&staff_id=${encodeURIComponent(S.session.user.id)}`;
 }
 async function runtimeBlobUrl(sp){const r=await fetch(runtimeEndpoint(sp),{cache:'no-store',headers:{Authorization:'Bearer '+S.session.access_token,apikey:KEY}});if(!r.ok)throw new Error('Program could not load ('+r.status+')');const buf=await r.arrayBuffer();if(!buf.byteLength)throw new Error('Program runtime was empty.');return window.URL.createObjectURL(new Blob([buf],{type:'text/html;charset=utf-8'}))}
-function formatSheetDate(d){
- if(!d)return '—';
- const iso=String(d).slice(0,10);
- if(!/^\d{4}-\d{2}-\d{2}$/.test(iso))return '—';
- const [y,m,day]=iso.split('-');return m+'/'+day+'/'+y;
-}
-function benchmarkKey(t){
- const m=t?.metadata||{};
- const n=m.benchmark_number??m.benchmark;
- if(n!==undefined&&n!==null&&String(n).trim()!=='')return ['B'+String(n),m.benchmark_name||('Benchmark '+n)];
- if(m.number_band)return ['R'+m.number_band,'Target range '+m.number_band];
- if(m.benchmark_id)return ['B'+m.benchmark_id,m.benchmark_name||m.benchmark_id];
- return ['UNGROUPED','Targets without a recorded benchmark'];
-}
-function normalizeTarget(r,studentSpecific){
- const m=r.metadata||{};
- return {key:String(r.target_key??r.name??r.target_name??''),name:String(r.target_name??r.name??r.target_key??'Target'),
-   order:Number(r.display_order??m.quantity??m.source_acquisition_order??0),
-   metadata:m,status:studentSpecific?String(r.status||'not_introduced'):'not_introduced',
-   introduced_at:studentSpecific?r.introduced_at||null:null,
-   mastered_at:studentSpecific?r.mastered_at||null:null,
-   studentSpecific};
-}
-function targetStage(t){
- const raw=String(t.metadata?.acquisition_status||t.metadata?.stage_status||t.status||'').toLowerCase();
- const map={probe:'Probe',introduction:'Introduction',introduced:'Introduction',acquisition:'Introduction',mastered:'Mastered',
-  reintroduced:'Reintroduced',maintenance:'Maintenance',paused:'Paused'};
- return map[raw]||'Not recorded';
-}
-function sheetCell(v){return v!==undefined&&v!==null&&String(v).trim()!==''?esc(v):'<span class="empty-cell">—</span>'}
-function sheetColgroup(){
- return '<colgroup><col class="sheet-col-num"><col class="sheet-col-skill">'+
-  '<col class="sheet-col-small"><col class="sheet-col-small">'+
-  '<col class="sheet-col-small"><col class="sheet-col-small">'+
-  '<col class="sheet-col-maint"><col class="sheet-col-maint">'+
-  '<col class="sheet-col-maint"><col class="sheet-col-maint">'+
-  '<col class="sheet-col-notes"></colgroup>';
-}
-function sheetValueDate(v){
- if(!v)return null;
- const iso=String(v).slice(0,10);
- if(!/^\d{4}-\d{2}-\d{2}$/.test(iso))return null;
- const [y,m,d]=iso.split('-');
- return Number(m)+'/'+Number(d)+'/'+y.slice(-2);
-}
-function recordedValue(metadata,keys){
- for(const k of keys)if(metadata?.[k]!==undefined&&metadata[k]!==null&&String(metadata[k]).trim()!=='')return metadata[k];
- return null;
-}
-function maintenanceEntry(m,index){
- const nested=m.maintenance||{};
- const value=index===1?
-   nested.first||nested.one||m.maintenance1||m.maintenance_1||{}:
-   nested.second||nested.two||m.maintenance2||m.maintenance_2||{};
- const entry=(value&&typeof value==='object'&&!Array.isArray(value))?value:{};
- return {
-  date:entry.date||recordedValue(m,[index===1?'maintenance1_date':'maintenance2_date',index===1?'maintenance_1_date':'maintenance_2_date']),
-  score:entry.score??recordedValue(m,[index===1?'maintenance1_score':'maintenance2_score',index===1?'maintenance_1_score':'maintenance_2_score'])
- };
-}
-function sheetContents(sp,targets,hasStudentTargets){
- const program=sp.program||{};
- const programTitle=String(program.program_name||'Program');
- const description=String(program.description||'');
- const groupMap=new Map();
- for(const item of targets){
-  const [key,name]=benchmarkKey(item);
-  let g=groupMap.get(key);
-  if(!g){g={key,name,items:[],goal:null};groupMap.set(key,g)}
-  g.items.push(item);
-  const m=item.metadata||{};
-  if(!g.goal){
-   const goal=recordedValue(m,['benchmark_goal','benchmark_goal_text','benchmark_objective','goal']);
-   if(typeof goal==='string'&&goal.trim())g.goal=goal.trim();
-  }
- }
- const allDates=[];
- for(const t of targets){
-  for(const d of [t.introduced_at,t.mastered_at,maintenanceEntry(t.metadata||{},1).date,maintenanceEntry(t.metadata||{},2).date]){
-   if(d&&/^\d{4}-\d{2}-\d{2}/.test(String(d)))allDates.push(String(d).slice(0,10));
-  }
- }
- allDates.sort();
- const range=allDates.length?(formatSheetDate(allDates[0])+' – '+formatSheetDate(allDates[allDates.length-1])):'Not recorded';
- const instructor=recordedValue(sp.instance_config||{},['instructor_name','provider_name'])||'Not recorded';
- const colgroup=sheetColgroup();
- const head='<table class="sheet-table" aria-label="Progress tracking column headers">'+colgroup+
- '<thead><tr>'+
- '<th class="sheet-header-main" rowspan="2" scope="col">#</th>'+
- '<th class="sheet-header-main" rowspan="2" scope="col">Skill / Target</th>'+
- '<th class="sheet-header-intro" colspan="2" scope="colgroup">Introduced</th>'+
- '<th class="sheet-header-mastered" colspan="2" scope="colgroup">Mastered</th>'+
- '<th class="sheet-header-maint1" colspan="2" scope="colgroup">Maintenance 1</th>'+
- '<th class="sheet-header-maint2" colspan="2" scope="colgroup">Maintenance 2</th>'+
- '<th class="sheet-header-main" rowspan="2" scope="col">Notes</th></tr>'+
- '<tr><th class="sheet-header-sub-intro">Date</th><th class="sheet-header-sub-intro">Initials</th>'+
- '<th class="sheet-header-sub-mastered">Date</th><th class="sheet-header-sub-mastered">Initials</th>'+
- '<th class="sheet-header-sub-maint1">Date</th><th class="sheet-header-sub-maint1">Score</th>'+
- '<th class="sheet-header-sub-maint2">Date</th><th class="sheet-header-sub-maint2">Score</th></tr></thead></table>';
- let total=0;
- const sections=[...groupMap.values()].map((g,i)=>{
-  const rows=g.items.map(t=>{
-   total++;
-   const m=t.metadata||{},m1=maintenanceEntry(m,1),m2=maintenanceEntry(m,2);
-   const introdInitials=recordedValue(m,['introduced_initials','introduction_initials','introduced_by_initials']);
-   const masteredInitials=recordedValue(m,['mastered_initials','mastered_by_initials']);
-   const note=recordedValue(m,['progress_note','tracking_note','note','notes']);
-   return '<tr><th class="sheet-row-number" scope="row">'+total+'</th>'+
-    '<th class="sheet-row-skill" scope="row">'+esc(t.name)+'</th>'+
-    '<td>'+sheetCell(sheetValueDate(t.introduced_at))+'</td>'+
-    '<td>'+sheetCell(introdInitials)+'</td>'+
-    '<td>'+sheetCell(sheetValueDate(t.mastered_at))+'</td>'+
-    '<td>'+sheetCell(masteredInitials)+'</td>'+
-    '<td>'+sheetCell(sheetValueDate(m1.date))+'</td>'+
-    '<td>'+sheetCell(m1.score)+'</td>'+
-    '<td>'+sheetCell(sheetValueDate(m2.date))+'</td>'+
-    '<td>'+sheetCell(m2.score)+'</td>'+
-    '<td class="sheet-notes">'+sheetCell(note)+'</td></tr>';
-  }).join('');
-  const benchTitle=g.name.startsWith('Benchmark ')?g.name:('Benchmark '+(i+1)+': '+g.name.replace(/^Target range /,'Targets '));
-  const goal=g.goal?'<span class="bench-goal">Goal: '+esc(g.goal)+'</span>':'';
-  const count=g.goal?'':'<span class="bench-count">'+g.items.length+' targets</span>';
-  const color=['bench-blue','bench-green','bench-gold','bench-rose'][i%4];
-  return '<details class="sheet-benchmark '+color+'" name="compass-benchmark" data-benchmark-key="'+esc(g.key)+'">'+
-   '<summary aria-label="Toggle '+esc(benchTitle)+'">'+
-   '<span class="bench-chevron" aria-hidden="true">▸</span><strong>'+esc(benchTitle)+'</strong>'+goal+count+'</summary>'+
-   '<table class="sheet-table" aria-label="'+esc(benchTitle)+' skill progress">'+colgroup+'<tbody>'+rows+'</tbody></table></details>';
- }).join('');
- const criteria=program.program_code==='CP-1TO1-COUNT'?
-  ['One complete DTI chain per run','Default mastery: 80% across 3 separate qualifying instructional dates (editable in Program Setup)','Probe results are excluded from teaching mastery']:
-  ['Mastery criteria follow this program’s configured teaching plan','Do not interpret missing dates as unsuccessful performance'];
- const criteriaHtml=criteria.map(c=>'<li><span class="sheet-criteria-box" aria-hidden="true"></span><span>'+esc(c)+'</span></li>').join('');
- const note=recordedValue(sp.instance_config||{},['progress_notes','notes'])||'';
- return '<div class="sheet-page">'+
-  '<header class="sheet-hero"><div><h2>'+esc(programTitle)+'</h2><p class="sheet-hero-sub">COMPASS · Instructional Skill Progress Tracking</p></div>'+
-   '<div class="sheet-hero-fields">'+
-   '<span class="sheet-label">Student:</span><span class="sheet-value">'+esc(S.student?.display_label||S.student?.student_code||'Student')+'</span>'+
-   '<span class="sheet-label">Date Range:</span><span class="sheet-value">'+esc(range)+'</span>'+
-   '<span class="sheet-label">Program:</span><span class="sheet-value">'+esc(programTitle)+'</span>'+
-   '<span class="sheet-label">Instructor:</span><span class="sheet-value">'+esc(instructor)+'</span></div></header>'+
-  '<div class="sheet-context"><span><strong>Acquisition:</strong> '+esc(acquisitionStage(sp))+'</span><span><strong>Assigned:</strong> '+esc(formatSheetDate(sp.assigned_date))+'</span></div>'+
-  (sections?'<div class="sheet-grid-scroll"><div class="sheet-grid">'+head+sections+'</div></div>':
-    '<div class="sheet-message">No target definitions available for this program. Use Full Screen to access the teaching program.</div>')+
-  '<footer class="sheet-bottom">'+
-   '<section><h3>Mastery Criteria</h3><ul>'+criteriaHtml+'</ul></section>'+
-   '<section><h3>Key</h3><div class="sheet-key-row"><strong>I</strong><span>Introduced</span></div>'+
-   '<div class="sheet-key-row"><strong>M</strong><span>Mastered</span></div>'+
-   '<div class="sheet-key-row"><strong>M1</strong><span>Maintenance 1</span></div>'+
-   '<div class="sheet-key-row"><strong>M2</strong><span>Maintenance 2</span></div></section>'+
-   '<section><h3>Notes</h3>'+(note?'<p>'+esc(note)+'</p>':'<div class="sheet-notes-rule"></div><div class="sheet-notes-rule"></div>')+'</section></footer>'+
-  '<p class="sheet-sourceline">'+
-  (hasStudentTargets?'Student-specific target records provide the recorded dates and milestones.':
-   'Program-library targets are shown. No student-specific milestone dates were found.')+
-  ' Blank tracking fields are not recorded values, not inferred scores. Choose Full Screen to open the teaching runner.</p>'+
-  '</div>';
-}
-async function renderSheet(sp,seq){
- const page=$('programSheet');
- page.innerHTML='<div class="sheet-message">Loading benchmark progress…</div>';
- const program=sp.program||{};
- let targets=[],personal=false,notes=[];
- try{
-   const {data,error}=await sb.from('student_compass_program_targets')
-     .select('target_key,target_name,display_order,status,introduced_at,mastered_at,metadata')
-     .eq('student_compass_program_id',sp.id).order('display_order',{ascending:true}).limit(800);
-   if(error)throw error;
-   if(data?.length){personal=true;targets=data.map(x=>normalizeTarget(x,true));}
- }catch(err){notes.push('Assigned target data could not be loaded.')}
- if(!targets.length){
-   const configured=Array.isArray(program.program_config?.targets)?program.program_config.targets:[];
-   if(configured.length){targets=configured.map((t,i)=>normalizeTarget({...t,display_order:i+1},false));}
-   else{
-     try{
-      const {data,error}=await sb.from('compass_programming_targets')
-        .select('target_key,target_name,display_order,metadata').eq('program_id',sp.program_id)
-        .order('display_order',{ascending:true}).limit(800);
-      if(error)throw error;
-      targets=(data||[]).map(x=>normalizeTarget(x,false));
-     }catch(err){notes.push('Program target definitions could not be loaded.')}
-   }
- }
- if(seq!==S.loadSeq||S.programs[S.index]?.id!==sp.id)return;
- targets.sort((a,b)=>a.order-b.order||a.name.localeCompare(b.name));
- page.innerHTML=sheetContents(sp,targets,personal);
- if(notes.length)page.insertAdjacentHTML('afterbegin','<div class="sheet-message">'+notes.map(esc).join(' ')+'</div>');
- page.scrollTop=0;
- status(targets.length?'Program benchmark sheet ready. Select Full Screen to run the program.':'No benchmark target data found; Full Screen can still open the program.',targets.length?'ok':'');
-}
 async function loadRunner(sp,seq){
  if(!sp||seq!==S.loadSeq)return;
  const frame=$('runnerFrame'),name=sp.program?.program_name||'Program';
@@ -428,14 +93,14 @@ async function loadRunner(sp,seq){
   frame.onload=()=>{
    if(seq!==S.loadSeq)return;
    $('loading').hidden=true;
-   frame.hidden=!document.querySelector('.app').classList.contains('hub-expanded');
+   frame.hidden=false;
    status(usesV25Counting(sp)?'1:1 Counting V25 ready — student context loading.':name+' ready.','ok');
    if(usesV25Counting(sp))sendV25Context(sp).catch(e=>status('Student context could not load: '+e.message,'error'));
    try{frame.contentWindow.scrollTo(0,0)}catch(_){}
   };
   frame.onerror=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;status(name+' could not render.','error')};
   frame.removeAttribute('srcdoc');frame.src=url;
-  frame.hidden=!document.querySelector('.app').classList.contains('hub-expanded');
+  frame.hidden=false;
  }catch(err){
   console.error(err);if(seq!==S.loadSeq)return;
   $('loading').hidden=true;S.runnerAssignmentId=null;frame.hidden=true;
@@ -445,44 +110,26 @@ async function loadRunner(sp,seq){
 async function openAt(i){
  if(i<0||i>=S.programs.length)return;
  const seq=++S.loadSeq,prev=S.programs[S.index],next=S.programs[i];
- // Preserve an interrupted chain before switching to another assignment.
  if(prev?.id!==next.id&&S.runnerAssignmentId===prev?.id&&usesV25Counting(prev)){
   try{$('runnerFrame').contentWindow?.postMessage({type:'COMPASS_DEMO_V18_PAUSE'},location.origin)}catch(_){}
  }
- S.index=i;renderList();nav();
+ S.index=i;renderList();nav();setHubMenu(false);
  const held=lifecycle(next.program)==='on_hold',name=next.program?.program_name||'Program';
  $('runnerTitle').textContent=`${i+1} of ${S.programs.length}: ${name}`;
- $('runnerSubtitle').textContent='Benchmark progress · Full Screen opens the teaching program';
+ $('runnerSubtitle').textContent='Program Setup → Run Program';
  $('empty').hidden=true;
  if(held&&!S.isPlatformAdmin){
-  $('programSheet').innerHTML='<div class="sheet-message">Program On Hold — Platform Admin only.</div>';
-  $('runnerFrame').hidden=true;$('loading').hidden=true;
-  status('On Hold — only Platform Admin can open this program.','error');return;
+  $('runnerFrame').hidden=true;$('loading').hidden=true;status('On Hold — Platform Admin only','error');return;
  }
  if(S.runnerAssignmentId!==next.id){
   if(S.blobUrl){URL.revokeObjectURL(S.blobUrl);S.blobUrl=null}
   S.runnerAssignmentId=null;
   $('runnerFrame').hidden=true;$('runnerFrame').removeAttribute('src');$('runnerFrame').removeAttribute('srcdoc');
  }
- void renderSheet(next,seq);
- if(document.querySelector('.app').classList.contains('hub-expanded')){
-  $('programSheet').hidden=true;
-  if(S.runnerAssignmentId===next.id&&S.blobUrl)$('runnerFrame').hidden=false;
-  else void loadRunner(next,seq);
- }else{$('programSheet').hidden=false;$('runnerFrame').hidden=true;$('loading').hidden=true}
+ if(S.runnerAssignmentId===next.id&&S.blobUrl){$('runnerFrame').hidden=false;status(name+' ready.','ok')}
+ else await loadRunner(next,seq);
 }
-
-// Accordion fallback for older browsers: one benchmark expanded at a time.
-// Native details name="compass-benchmark" also provides exclusive-open behavior.
-$('programSheet').addEventListener('toggle',event=>{
- const selected=event.target;
- if(!selected.matches?.('details.sheet-benchmark')||!selected.open)return;
- for(const item of $('programSheet').querySelectorAll('details.sheet-benchmark')){
-  if(item!==selected&&item.open)item.open=false;
- }
-},true);
-
-$('programList').onclick=e=>{const b=e.target.closest('[data-index]');if(b)openAt(Number(b.dataset.index))};$('search').oninput=renderList;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index-1));['nextBtn','bottomNextBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index+1));$('fullscreenBtn').onclick=toggleFullscreen;$('closeBtn').onclick=closeHub;
+$('programList').onclick=e=>{const b=e.target.closest('[data-index]');if(b)openAt(Number(b.dataset.index))};$('hubMenuBtn').onclick=()=>setHubMenu(!document.querySelector('.app').classList.contains('drawer-open'));$('hubMenuClose').onclick=()=>setHubMenu(false);$('hubBackdrop').onclick=()=>setHubMenu(false);$('search').oninput=renderList;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index-1));['nextBtn','bottomNextBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index+1));$('fullscreenBtn').onclick=toggleFullscreen;$('closeBtn').onclick=closeHub;
 const v25SavesInFlight=new Set(),v25SavesConfirmed=new Set();
 async function sendV25Context(sp){
  if(!usesV25Counting(sp)||sp.id!==S.programs[S.index]?.id||!S.session?.user)return;
