@@ -61,6 +61,33 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
    assert(metrics.content.x>=metrics.main.x&&metrics.content.x<metrics.main.x+100,
      'Home content should not be shifted or hidden far to the right');
    assert(metrics.home.right<=width+8,'Home section should fit inside viewport');
+   const caseloadAudit=await page.evaluate(()=>{
+     const home=document.getElementById('page-home'),view=document.getElementById('page-caseload');
+     home.classList.remove('active');home.hidden=true;home.style.display='none';
+     view.classList.add('active');view.hidden=false;view.style.display='block';
+     const cards=[...view.querySelectorAll('.compass-caseload-metrics > article')];
+     const rect=e=>{const r=e.getBoundingClientRect();return {x:Math.round(r.x),width:Math.round(r.width),right:Math.round(r.right),top:Math.round(r.top)}};
+     const result={
+       headings:cards.map(c=>c.querySelector('span')?.textContent.trim()),
+       cardBounds:cards.map(rect),main:rect(view),search:rect(view.querySelector('#caseloadSearch')),
+       add:rect(view.querySelector('.caseload-action-row button')),
+       addActions:view.querySelectorAll('[data-action="open-caseload-add"]').length,
+       tableActionHeader:view.querySelector('table th:last-child')?.textContent.trim(),
+       oldCards:[...view.querySelectorAll('#caseServices,#caseSessionsToday,#caseAttention')].length,
+       styleIds:document.querySelectorAll('#compass-caseload-dashboard-20261025').length
+     };
+     view.classList.remove('active');view.hidden=true;view.style.display='none';
+     home.classList.add('active');home.hidden=false;home.style.display='block';
+     return result;
+   });
+   assert.deepEqual(caseloadAudit.headings,['Assigned Students','Upcoming Reviews','Assessments in Progress','Active Student Plans'],'Canonical caseload cards absent in browser');
+   assert.equal(caseloadAudit.addActions,1,'Duplicate Add Student actions');
+   assert.equal(caseloadAudit.oldCards,0,'Old summary cards are still mounted');
+   assert.equal(caseloadAudit.styleIds,1,'Duplicate or missing caseload CSS');
+   assert(caseloadAudit.add.top>caseloadAudit.search.top,'Add Student must render below Search');
+   assert(caseloadAudit.cardBounds.every(c=>c.x>=metrics.main.x-3&&c.right<=width+4),'Caseload metrics overflow the sidebar or viewport');
+   console.log('CASELOAD_BROWSER_LAYOUT_PASS '+JSON.stringify({width,caseloadAudit}));
+
    const nav=await page.evaluate(()=>{
      const sidebar=document.querySelector('#sidebar'),scroll=document.querySelector('#compassSidebarScroll');
      const toggle=document.querySelector('#compassAdditionalToggle'),additional=document.querySelector('#compassAdditionalNav');
