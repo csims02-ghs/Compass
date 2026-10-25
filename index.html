@@ -1835,6 +1835,22 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       else{tab=document.createElement('button');tab.type='button';tab.textContent='Graphs and Charts';tab.dataset.compassGraphsTab='1';tab.id='compassGraphsChartsTab';tab.className='compass-graphs-tab-fallback';const chartCard=$('overviewChart')&&$('overviewChart').closest('.card,.panel,[class*=card],[class*=panel]');if(chartCard&&chartCard.parentElement)chartCard.parentElement.insertBefore(tab,chartCard);else root.insertBefore(tab,root.firstChild)}
     }
     function leaveGraphs(){pane.hidden=true;pane.style.setProperty('display','none','important');tab.classList.remove('active');tab.setAttribute('aria-selected','false');if(overviewPanel){overviewPanel.hidden=false;overviewPanel.style.removeProperty('display')}}
+    // Keep the existing native Program Progress view reachable from the Graphs section.
+    if(pane&&!pane.querySelector('#compassGraphsProgressButton')){
+      const progressLink=document.createElement('button');
+      progressLink.id='compassGraphsProgressButton';
+      progressLink.type='button';
+      progressLink.className='btn small';
+      progressLink.textContent='Program Progress';
+      progressLink.addEventListener('click',function(){
+        leaveGraphs();
+        showProfileTab('progress');
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected','true');
+      });
+      const chartHeader=pane.querySelector('.compass-program-chart-card > div');
+      if(chartHeader)chartHeader.appendChild(progressLink);else pane.prepend(progressLink);
+    }
     if(!tab.dataset.compassBound){tab.dataset.compassBound='1';tab.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(overviewButton)overviewButton.click();setTimeout(function(){if(overviewPanel){overviewPanel.hidden=true;overviewPanel.style.setProperty('display','none','important')}pane.hidden=false;pane.style.setProperty('display','block','important');if(overviewButton){overviewButton.classList.remove('active');overviewButton.setAttribute('aria-selected','false')}tab.classList.add('active');tab.setAttribute('aria-selected','true');window.scrollTo({top:Math.max(0,(pane.getBoundingClientRect().top+window.scrollY)-120),behavior:'smooth'})},0)});
       if(overviewButton)Array.from(overviewButton.parentElement?overviewButton.parentElement.querySelectorAll('button,[role="tab"]'):[]).filter(function(b){return b!==tab}).forEach(function(b){b.addEventListener('click',leaveGraphs)});
     }
