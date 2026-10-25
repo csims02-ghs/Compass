@@ -232,8 +232,8 @@ return {name:t.name,key:t.key,probe:probes.length?probes[0].date:null,introduced
  bench:t.metadata?.benchmark_name||t.metadata?.benchmark||t.metadata?.number_band||base.find(e=>e.benchmark)?.benchmark||null};
 });
 }
-function acquisition(){
- const ps=programs(),chosen=picks.program==="all"?ps:ps.filter(p=>p.id===picks.program);
+function acquisition(options={}){
+ const ps=programs(),chosen=options.assignmentId?ps.filter(p=>p.id===options.assignmentId):(picks.program==="all"?ps:ps.filter(p=>p.id===picks.program));
  const colgroup='<colgroup><col class="cpr-col-num"><col class="cpr-col-skill">'+
   Array(4).fill('<col class="cpr-col-date">').join('')+
   Array(4).fill('<col class="cpr-col-maint">').join('')+
@@ -291,7 +291,9 @@ function acquisition(){
     'Only supported session and target evidence is shown. Distractor responses never count as maintenance. '+
     'Blank dates and initials mean not recorded. Mastery requires distinct qualifying instructional dates and recorded criteria.</div></div>';
  }).join('');
- sel("acquisition").innerHTML=tables||'<div class="cpr-warning">No programs are assigned to this student.</div>';
+ const html=tables||'<div class="cpr-warning">No program acquisition records are available.</div>';
+ if(options.htmlOnly)return html;
+ sel("acquisition").innerHTML=html;
  // Exclusive-open fallback for browsers without native shared details groups.
  sel("acquisition").querySelectorAll('details.cpr-bench-group').forEach(group=>{
   group.addEventListener('toggle',()=>{
@@ -330,6 +332,19 @@ if(id==="cpr-phaseAdd"&&picks.program!=="all"&&sel("phaseDate").value){phasePrev
 }
 return {panel,host};
 }
+// Read-only program-specific sheet API for Student Profile > Assigned Programs.
+// Snapshot is supplied by that profile, and this synchronous scope restores
+// the Progress tab's existing student context and filters afterward.
+window.compassAcquisitionDataForProgram=function(assignmentId,profileSnapshot){
+ if(!assignmentId||!profileSnapshot?.studentId||
+   !Array.isArray(profileSnapshot.programs)||
+   !profileSnapshot.programs.some(x=>(x.assignment||x).id===assignmentId))return null;
+ const previousSnap=snap,previousPicks=picks;
+ try{
+  snap=profileSnapshot;picks={...picks,program:assignmentId};
+  return acquisition({assignmentId,htmlOnly:true});
+ }finally{snap=previousSnap;picks=previousPicks}
+};
 function restore(){active=false;}
 function activate(){
   const ctx=scaffold();if(!ctx)return;
