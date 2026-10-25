@@ -88,7 +88,7 @@
   function render(data){
     if(!data||!data.student||!data.student.id)throw new Error('Student context required');
     const p=derive(data),student=data.student,school=data.school||'—',classroom=data.classroom||'—';
-    const printedOn=date((data.now||new Date().toISOString()).slice(0,10));
+    const printedOn=date(data.printedDate||(data.now||new Date().toISOString()).slice(0,10));
     const value=v=>v===null||v===undefined||v===''?'—':safe(v);
     const tile=(label,v,note,bar=false)=>'<div class="kpi"><span class="tiny">'+safe(label)+'</span><strong>'+safe(v)+'</strong>'+(bar?'<div class="track"><span style="width:'+(Number.isFinite(numeric(v))?numeric(v):0)+'%"></span></div>':'<small>'+safe(note||'')+'</small>')+'</div>';
     const numeric=v=>Number.parseFloat(String(v));
