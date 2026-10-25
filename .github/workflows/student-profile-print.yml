@@ -29,5 +29,13 @@ jobs:
         run: |
           node --check student-profile-print.js
           node --check scripts/test-student-profile-print.cjs
-      - name: Browser-test the portrait report
-        run: node scripts/test-student-profile-print.cjs
+      - name: Stress test populated student profile
+        run: PRINT_SCENARIO=populated node scripts/test-student-profile-print.cjs
+      - name: Stress test empty student data
+        run: PRINT_SCENARIO=empty node scripts/test-student-profile-print.cjs
+      - name: Stress test long student labels
+        run: PRINT_SCENARIO=long-name node scripts/test-student-profile-print.cjs
+      - name: Stress test partial prompt data
+        run: PRINT_SCENARIO=partial-prompts node scripts/test-student-profile-print.cjs
+      - name: Stress test unsafe student text
+        run: PRINT_SCENARIO=unsafe-name node scripts/test-student-profile-print.cjs
