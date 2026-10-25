@@ -412,15 +412,15 @@ function patchCompassOverview(source){
     const trendEl=$('compassBehaviorSummaryValue');if(trendEl){trendEl.textContent=trend==null?'—':(trend<0?'↓ ':trend>0?'↑ ':'→ ')+Math.abs(trend)+'%';trendEl.className=trend==null?'':trend<0?'compass-trend-good':trend>0?'compass-trend-bad':''}
     setVal('compassBehaviorSummaryNote',trend==null?'Insufficient comparison data':'vs. previous '+weeks+' weeks');
     const domains=[
-      {label:'Reading Comprehension',pattern:/reading|comprehension|sight word|phonics/i,icon:'▤',theme:'blue'},
-      {label:'Number Identification',pattern:/number|count|math|addition|subtraction/i,icon:'123',theme:'purple'},
-      {label:'Communication',pattern:/communication|language|echoic|aac|speech|conversation/i,icon:'◉',theme:'orange'},
-      {label:'Adaptive / Daily Living',pattern:/adaptive|living|hygiene|dressing|functional|independen/i,icon:'⚙',theme:'green'}
+      {label:'Reading Comprehension',pattern:/reading|comprehension|sight word|phonics/i,theme:'blue'},
+      {label:'Number Identification',pattern:/number|count|math|addition|subtraction/i,theme:'purple'},
+      {label:'Communication',pattern:/communication|language|echoic|aac|speech|conversation/i,theme:'orange'},
+      {label:'Adaptive / Daily Living',pattern:/adaptive|living|hygiene|dressing|functional|independen/i,theme:'green'}
     ];
     $('compassOverviewDomains').innerHTML=domains.map(d=>{
       const matching=instructional.filter(s=>{const p=assignments.get(s.student_compass_program_id);const def=p?programById(p.program_id):null;return d.pattern.test(String(def?.program_name||s.program_name||'')+' '+String(def?programDomain(def):''))});
       const amount=pct(sum(matching,'targets_correct'),sum(matching,'trials_total'));
-      return '<div class="compass-domain-row"><span class="compass-domain-icon '+d.theme+'">'+d.icon+'</span><span class="compass-domain-name">'+esc(d.label)+'</span><div class="compass-domain-track"><span class="'+d.theme+'" style="width:'+(amount==null?0:amount)+'%"></span></div><strong>'+(amount==null?'—':amount+'%')+'</strong></div>';
+      return '<div class="compass-domain-row"><span class="compass-domain-name">'+esc(d.label)+'</span><div class="compass-domain-track"><span class="'+d.theme+'" style="width:'+(amount==null?0:amount)+'%"></span></div><strong>'+(amount==null?'—':amount+'%')+'</strong></div>';
     }).join('');
     // Mastery is retrieved from the target records; a zero means no mastery recorded, not an inferred clinical conclusion.
     const masteredEl=$('compassMasteredValue');if(masteredEl){masteredEl.textContent='—';$('compassMasteredNote').textContent='Checking saved target status'}
@@ -495,13 +495,8 @@ function patchCompassOverview(source){
 #page-student-profile .compass-overview-domain-head h3{font-size:19px;margin:0;color:#0d315e}
 #page-student-profile .compass-overview-domain-head>div{display:flex;align-items:center;gap:12px}
 #page-student-profile #compassOverviewWeeks{border:1px solid #d7e3f1;border-radius:9px;background:white;color:#15375e;padding:8px 7px;font-size:12px}
-#page-student-profile .compass-domain-row{display:grid;grid-template-columns:25px minmax(105px,1fr) minmax(70px,1.1fr) 48px;gap:9px;align-items:center;min-height:45px}
-#page-student-profile .compass-domain-icon{font-size:20px;font-weight:850}
-#page-student-profile .compass-domain-icon.blue{color:#0871ef}
-#page-student-profile .compass-domain-icon.purple{color:#803bec}
-#page-student-profile .compass-domain-icon.orange{color:#f5890d}
-#page-student-profile .compass-domain-icon.green{color:#14a45e}
-#page-student-profile .compass-domain-name{font-size:13px;color:#10345d;overflow-wrap:anywhere}
+#page-student-profile .compass-domain-row{display:grid;grid-template-columns:minmax(155px,1.15fr) minmax(120px,1.6fr) 48px;gap:12px;align-items:center;min-height:45px}
+#page-student-profile .compass-domain-name{font-size:14px;color:#10345d;overflow-wrap:anywhere;font-weight:600}
 #page-student-profile .compass-domain-track{height:12px;background:#dce4ed;border-radius:10px;overflow:hidden}
 #page-student-profile .compass-domain-track span{display:block;height:100%;border-radius:10px}
 #page-student-profile .compass-domain-track .blue{background:#0871f7}
@@ -532,7 +527,7 @@ function patchCompassOverview(source){
 #page-student-profile .compass-legacy-overview-data{display:none!important}
 @media(max-width:1270px){#page-student-profile .overview-grid.compass-overview-three{grid-template-columns:minmax(205px,.78fr) minmax(0,2.3fr);gap:12px}}
 @media(max-width:950px){#page-student-profile .overview-grid.compass-overview-three{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:570px){#page-student-profile .profile-content{padding:10px}#page-student-profile .compass-overview-three>.card{padding:15px}#page-student-profile .compass-overview-kpis{grid-template-columns:1fr 1fr}#page-student-profile .compass-overview-kpi.behavior{grid-column:1/-1}#page-student-profile .compass-overview-head{flex-wrap:wrap}#page-student-profile .compass-domain-row{grid-template-columns:23px minmax(95px,1fr) 65px 43px;gap:4px}#page-student-profile .compass-overview-domain-head{flex-wrap:wrap}#page-student-profile .compass-overview-bottom{grid-template-columns:1fr}}
+@media(max-width:570px){#page-student-profile .profile-content{padding:10px}#page-student-profile .compass-overview-three>.card{padding:15px}#page-student-profile .compass-overview-kpis{grid-template-columns:1fr 1fr}#page-student-profile .compass-overview-kpi.behavior{grid-column:1/-1}#page-student-profile .compass-overview-head{flex-wrap:wrap}#page-student-profile .compass-domain-row{grid-template-columns:minmax(112px,1fr) minmax(65px,.9fr) 43px;gap:7px}#page-student-profile .compass-overview-domain-head{flex-wrap:wrap}#page-student-profile .compass-overview-bottom{grid-template-columns:1fr}}
 </style>
 `;
     source=source.replace('</head>',css+'\n</head>');
