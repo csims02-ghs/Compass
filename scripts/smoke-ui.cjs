@@ -110,6 +110,29 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
 
    assert(caseloadAudit.add.top>caseloadAudit.search.top,'Add Student must render below Search');
    assert(caseloadAudit.cardBounds.every(c=>c.x>=metrics.main.x-3&&c.right<=width+4),'Caseload metrics overflow the sidebar or viewport');
+   assert(caseloadAudit.cardBounds.every(c=>Math.abs(c.top-caseloadAudit.cardBounds[0].top)<=2),'All four caseload summary cards must fit on one desktop row');
+   assert(caseloadAudit.cardBounds.every(c=>c.width>=185),'Caseload cards must remain readable at desktop widths');
+   if(width===1440){
+     await page.setViewportSize({width:1280,height:950});
+     const fit1280=await page.evaluate(()=>{
+       const home=document.querySelector('#page-home'),view=document.querySelector('#page-caseload');
+       home.classList.remove('active');home.hidden=true;home.style.display='none';
+       view.classList.add('active');view.hidden=false;view.style.display='block';
+       const cards=[...view.querySelectorAll('.compass-caseload-metrics > article')].map(el=>{
+         const r=el.getBoundingClientRect();
+         const label=el.querySelector('span'),t=label.getBoundingClientRect();
+         return {top:Math.round(r.top),left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width),labelFits:label.scrollWidth<=label.clientWidth+1,within: t.right<=r.right+1};
+       });
+       view.classList.remove('active');view.hidden=true;view.style.display='none';
+       home.classList.add('active');home.hidden=false;home.style.display='block';
+       return cards;
+     });
+     assert.equal(fit1280.length,4,'Caseload must retain four cards at 1280px');
+     assert(fit1280.every(c=>Math.abs(c.top-fit1280[0].top)<=2&&c.right<=1284&&c.labelFits&&c.within),'At 1280px, all four cards must form one row without clipped labels: '+JSON.stringify(fit1280));
+     console.log('CASELOAD_FOUR_CARD_1280_PASS '+JSON.stringify(fit1280));
+     await page.setViewportSize({width,height:950});
+   }
+
    console.log('CASELOAD_BROWSER_LAYOUT_PASS '+JSON.stringify({width,caseloadAudit}));
 
    const nav=await page.evaluate(()=>{
