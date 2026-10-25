@@ -362,7 +362,7 @@ table{font-size:14.5px}th{font-size:12.5px;padding:11px 12px}td{padding:12px}
 @media(max-width:760px){.followup-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.control,input,select,textarea{font-size:16px}}
 /* COMPASS native compact sidebar with permanently visible Additional Tools control. */
-:root{--sidebar:264px}
+:root{--sidebar:248px}
 #sidebar{width:var(--sidebar);height:100vh;height:100dvh;display:flex;flex-direction:column;
  overflow:hidden!important;padding:0!important;min-height:0}
 #sidebar .compass-sidebar-scroll{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;
@@ -1026,9 +1026,12 @@ body{display:block!important;width:100%;min-width:0}
 #page-caseload .compass-caseload-table th button{border:0;background:none;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
 #page-caseload .compass-caseload-table td{padding:10px 8px;vertical-align:middle;border-bottom:1px solid #eaf0f7;color:#284b74;overflow-wrap:anywhere}
 #page-caseload .compass-caseload-table tbody tr:hover{background:#f7fbff}
-#page-caseload .compass-caseload-table th:nth-child(1){width:19%}#page-caseload .compass-caseload-table th:nth-child(2){width:16%}#page-caseload .compass-caseload-table th:nth-child(3){width:7%}
-#page-caseload .compass-caseload-table th:nth-child(4){width:15%}#page-caseload .compass-caseload-table th:nth-child(5){width:15%}#page-caseload .compass-caseload-table th:nth-child(6){width:12%}
-#page-caseload .compass-caseload-table th:nth-child(7){width:10%}#page-caseload .compass-caseload-table th:nth-child(8){width:6%}
+#page-caseload .compass-caseload-table th:nth-child(1){width:18%}#page-caseload .compass-caseload-table th:nth-child(2){width:16%}#page-caseload .compass-caseload-table th:nth-child(3){width:7%}
+#page-caseload .compass-caseload-table th:nth-child(4){width:13%}#page-caseload .compass-caseload-table th:nth-child(5){width:13%}#page-caseload .compass-caseload-table th:nth-child(6){width:12%}
+#page-caseload .compass-caseload-table th:nth-child(7){width:11%}#page-caseload .compass-caseload-table th:nth-child(8){width:10%}
+#page-caseload .compass-caseload-table th:nth-child(4),#page-caseload .compass-caseload-table th:nth-child(5){font-size:10.5px}
+#page-caseload .compass-caseload-table td:nth-child(4) .case-percent,#page-caseload .compass-caseload-table td:nth-child(5) .case-percent{font-size:11.5px}
+#page-caseload .compass-caseload-table td:last-child{white-space:nowrap;overflow-wrap:normal;word-break:normal;padding-left:6px;padding-right:6px}
 #page-caseload .caseload-student-cell{display:flex;align-items:center;gap:9px;min-width:0}
 #page-caseload .caseload-student-avatar{width:33px;height:33px;min-width:33px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:900;background:#dceaff;color:#1756a0}
 #page-caseload .caseload-student-name{font-size:12px;font-weight:850;color:#183b65;display:block}
@@ -1042,7 +1045,7 @@ body{display:block!important;width:100%;min-width:0}
 #page-caseload .caseload-status.review{background:#fff1cf;color:#98630d}
 #page-caseload .caseload-status.overdue{background:#ffe1e3;color:#b32f43}
 #page-caseload .caseload-status.inactive{background:#e9edf2;color:#5d7290}
-#page-caseload .case-profile-button{border:1px solid #91b7ed!important;background:#f9fcff!important;color:#1257aa!important;border-radius:8px!important;padding:8px 10px!important;font-size:12px!important;font-weight:850!important}
+#page-caseload .case-profile-button{border:1px solid #91b7ed!important;background:#f9fcff!important;color:#1257aa!important;border-radius:8px!important;padding:8px 10px!important;font-size:12px!important;font-weight:850!important;white-space:nowrap!important;overflow-wrap:normal!important;word-break:keep-all!important;display:inline-flex;align-items:center;justify-content:center;min-width:76px;line-height:1.25}
 #page-caseload .case-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 #page-caseload .case-mini-card{padding:16px;border:1px solid #dce5ef;border-radius:13px;background:#fff}
 #page-caseload .case-mini-card header{display:flex;gap:12px;align-items:center;margin-bottom:11px}
