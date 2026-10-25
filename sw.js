@@ -1,5 +1,5 @@
 /* COMPASS service worker: online navigation is authoritative; caches are offline fallbacks only. */
-const CACHE='compass-shell-v41';
+const CACHE='compass-shell-v42';
 const RELEASE='v20261010-3';
 const CORE=['./','./index.html','./compass-admin-ui.js','./index-profile-charts-v5-20261017.html','./program-hub.html','./manifest.webmanifest',
 './release/v20261010-3/part01.txt?release=v20261010-3-program-hub-v4',
