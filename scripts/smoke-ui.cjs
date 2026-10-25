@@ -61,6 +61,38 @@ console.log('COMPASS_DUPLICATE_SAFE_ASSIGNMENT_SMOKE_PASS');
    assert(metrics.content.x>=metrics.main.x&&metrics.content.x<metrics.main.x+100,
      'Home content should not be shifted or hidden far to the right');
    assert(metrics.home.right<=width+8,'Home section should fit inside viewport');
+
+   // COMPASS Home command center: no duplicate roster, actionable controls and valid layouts.
+   const homeAudit=await page.evaluate(()=>{
+     const root=document.querySelector('#page-home'),metricCards=[...root.querySelectorAll('.v4-kpi')],quick=[...root.querySelectorAll('[data-home-quick]')];
+     const perf=[...root.querySelectorAll('.v4-perf-card')],cal=root.querySelector('#homeCalendarGrid');
+     const rect=el=>{const r=el.getBoundingClientRect();return {width:Math.round(r.width),height:Math.round(r.height),right:Math.round(r.right),top:Math.round(r.top)}};
+     return {
+       homeCards:metricCards.map(x=>x.querySelector('.v4-kpi-label')?.textContent.trim()),
+       actions:quick.map(x=>x.dataset.homeQuick),perfCount:perf.length,
+       duplicateRoster:!!root.querySelector('#homeCaseloadBody,.home-caseload-table'),
+       day:!!root.querySelector('#todaySchedule'),week:!!root.querySelector('#weekSchedule'),
+       calendar:!!cal,calendarBounds:rect(cal),range:!!root.querySelector('#homeMetricRange'),
+       date:!!root.querySelector('#homeCurrentDate'),resume:!!root.querySelector('#homeRecentWork'),
+       deadlines:!!root.querySelector('#homeDeadlineDonut'),
+       search:!!root.querySelector('#homeGlobalSearch'),headerAction:!!root.querySelector('#quickRunBtn'),
+       styleLoaded:getComputedStyle(metricCards[0]).display==='flex',
+       root:rect(root),viewport:innerWidth,
+       topGridCols:getComputedStyle(root.querySelector('.v4-top-grid')).gridTemplateColumns.split(' ').filter(Boolean).length
+     };
+   });
+   assert.deepEqual(homeAudit.homeCards,['ACTIVE STUDENTS','NEEDS ATTENTION','UPCOMING REVIEWS','ASSESSMENTS IN PROGRESS']);
+   assert.deepEqual(homeAudit.actions,['run','assessment','notes','data']);
+   assert.equal(homeAudit.perfCount,4,'All four instructional metric cards must be shown');
+   assert.equal(homeAudit.duplicateRoster,false,'Home must not repeat the My Caseload student roster');
+   assert(homeAudit.day&&homeAudit.week&&homeAudit.calendar&&homeAudit.range&&homeAudit.resume&&homeAudit.deadlines,'Home command-center panels must exist');
+   assert(homeAudit.search&&homeAudit.headerAction&&homeAudit.date,'Header search, session action, and local date must exist');
+   assert(homeAudit.styleLoaded,'Dedicated Home CSS must load');
+   assert(homeAudit.calendarBounds.width>180,'The live mini calendar must have usable width');
+   assert(homeAudit.topGridCols===2,'Wide desktop Home should show calendar and week panel side by side');
+   assert(homeAudit.root.right<=width+10,'Home must not extend off the right edge');
+   console.log('COMPASS_HOME_V4_SMOKE_PASS '+JSON.stringify({width,homeAudit}));
+
    const caseloadAudit=await page.evaluate(()=>{
      const home=document.getElementById('page-home'),view=document.getElementById('page-caseload');
      home.classList.remove('active');home.hidden=true;home.style.display='none';
