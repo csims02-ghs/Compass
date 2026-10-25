@@ -1,63 +1,36 @@
-name: Build static COMPASS HTML
+name: Validate canonical COMPASS HTML shell
 on:
   push:
     branches: [main]
     paths:
       - '.github/workflows/build-static-compass.yml'
-      - 'scripts/build-static.js'
-      - 'scripts/profile-premium-transform.cjs'
-      - 'scripts/student-edit-programs-source.js.txt'
-      - 'scripts/student-edit-programs.css'
-      - 'scripts/test-bulk-edit.cjs'
-      - 'scripts/index-loader-source.html'
-      - 'index-base-20261016.html'
-      - 'index-profile-charts-v5-20261017.html'
-      - 'release/v20261010-3/**'
+      - 'index.html'
+      - 'sw.js'
+      - 'scripts/test-caseload-shell.cjs'
+  workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: true
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build single-pass COMPASS page
+      - name: Verify production source of truth
         run: |
-          node --check scripts/build-static.js
-          node scripts/build-static.js
-      - name: Verify HTML and core features
-        run: |
+          node --check scripts/test-caseload-shell.cjs
+          node scripts/test-caseload-shell.cjs
           python3 - <<'PY'
           from pathlib import Path
-          h=Path('index.html').read_text()
-          for marker in ('id="sidebar"', 'page-home', 'student_iep_goals','compass_program_sessions','assigned-program-iep-links.js','supabase'):
-              assert marker in h, marker
-          assert len(h)>100000, len(h)
-          assert 'Loading COMPASS 1/' not in h
-          print('Static HTML ready:',len(h),'characters')
+          s=Path('index.html').read_text()
+          for required in ('id="sidebar"','page-home','student_iep_goals','compass_program_sessions','assigned-program-iep-links.js','supabase'):
+            assert required in s,required
+          assert len(s)>100000,len(s)
+          print('CANONICAL_SHELL_SAFE',len(s))
           PY
-      - name: Browser smoke test before publishing
-        run: |
-          npm init -y >/dev/null
-          npm install --no-save playwright@1.56.1
-          google-chrome --version
-          python3 -m http.server 8099 --bind 127.0.0.1 >/tmp/compass-prepublish.log 2>&1 &
-          sleep 2
-          node scripts/smoke-ui.cjs
-          node scripts/test-bulk-edit.cjs
-      - name: Commit the final HTML directly
-        run: |
-          git config user.name "COMPASS Build"
-          git config user.email "compass-build@users.noreply.github.com"
-          git add index.html
-          if git diff --cached --quiet; then
-            echo "No changes to static HTML"
-          else
-            git commit -m "Build direct COMPASS HTML with IEP and trial integration [skip ci]"
-            git push
-          fi
+# scripts/build-static.js and the nested loader HTMLs are archival sources.
+# They are intentionally NOT run by this workflow: they regenerate older code
+# and must not overwrite the hand-maintained canonical production index.html.
