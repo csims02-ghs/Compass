@@ -100,15 +100,26 @@ window.__COMPASS_STUDENT_RUNTIME__={
    await page.waitForFunction(()=>window.__qaCalls.some(x=>x.action==='save_setup'));
    await page.locator('#runBtn').click();
    const opportunities=await page.evaluate(()=>window.COMPASS_REVIEW_TEST.getRun().steps.length);
-   for(let i=0;i<opportunities;i++)await page.evaluate(()=>{
-     document.querySelector('[data-score="correct"]').click();
+   for(let i=0;i<opportunities;i++)await page.evaluate(index=>{
+     const outcome=index===0?'incorrect':index===1?'prompted':'correct';
+     const button=document.querySelector('[data-score="'+outcome+'"]');
+     if(!button)throw Error('Missing scoring button '+outcome);
+     if(index===0 && !/Target Incorrect/.test(button.textContent))throw Error('Incorrect label missing');
+     if(index===1 && !/Target Prompted/.test(button.textContent))throw Error('Prompted label missing');
+     button.click();
      document.getElementById('saveNextBtn').click();
-   });
+   },i);
    await page.waitForFunction(()=>window.COMPASS_REVIEW_TEST?.getRun()?.syncedSessionId);
    const sessionCalls=await page.evaluate(()=>window.__qaCalls.filter(x=>x.action==='save_session'));
    assert.equal(sessionCalls.length,1,'Teaching run must invoke student-specific save');
    assert.equal(sessionCalls[0].program_version,25);
    assert.equal(sessionCalls[0].trial_events.length,opportunities);
+   assert.equal(sessionCalls[0].counts.incorrect,1,'Target Incorrect must be recorded once');
+   assert.equal(sessionCalls[0].counts.prompted_correct,1,'Target Prompted must be recorded once');
+   assert.equal(sessionCalls[0].trial_events[0].result,'incorrect');
+   assert.equal(sessionCalls[0].trial_events[1].result,'prompted');
+   assert(sessionCalls[0].counts.independent_correct>=1,'Remaining independent target trials retained');
+   assert(sessionCalls[0].counts.independent_correct<opportunities-1,'Prompted must not count as independent correct');
    assert.equal(sessionCalls[0].goal_id,'test-goal');
    assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false);
    assert.equal(errors.length,0,errors.join('\n'));
