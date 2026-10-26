@@ -180,6 +180,17 @@ window.__COMPASS_STUDENT_RUNTIME__={
      denial:window.__qaDeny
    }))));
    assert.equal(await page.locator('#nextProgramBtn').isDisabled(),true,'Saving failure must block Next Program');
+   const blockedNavigation=await page.evaluate(async()=>{
+     const messages=[];window.addEventListener('message',event=>{
+       if(event.data?.type==='compass-next-program')messages.push(event.data);
+     });
+     const btn=document.getElementById('nextProgramBtn');
+     btn.disabled=false;btn.click();
+     await Promise.resolve();
+     return {blocked:btn.disabled,emitted:messages.length};
+   });
+   assert(blockedNavigation.blocked,'Even a manually re-enabled Next Program button must fail closed');
+   assert.equal(blockedNavigation.emitted,0,'Failed session must never emit next-program navigation');
    assert.equal(await page.locator('#saveNextBtn').innerText(),'Retry COMPASS Save');
    await page.evaluate(()=>{window.__qaDeny=false});
    await page.locator('#saveNextBtn').click();
