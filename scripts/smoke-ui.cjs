@@ -20,7 +20,7 @@ assert(compassSource.includes('id="clinicalReadinessPanel"'),'BCBA clinical revi
 assert(compassSource.includes('id="clinicalReopenBtn"'),'BCBA legacy review action missing');
 assert(compassSource.includes("state.assessmentType==='fba'?'in_progress'"),
  'FBA sections must not automatically clinically finalize at 100%');
-assert(compassSource.includes('compass-role-workflows.css?v=20261025-1'),'Scoped role stylesheet missing');
+assert(compassSource.includes('compass-role-workflows.css?v=20261025-2'),'Unified support stylesheet missing');
 assert(compassSource.includes("function compassCanReviewFBA(){return state.profile?.role==='bcba'}"),
  'Clinical sign-off must require BCBA role in client workflow');
 const fbaSection=srcSection('  function compassClinicalChecks(record){','  function renderClinicalReadiness(){');
@@ -60,6 +60,39 @@ assert.equal(goalEvidence.sessions,1,'Do not attribute a different goal session'
 assert.equal(goalEvidence.trials,2,'Exclude probes and different-goal trials from IEP evidence');
 assert.equal(goalEvidence.independent,50,'Independent accuracy must count correct / scored teaching trials');
 console.log('COMPASS_ROLE_CLINICAL_AND_IEP_EVIDENCE_LOGIC_PASS');
+
+assert(!compassSource.includes('id="compassRoleViewSwitch"'),'Legacy SPED / BCBA role toggle must be removed');
+assert(!compassSource.includes('data-role-view='),'Legacy role switch handlers must be removed');
+assert(compassSource.includes('Student Support &amp; Progress'),'Shared workspace title must be visible');
+assert.equal((compassSource.match(/data-role-filter="(?:all|iep|assessment)"/g)||[]).length,3,
+ 'One combined queue must have three filters, not separate role views');
+assert(compassSource.includes('id="compassRoleQueueCount"'),'Priorities need a visible total count');
+const sharedSection=srcSection('  let compassRoleFilter=', '  function renderRoleFocus(){');
+const makeQueue=new Function('todayISO','localISO','fmtDate','assessmentStatus','assessmentData','assessmentProgress','assessmentDueDate','studentLabel','studentById','roleName',sharedSection+';return compassUnifiedRoleItems;');
+const dstr=(n)=>{const d=new Date();d.setDate(d.getDate()+n);return d.toLocaleDateString('en-CA').split('/').join('-')};
+const reviewDate=(delta)=>{const d=new Date();d.setDate(d.getDate()+delta);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
+const testToday=reviewDate(0),testDate=future=>reviewDate(future);
+const queue=makeQueue(()=>testToday,d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'),d=>d,
+ a=>a.status,a=>a.assessment_data||{},a=>a.progress||0,a=>a.due_date||null,
+ s=>s?.display_label||'Student',id=>({display_label:id==='s1'?'Student One':'Student Two'}),x=>x);
+const result=queue([
+ {id:'g-overdue',student_id:'s1',title:'Overdue Goal',status:'active',review_date:testDate(-2),baseline_percent:35,target_percent:80},
+ {id:'g-baseline',student_id:'s1',title:'Missing Baseline',status:'active',review_date:null,baseline_percent:null,target_percent:80},
+ {id:'g-normal',student_id:'s2',title:'Normal Goal',status:'active',review_date:testDate(100),baseline_percent:25,target_percent:80}
+],[
+ {id:'fba-1',student_id:'s2',assessment_type:'fba',status:'in_progress',progress:35,assessment_data:{}},
+ {id:'fba-legacy',student_id:'s1',assessment_type:'fba',status:'completed',assessment_data:{}},
+ {id:'fba-signed',student_id:'s1',assessment_type:'fba',status:'completed',assessment_data:{clinical_review:{reviewer_id:'bcba-id'}}}
+]);
+assert.equal(result.length,4,'Unified queue should include two flagged goals and two unresolved FBAs');
+assert.equal(result[0].key,'goal:g-overdue','Overdue review must have highest priority');
+assert(result.some(x=>x.key==='assessment:fba-1'),'BCBA FBA items must appear alongside SPED IEP items');
+assert(result.some(x=>x.key==='assessment:fba-legacy'),'Historical FBA without sign-off needs review');
+assert(!result.some(x=>x.key==='assessment:fba-signed'),'BCBA-signed completed FBA is not an outstanding action');
+assert(!result.some(x=>x.key==='goal:g-normal'),'Healthy goal should not produce a priority item');
+assert.equal(new Set(result.map(x=>x.key)).size,result.length,'Same goal or assessment must appear only once');
+console.log('COMPASS_UNIFIED_SPED_BCBA_QUEUE_PASS');
+
 
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
@@ -145,6 +178,24 @@ console.log('COMPASS_ROLE_CLINICAL_AND_IEP_EVIDENCE_LOGIC_PASS');
    assert(homeAudit.topGridCols===2,'Wide desktop Home should show calendar and week panel side by side');
    assert(homeAudit.root.right<=width+10,'Home must not extend off the right edge');
    console.log('COMPASS_HOME_V4_SMOKE_PASS '+JSON.stringify({width,homeAudit}));
+
+
+   const combinedAudit=await page.evaluate(()=>{
+     const root=document.querySelector('#compassRoleFocus');
+     const filters=[...root.querySelectorAll('[data-role-filter]')].map(b=>b.dataset.roleFilter);
+     const title=root.querySelector('#compassRoleFocusTitle')?.textContent.trim();
+     const noRoleSwitch=!root.querySelector('#compassRoleViewSwitch');
+     const hasQueue=!!root.querySelector('#compassRoleItems')&&!!root.querySelector('#compassRoleQueueCount');
+     const showMore=!!root.querySelector('#compassRoleShowMore');
+     const rbtRunnerAvailable=!!document.querySelector('#runStudentProgramsBtn');
+     return{title,filters,noRoleSwitch,hasQueue,showMore,rbtRunnerAvailable};
+   });
+   assert.equal(combinedAudit.title,'Student Support & Progress');
+   assert.deepEqual(combinedAudit.filters,['all','iep','assessment']);
+   assert(combinedAudit.noRoleSwitch&&combinedAudit.hasQueue&&combinedAudit.showMore,
+     'Unified Student Support should replace the old role tabs and expose one queue');
+   assert(combinedAudit.rbtRunnerAvailable,'Existing instructional runner entry point must remain present');
+   console.log('COMPASS_UNIFIED_ROLE_DOM_PASS '+JSON.stringify({width,combinedAudit}));
 
    const caseloadAudit=await page.evaluate(()=>{
      const home=document.getElementById('page-home'),view=document.getElementById('page-caseload');
