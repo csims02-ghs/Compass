@@ -3446,7 +3446,24 @@ if(removed.length){
     if(!win.closed){win.document.open();win.document.write('<!doctype html><html><body style="font:16px Arial;padding:30px">Unable to generate report. Close this tab and try again.</body></html>');win.document.close()}
     toast('Unable to prepare the printer-friendly report.','error');
   }
-});$('mobileMenu').addEventListener('click',()=>$('sidebar').classList.toggle('open'));$('modalClose').addEventListener('click',closeModal);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modalBackdrop').classList.contains('hidden')&&!document.querySelector('.offline-download-progress'))closeModal()});$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});$('runnerClose').addEventListener('click',()=>{if(state.activeProgramListRun){state.activeProgramListRun=null;toast('Program List stopped. You can restart it from the list.','error')}closeRunner()});window.addEventListener('message',async e=>{if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-program-session-saved'){try{await loadStudentProfile()}catch(syncErr){console.warn('COMPASS goal and progress refresh deferred',syncErr)}return}if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-next-program'){if(state.activeProgramListRun){await advanceProgramList()}else{toast('Next Program is available when a Program List is running.','error')}return}if(e.data?.type==='compass-offline-session-save'&&e.data.row){await queueOfflineSession(e.data.row);return}if(e.data?.type==='compass-program-session-saved'){toast('Program session saved to COMPASS.');if(state.activeProgramListRun&&!state.activeProgramListRun.offline){await advanceProgramList();return}if(state.currentStudent)loadStudentProfile().then(()=>loadGlobalData());else loadGlobalData()}});
+});$('mobileMenu').addEventListener('click',()=>$('sidebar').classList.toggle('open'));$('modalClose').addEventListener('click',closeModal);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modalBackdrop').classList.contains('hidden')&&!document.querySelector('.offline-download-progress'))closeModal()});$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});$('runnerClose').addEventListener('click',()=>{if(state.activeProgramListRun){state.activeProgramListRun=null;toast('Program List stopped. You can restart it from the list.','error')}closeRunner()});window.addEventListener('message',async e=>{
+    if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-auth-request'){
+      // Source and same-origin checks: never disclose staff tokens to another frame.
+      if(e.origin!==window.location.origin||typeof e.data.nonce!=='string'||
+         !/^[\w-]{12,90}$/.test(e.data.nonce))return;
+      const requested=String(e.data.assignment_id||'');
+      const assigned=state.studentPrograms.find(sp=>sp.id===requested&&sp.status==='active');
+      if(!assigned||!state.user)return;
+      const selected=state.currentStudent?.id===assigned.student_id;
+      const scheduled=!!state.activeProgramListRun?.items?.some(item=>item.student_compass_program_id===requested);
+      if(!selected&&!scheduled)return;
+      const {data:{session},error}=await sb.auth.getSession();
+      if(error||!session?.access_token||session.user?.id!==state.user.id)return;
+      e.source.postMessage({type:'compass-auth-response',nonce:e.data.nonce,
+        access_token:session.access_token},e.origin);
+      return;
+    }
+    if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-program-session-saved'){try{await loadStudentProfile()}catch(syncErr){console.warn('COMPASS goal and progress refresh deferred',syncErr)}return}if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-next-program'){if(state.activeProgramListRun){await advanceProgramList()}else{toast('Next Program is available when a Program List is running.','error')}return}if(e.data?.type==='compass-offline-session-save'&&e.data.row){await queueOfflineSession(e.data.row);return}if(e.data?.type==='compass-program-session-saved'){toast('Program session saved to COMPASS.');if(state.activeProgramListRun&&!state.activeProgramListRun.offline){await advanceProgramList();return}if(state.currentStudent)loadStudentProfile().then(()=>loadGlobalData());else loadGlobalData()}});
 
   $('assessmentDataCollectionBtn')?.addEventListener('click',()=>{state.dataCollectionStudent=assessmentStudent();showPage('data-collection')});
   $('openBehaviorDataBtn')?.addEventListener('click',()=>{state.dataCollectionStudent=state.currentStudent;showPage('data-collection')});
