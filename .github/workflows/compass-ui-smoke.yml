@@ -7,6 +7,7 @@ on:
       - 'scripts/smoke-ui.cjs'
       - 'scripts/test-bulk-edit.cjs'
       - 'scripts/test-aac-auth-handoff.cjs'
+      - 'scripts/test-actions-v25-live.cjs'
       - 'index.html'
 permissions:
   contents: read
@@ -31,6 +32,7 @@ jobs:
           node scripts/smoke-ui.cjs
           node scripts/test-bulk-edit.cjs
           node scripts/test-aac-auth-handoff.cjs
+          node scripts/test-actions-v25-live.cjs
       - name: Attach screenshots
         if: always()
         uses: actions/upload-artifact@v4
