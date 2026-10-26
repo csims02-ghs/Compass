@@ -81,14 +81,34 @@ window.__COMPASS_STUDENT_RUNTIME__={
    await page.locator('#circuitSelect').selectOption('probe');
    assert(await page.locator('#targetSelect').isDisabled());
    await page.locator('#runBtn').click();
-   for(let i=0;i<100;i++)await page.evaluate(()=>{
-      document.querySelector('[data-score="correct"]').click();
-      document.getElementById('saveNextBtn').click();
-   });
+   let missingMaterialChecks=0;
+   for(let i=0;i<100;i++){
+     const observed=await page.evaluate(()=>{
+       const run=window.COMPASS_REVIEW_TEST.getRun(),step=run.steps[run.events.length];
+       const absent=!step.target.image;
+       const disabled=document.querySelector('[data-score="correct"]').disabled;
+       const studentMaterial=document.getElementById('taskStage').textContent;
+       if(absent&&disabled!==true)throw Error('Missing action image permitted scoring without material verification');
+       if(absent&&studentMaterial.includes(step.target.name))throw Error('Unverified target answer leaked on student display: '+step.target.name);
+       if(!absent&&disabled)throw Error('Verified embedded picture unexpectedly blocked');
+       if(absent){
+         const btn=document.getElementById('actionsVerifyMaterialsBtn');
+         if(!btn)throw Error('Material verification button missing');
+         btn.click();
+         if(document.querySelector('[data-score="correct"]').disabled)throw Error('Scoring did not unlock after staff confirmed material');
+       }
+       document.querySelector('[data-score="correct"]').click();
+       document.getElementById('saveNextBtn').click();
+       return absent;
+     });
+     if(observed)missingMaterialChecks++;
+   }
+   assert.equal(missingMaterialChecks,16,'Exactly the 16 unverified pictures must require manual material verification');
    await page.waitForFunction(()=>window.COMPASS_REVIEW_TEST?.getRun()?.syncedProbeId);
    const res=await page.evaluate(()=>({run:window.COMPASS_REVIEW_TEST.getRun(),calls:window.__qaCalls,
        hasOverflow:document.documentElement.scrollWidth>innerWidth+3}));
    assert.equal(res.run.events.length,100);
+   assert.equal(res.run.events.filter(e=>e.material_verified===true).length,100,'Every scored full-probe event requires accessible materials');
    assert.equal(res.calls.filter(x=>x.action==='save_probe').length,2);
    assert.equal(res.calls.filter(x=>x.action==='save_probe').at(-1).events.length,100);
    assert.equal(res.calls.filter(x=>x.action==='save_session').length,0);
@@ -125,7 +145,7 @@ window.__COMPASS_STUDENT_RUNTIME__={
    assert.equal(errors.length,0,errors.join('\n'));
    console.log('ACTIONS_V25_LIVE_PROBE_PASS',JSON.stringify({width:size.width,
      targets:basics.targets,benchmarks:basics.bench,embeddedImages:basics.embedded,
-     fullProbe:res.run.events.length,photoDecode:picture.ok,overflow:res.hasOverflow}));
+     fullProbe:res.run.events.length,manualMaterialConfirmations:missingMaterialChecks,photoDecode:picture.ok,overflow:res.hasOverflow}));
    await page.close();
   }
  }finally{await browser.close()}
