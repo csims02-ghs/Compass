@@ -43,5 +43,31 @@ async function run({eventOrigin='https://compass.example.com',assignmentId='assi
    results=await run(options);
    assert.equal(results.length,0,name+' must not receive staff session');
  }
- console.log('COMPASS_AAC_AUTH_HANDOFF_QA_PASS: legitimate assignment allowed; 6 denial paths blocked.');
+ const nextStart="if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-next-program')";
+ const nextEnd="if(e.data?.type==='compass-offline-session-save'";
+ const begin=html.indexOf(nextStart),stop=html.indexOf(nextEnd,begin+nextStart.length);
+ assert(begin>=0&&stop>begin,'Student Next Program listener must exist');
+ const nextBlock=html.slice(begin,stop);
+ const nextHandler=new Function('e','
+})().catch(err=>{console.error(err);process.exitCode=1;});
+,'state','programById','openRunner','advanceProgramList','toast',
+  'return (async()=>{'+nextBlock+'})()');
+ const opens=[],notices=[];
+ const frame={};
+ const assignedA={id:'assigned-A',student_id:'student-A',program_id:'AAC',status:'active',display_order:1,view_token:'test-a'};
+ const assignedB={id:'assigned-B',student_id:'student-A',program_id:'ACTIONS',status:'active',display_order:2,view_token:'test-b'};
+ const caseState={currentStudent:{id:'student-A'},profile:{role:'bcba'},activeProgramListRun:null,studentPrograms:[assignedA,assignedB]};
+ await nextHandler({source:frame,data:{type:'compass-next-program',assignment_id:'assigned-A'}},
+   ()=>frame,caseState,id=>({program_name:id==='ACTIONS'?'Actions':'AAC',program_status:'active'}),
+   async (...args)=>opens.push(args),async()=>{},(...args)=>notices.push(args));
+ assert.equal(opens.length,1,'Next Program must open next assigned program');
+ assert.equal(opens[0][0],'assigned-B','Next Program must retain this student assignment');
+ assert.equal(opens[0][1],'test-b');
+ caseState.currentStudent.id='different-student';
+ await nextHandler({source:frame,data:{type:'compass-next-program',assignment_id:'assigned-A'}},
+   ()=>frame,caseState,id=>({program_status:'active'}),
+   async (...args)=>opens.push(args),async()=>{},(...args)=>notices.push(args));
+ assert.equal(opens.length,1,'Must not navigate to another student assignment');
+
+ console.log('COMPASS_AAC_AUTH_HANDOFF_QA_PASS: legitimate assignment allowed; 6 denial + Next Program paths blocked.');
 })().catch(err=>{console.error(err);process.exitCode=1;});
