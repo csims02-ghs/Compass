@@ -14,11 +14,11 @@ assert(authBlock.includes('session.user?.id!==state.user.id'),'Validate signed-i
 const handler=new Function('e','$','sb','state','window','return (async()=>{'+authBlock+'})()');
 async function run({eventOrigin='https://compass.example.com',assignmentId='assignment-A',
  sessionUser='staff-A',signedIn=true,frameMatches=true,studentId='student-A'}={}){
- const messages=[],frame={postMessage:(data,origin)=>messages.push({data,origin})};
+ const messages=[],frameWindow={postMessage:(data,origin)=>messages.push({data,origin})},frame={contentWindow:frameWindow};
  const state={user:signedIn?{id:'staff-A'}:null,currentStudent:{id:'student-A'},
    activeProgramListRun:null,
    studentPrograms:[{id:'assignment-A',student_id:studentId,status:'active'}]};
- const event={source:frameMatches?frame:{},origin:eventOrigin,
+ const event={source:frameMatches?frameWindow:{},origin:eventOrigin,
    data:{type:'compass-auth-request',nonce:'qa-aac-nonce-123456',assignment_id:assignmentId}};
  const sb={auth:{getSession:async()=>({data:{session:signedIn?{access_token:'synthetic.jwt.token',
    user:{id:sessionUser}}:null},error:null})}};
@@ -53,18 +53,18 @@ async function run({eventOrigin='https://compass.example.com',assignmentId='assi
 ,'state','programById','openRunner','advanceProgramList','toast',
   'return (async()=>{'+nextBlock+'})()');
  const opens=[],notices=[];
- const frame={};
+ const frame={contentWindow:{}};
  const assignedA={id:'assigned-A',student_id:'student-A',program_id:'AAC',status:'active',display_order:1,view_token:'test-a'};
  const assignedB={id:'assigned-B',student_id:'student-A',program_id:'ACTIONS',status:'active',display_order:2,view_token:'test-b'};
  const caseState={currentStudent:{id:'student-A'},profile:{role:'bcba'},activeProgramListRun:null,studentPrograms:[assignedA,assignedB]};
- await nextHandler({source:frame,data:{type:'compass-next-program',assignment_id:'assigned-A'}},
+ await nextHandler({source:frame.contentWindow,data:{type:'compass-next-program',assignment_id:'assigned-A'}},
    ()=>frame,caseState,id=>({program_name:id==='ACTIONS'?'Actions':'AAC',program_status:'active'}),
    async (...args)=>opens.push(args),async()=>{},(...args)=>notices.push(args));
  assert.equal(opens.length,1,'Next Program must open next assigned program');
  assert.equal(opens[0][0],'assigned-B','Next Program must retain this student assignment');
  assert.equal(opens[0][1],'test-b');
  caseState.currentStudent.id='different-student';
- await nextHandler({source:frame,data:{type:'compass-next-program',assignment_id:'assigned-A'}},
+ await nextHandler({source:frame.contentWindow,data:{type:'compass-next-program',assignment_id:'assigned-A'}},
    ()=>frame,caseState,id=>({program_status:'active'}),
    async (...args)=>opens.push(args),async()=>{},(...args)=>notices.push(args));
  assert.equal(opens.length,1,'Must not navigate to another student assignment');
