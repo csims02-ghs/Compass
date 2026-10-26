@@ -59,6 +59,14 @@ window.__COMPASS_STUDENT_RUNTIME__={
    await page.locator('#taskStage img').first().waitFor({state:'attached'});
    const picture=await page.locator('#taskStage img').first().evaluate(el=>({ok:el.complete&&el.naturalWidth>0,width:el.naturalWidth}));
    assert(picture.ok,'Embedded source picture must decode');
+   const pictureSizing=await page.locator('#taskStage .stim-card img').first().evaluate(el=>{
+     const box=el.getBoundingClientRect(),card=el.closest('.stim-card')?.getBoundingClientRect();
+     return {height:box.height,cardHeight:card?.height||0,withinCard:!!card&&box.left>=card.left-2&&box.right<=card.right+2};
+   });
+   const expected=Math.min(325,Math.max(178,size.height*.38));
+   assert(Math.abs(pictureSizing.height-expected)<=4,
+     'Picture element should follow selected responsive size: '+JSON.stringify({pictureSizing,expected}));
+   assert(pictureSizing.withinCard,'Expanded action image must fit inside its existing card');
    for(let i=0;i<5;i++)await page.evaluate(()=>{
       document.querySelector('[data-score="correct"]').click();
       document.getElementById('saveNextBtn').click();
