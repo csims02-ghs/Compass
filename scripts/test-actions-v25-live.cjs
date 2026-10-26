@@ -186,8 +186,9 @@ window.__COMPASS_STUDENT_RUNTIME__={
      });
      const btn=document.getElementById('nextProgramBtn');
      btn.hidden=false;btn.disabled=false;btn.click();
-     await Promise.resolve();
-     return {blocked:btn.disabled,emitted:messages.length};
+     await new Promise(resolve=>setTimeout(resolve,80));
+     return {blocked:btn.disabled,hidden:btn.hidden,emitted:messages.length,
+       linked:window.COMPASS_REVIEW_SETUP?.isStudentLinked?.(),validation:document.getElementById('validation').textContent};
    });
    console.log('ACTIONS_FORCED_NAVIGATION_DIAG',JSON.stringify(blockedNavigation));
    assert.equal(blockedNavigation.emitted,0,'Failed session must never emit next-program navigation');
