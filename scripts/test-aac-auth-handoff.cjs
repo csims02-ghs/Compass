@@ -48,9 +48,7 @@ async function run({eventOrigin='https://compass.example.com',assignmentId='assi
  const begin=html.indexOf(nextStart),stop=html.indexOf(nextEnd,begin+nextStart.length);
  assert(begin>=0&&stop>begin,'Student Next Program listener must exist');
  const nextBlock=html.slice(begin,stop);
- const nextHandler=new Function('e','
-})().catch(err=>{console.error(err);process.exitCode=1;});
-,'state','programById','openRunner','advanceProgramList','toast',
+ const nextHandler=new Function('e','$','state','programById','openRunner','advanceProgramList','toast',
   'return (async()=>{'+nextBlock+'})()');
  const opens=[],notices=[];
  const frame={contentWindow:{}};
