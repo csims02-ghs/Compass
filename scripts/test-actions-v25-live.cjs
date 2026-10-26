@@ -179,13 +179,13 @@ window.__COMPASS_STUDENT_RUNTIME__={
      calls:window.__qaCalls.filter(x=>x.action==='save_session').length,
      denial:window.__qaDeny
    }))));
-   assert.equal(await page.locator('#nextProgramBtn').isDisabled(),true,'Saving failure must block Next Program');
+   assert.equal(await page.locator('#nextProgramBtn').isHidden(),true,'Saving failure must hide Next Program until a confirmed save');
    const blockedNavigation=await page.evaluate(async()=>{
      const messages=[];window.addEventListener('message',event=>{
        if(event.data?.type==='compass-next-program')messages.push(event.data);
      });
      const btn=document.getElementById('nextProgramBtn');
-     btn.disabled=false;btn.click();
+     btn.hidden=false;btn.disabled=false;btn.click();
      await Promise.resolve();
      return {blocked:btn.disabled,emitted:messages.length};
    });
@@ -196,6 +196,7 @@ window.__COMPASS_STUDENT_RUNTIME__={
    await page.locator('#saveNextBtn').click();
    await page.waitForFunction(()=>window.COMPASS_REVIEW_TEST?.getRun()?.syncedSessionId);
    assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false,'Confirmed retry unlocks Next Program');
+   assert.equal(await page.locator('#nextProgramBtn').isVisible(),true,'Confirmed retry reveals Next Program');
    assert.equal(errors.length,0,errors.join('\n'));
    console.log('ACTIONS_V25_LIVE_PROBE_PASS',JSON.stringify({width:size.width,
      targets:basics.targets,benchmarks:basics.bench,embeddedImages:basics.embedded,
