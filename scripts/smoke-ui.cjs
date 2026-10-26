@@ -301,6 +301,8 @@ console.log('COMPASS_UNIFIED_SPED_BCBA_QUEUE_PASS');
    assert(programsAudit.assign&&programsAudit.editAnchor&&programsAudit.domain&&programsAudit.sort&&programsAudit.page&&programsAudit.preview,'Program Library workflow controls must be present');
    assert(programsAudit.cards.every(c=>c.right<=width+2),'Program summary cards overflow desktop viewport');
    assert(programsAudit.buttons.every(b=>b.width>30&&b.height>=28),'Program action buttons must remain readable');
+   assert(programsAudit.buttons.every(b=>Math.abs(b.y-programsAudit.buttons[0].y)<=2),'Preview and Open buttons must share one row on desktop');
+   assert(programsAudit.buttons.every(b=>b.right<=programsAudit.actionCell.right+1),'Program action buttons must not overflow action cell');
    console.log('PROGRAM_LIBRARY_DESIGN_PASS '+JSON.stringify({width,programsAudit}));
 
 
