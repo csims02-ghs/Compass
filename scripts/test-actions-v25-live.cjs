@@ -2,10 +2,15 @@
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const URL='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program-runner?program_code=CP-ACTION-IDENTIFICATION&format=html';
+const earlyStudentContext='<script id="compass-actions-student-context-v1">window.COMPASS_CONTEXT='+JSON.stringify({
+ studentId:'test-student-actions',studentCompassProgramId:'test-assignment-actions',
+ assignmentId:'test-assignment-actions',behaviors:['Noncompliance'],
+ iepGoals:[{id:'test-goal',title:'Synthetic IEP Actions Goal'}],instanceConfig:{}
+})+'</'+'script>';
 const fixture=String.raw`<script id="actions-synthetic-student-qa">
 window.__COMPASS_STUDENT_RUNTIME__={
  context:{assignment_id:'test-assignment-actions',student_id:'test-student-actions',student_name:'Synthetic Actions Learner',
-   studentCompassProgramId:'test-assignment-actions',staff_id:'test-staff',primary_behaviors:['Non-Compliance'],secondary_behaviors:[],
+   studentCompassProgramId:'test-assignment-actions',staff_id:'test-staff',primary_behaviors:['Noncompliance'],secondary_behaviors:[],
    iep_goals:[{id:'test-goal',title:'Synthetic IEP Actions Goal'}],instance_config:{programSetup:null},targets:[]},
  securePost:async p=>{
    if(window.__qaDeny)throw Error('Synthetic authorization denied');
@@ -32,9 +37,16 @@ window.__COMPASS_STUDENT_RUNTIME__={
  try{
   for(const size of [{width:1024,height:768},{width:900,height:580}]){
    const page=await browser.newPage({viewport:size});
+   // Simulate a prior browser visit where the student selection had been cleared:
+   // live Student Profile must restore its assigned behavior regardless of local state.
+   await page.addInitScript(()=>{
+     const key='COMPASS_V25_REVIEW_CP-ACTION-IDENTIFICATION_STUDENT_test-student-actions_ASSIGNMENT_test-assignment-actions';
+     localStorage.setItem(key,JSON.stringify({runs:[],events:[],behaviorEvents:[],selectedBehaviors:[],
+       behaviorAssignmentSignature:'Noncompliance'}));
+   });
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('**/compass-program-runner?*',async route=>{
-     await route.fulfill({status:200,contentType:'text/html',body:html.replace('</body>',fixture+'</body>')});
+     await route.fulfill({status:200,contentType:'text/html',body:html.replace('</head>',earlyStudentContext+'</head>').replace('</body>',fixture+'</body>')});
    });
    await page.goto(URL);
    await page.locator('#targetSelect option').first().waitFor({state:'attached'});
@@ -134,7 +146,16 @@ window.__COMPASS_STUDENT_RUNTIME__={
    await page.waitForFunction(()=>window.__qaCalls.some(x=>x.action==='save_setup'));
    await page.locator('#runBtn').click();
    const behaviorInitially=await page.evaluate(()=>window.COMPASS_REVIEW_TEST.getRun().behaviors);
-   assert(Object.prototype.hasOwnProperty.call(behaviorInitially,'Non-Compliance'),'Assigned student behavior should load automatically');
+   assert(Object.prototype.hasOwnProperty.call(behaviorInitially,'Noncompliance'),'Assigned student behavior should load automatically');
+   const tracking=await page.evaluate(()=>{
+     const container=document.querySelector('#runPage .score-card'),block=document.querySelector('#runPage .behavior-block');
+     const c=container.getBoundingClientRect(),b=block.getBoundingClientRect();
+     return {label:document.getElementById('behaviorList').textContent,
+       trackingVisible:!!block&&b.top>=c.top-8&&b.top<c.bottom-15,
+       trackTop:b.top,scorePanelBottom:c.bottom,staffPanelScrolled:container.scrollTop};
+   });
+   assert(tracking.label.includes('Noncompliance'),'The behavior label must render in staff controls');
+   console.log('ACTIONS_STUDENT_BEHAVIOR_VISIBILITY',JSON.stringify({width:size.width,tracking}));
    await page.locator('#behaviorList .inc').first().click();
    const opportunities=await page.evaluate(()=>window.COMPASS_REVIEW_TEST.getRun().steps.length);
    for(let i=0;i<opportunities;i++)await page.evaluate(index=>{
@@ -158,7 +179,7 @@ window.__COMPASS_STUDENT_RUNTIME__={
    assert(sessionCalls[0].counts.independent_correct>=1,'Remaining independent target trials retained');
    assert(sessionCalls[0].counts.independent_correct<opportunities-1,'Prompted must not count as independent correct');
    assert.equal(sessionCalls[0].goal_id,'test-goal');
-   assert.equal(sessionCalls[0].behavior_counts['Non-Compliance'],1,'Inherited student behavior must save with the teaching session');
+   assert.equal(sessionCalls[0].behavior_counts['Noncompliance'],1,'Inherited student behavior must save with the teaching session');
    assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false);
    await page.locator('#backBtn').click();
    await page.evaluate(()=>{window.__qaDeny=true});
