@@ -1253,13 +1253,14 @@ body{display:block!important;width:100%;min-width:0}
           </article>
         </div>
 
+
           <article id="compassRoleFocus" class="card compass-role-focus" hidden>
-            <div class="crf-head"><div><span class="crf-eyebrow">ROLE WORKSPACE</span><h2 id="compassRoleFocusTitle">Professional Priorities</h2><p id="compassRoleFocusDesc">Your actionable review queue</p></div>
-              <div id="compassRoleViewSwitch" class="crf-switch" hidden><button data-role-view="sped" type="button" class="active">SPED</button><button data-role-view="bcba" type="button">BCBA</button></div>
-            </div>
+            <div class="crf-head"><div><span class="crf-eyebrow">STUDENT SUPPORT WORKSPACE</span><h2 id="compassRoleFocusTitle">Student Support &amp; Progress</h2><p id="compassRoleFocusDesc">IEP goals, behavioral assessments, clinical reviews, and student priorities in one place</p></div></div>
             <div id="compassRoleMetrics" class="crf-metrics" aria-live="polite"></div>
+            <div class="crf-queue-head"><div><h3>Student Support Priorities</h3><p>Actionable items across IEP goals and behavioral assessments</p></div><span id="compassRoleQueueCount" class="crf-queue-count">—</span></div>
+            <div id="compassRoleFilters" class="crf-filters" role="group" aria-label="Filter student support priorities"><button data-role-filter="all" type="button" aria-pressed="true" class="active">All Priorities</button><button data-role-filter="iep" type="button" aria-pressed="false">IEP Goals</button><button data-role-filter="assessment" type="button" aria-pressed="false">Assessments</button></div>
             <div id="compassRoleItems" class="crf-items"></div>
-            <p class="crf-caveat" id="compassRoleCaveat"></p>
+            <div class="crf-footer"><p class="crf-caveat" id="compassRoleCaveat">Only assigned students appear here. Educational review and clinical sign-off remain separate professional actions.</p><button id="compassRoleShowMore" type="button" class="link-btn" hidden>Show more priorities</button></div>
           </article>
       </div>
       </section>
@@ -2117,7 +2118,6 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   }
 
   // Role-aware SPED/BCBA workspaces. This adds no new access to student records.
-  let compassRoleView='sped';
   function compassCanReviewFBA(){return state.profile?.role==='bcba'}
   function compassIsSpedRole(){return /^(sped|special_education|special_education_teacher|special_ed|teacher|case_manager)$/.test(String(state.profile?.role||''))}
   function compassIsBcbaRole(){return /^(bcba|behavior_specialist|behaviorist)$/.test(String(state.profile?.role||''))}
@@ -2125,33 +2125,59 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function compassHasEvidenceTools(){return compassIsSpedRole()||compassIsBcbaRole()||compassIsManagerRole()}
   function compassAssignedRecords(){const scope=homeScopeIds();return{goals:(state.globalGoals||[]).filter(g=>scope.has(g.student_id)&&g.status==='active'),assessments:(state.globalAssessments||[]).filter(a=>scope.has(a.student_id))}}
   function compassMetric(label,value,desc){return '<div class="crf-metric"><small>'+esc(label)+'</small><strong>'+esc(value)+'</strong><span>'+esc(desc)+'</span></div>'}
+
+  // Combined SPED / BCBA overview. Clinical signing permissions remain enforced elsewhere.
+  let compassRoleFilter='all',compassRoleExpanded=false;
+  function compassUnifiedRoleItems(goals,assessments){
+    const today=todayISO(),future=new Date();future.setDate(future.getDate()+30);const cutoff=localISO(future),items=[];
+    const fmt=d=>d?fmtDate(d):'Not scheduled';
+    goals.forEach(g=>{
+      const reasons=[];let priority=8,date='9999-12-31';
+      if(g.review_date&&g.review_date<=today){reasons.push('IEP review overdue / due today ('+fmt(g.review_date)+')');priority=0;date=g.review_date}
+      else if(g.review_date&&g.review_date<=cutoff){reasons.push('IEP review approaching ('+fmt(g.review_date)+')');priority=1;date=g.review_date}
+      if(g.baseline_percent==null){reasons.push('Baseline not recorded');priority=Math.min(priority,3)}
+      if(!g.review_date){reasons.push('Review date not scheduled');priority=Math.min(priority,5)}
+      if(g.target_percent==null){reasons.push('Numeric target missing');priority=Math.min(priority,6)}
+      if(!reasons.length)return;
+      items.push({type:'iep',key:'goal:'+g.id,studentId:g.student_id,title:g.title||'IEP Goal',student:studentLabel(studentById(g.student_id)),reason:reasons.join(' · '),date,priority,flag:priority===0?'Overdue':priority===1?'Due Soon':'IEP'});
+    });
+    assessments.filter(a=>['fba','fba_bip_data','functional_behavior_assessment'].includes(a.assessment_type)).forEach(a=>{
+      const status=assessmentStatus(a),data=assessmentData(a),progress=assessmentProgress(a,'fba'),due=assessmentDueDate(a);
+      const legacy=status==='completed'&&!data.clinical_review?.reviewer_id;
+      if(status==='completed'&&!legacy||status==='cancelled'||status==='discontinued')return;
+      const overdue=!!due&&due<=today,soon=!!due&&due<=cutoff;
+      let priority=legacy?3:progress>=100?2:4;
+      if(overdue)priority=0;else if(soon)priority=1;
+      const reason=legacy?'Completed before independent sign-off was recorded':progress>=100?'Sections documented · awaiting clinician review':progress+'% of sections documented · '+roleName(status);
+      items.push({type:'assessment',key:'assessment:'+a.id,recordId:a.id,studentId:a.student_id,title:'Functional Behavior Assessment',student:studentLabel(studentById(a.student_id)),reason:(soon?'Due '+fmt(due)+' · ':'')+reason,date:due||'9999-12-31',priority,flag:legacy?'Review':overdue?'Overdue':soon?'Due Soon':'FBA'});
+    });
+    items.sort((a,b)=>a.priority-b.priority||a.date.localeCompare(b.date)||a.student.localeCompare(b.student)||a.title.localeCompare(b.title)||a.key.localeCompare(b.key));
+    return items;
+  }
   function renderRoleFocus(){
     const panel=$('compassRoleFocus');if(!panel)return;
-    const manager=compassIsManagerRole(),bcba=compassIsBcbaRole(),sped=compassIsSpedRole();
-    if(!manager&&!bcba&&!sped){panel.hidden=true;return}
+    if(!compassIsManagerRole()&&!compassIsBcbaRole()&&!compassIsSpedRole()){panel.hidden=true;return}
     panel.hidden=false;
-    const switcher=$('compassRoleViewSwitch');switcher.hidden=!manager;
-    const current=manager?compassRoleView:(bcba?'bcba':'sped');
-    switcher.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.roleView===current));
-    const {goals,assessments}=compassAssignedRecords(),today=todayISO(),end=new Date();end.setDate(end.getDate()+30);const cutoff=localISO(end);
-    if(current==='sped'){
-      const due=goals.filter(g=>g.review_date&&g.review_date<=cutoff).length;
-      const missingBaseline=goals.filter(g=>g.baseline_percent==null).length;
-      const missingTargets=goals.filter(g=>g.target_percent==null).length;
-      $('compassRoleFocusTitle').textContent='SPED · IEP Implementation & Progress';
-      $('compassRoleFocusDesc').textContent='Goals, evidence quality, and upcoming review dates for your assigned students';
-      $('compassRoleMetrics').innerHTML=compassMetric('Active IEP Goals',goals.length,'Across assigned students')+compassMetric('Reviews Due / Overdue',due,'Next 30 days, including overdue')+compassMetric('Baseline Missing',missingBaseline,'Goals needing baseline entry')+compassMetric('Target Missing',missingTargets,'Goals without a numeric target');
-      const flagged=goals.filter(g=>!g.review_date||g.baseline_percent==null||g.target_percent==null||g.review_date<=cutoff).slice(0,5);
-      $('compassRoleItems').innerHTML=flagged.length?flagged.map(g=>'<button class="crf-item" type="button" data-role-goal="'+esc(g.student_id)+'"><strong>'+esc(studentLabel(studentById(g.student_id)))+'</strong><span>'+esc(g.title||'IEP Goal')+'</span><small>'+(!g.review_date?'Review not scheduled':g.review_date<=cutoff?'Review date approaching or overdue':'Check goal fields')+'</small></button>').join(''):'<div class="crf-empty">No goal-field or review-date flags found in your assigned records.</div>';
-      $('compassRoleCaveat').textContent='Open an individual student’s Goals tab to review direct program evidence and print an evidence summary. No IEP conclusions are generated automatically.';
-    }else{
-      const fba=assessments.filter(a=>normalizeAssessmentType(a.assessment_type)==='fba'),draft=fba.filter(a=>assessmentStatus(a)!=='completed'),pending=fba.filter(a=>assessmentProgress(a,'fba')===100&&assessmentStatus(a)!=='completed'),reviewed=fba.filter(a=>assessmentStatus(a)==='completed'&&assessmentData(a).clinical_review?.reviewer_id),legacy=fba.filter(a=>assessmentStatus(a)==='completed'&&!assessmentData(a).clinical_review?.reviewer_id);
-      $('compassRoleFocusTitle').textContent='BCBA · Clinical Assessment Review';
-      $('compassRoleFocusDesc').textContent='FBA progress, clinical readiness, and clinician-signed assessment records';
-      $('compassRoleMetrics').innerHTML=compassMetric('FBA Drafts',draft.length,'Active or incomplete')+compassMetric('100% Sections, Pending Review',pending.length,'Not clinically finalized')+compassMetric('BCBA-Reviewed FBA',reviewed.length,'Signed under new review protocol')+compassMetric('Legacy Completed',legacy.length,'Sign-off not independently verified');
-      $('compassRoleItems').innerHTML=draft.slice(0,5).map(a=>'<button class="crf-item" type="button" data-role-fba="'+esc(a.student_id)+'"><strong>'+esc(studentLabel(studentById(a.student_id)))+'</strong><span>Functional Behavior Assessment</span><small>'+assessmentProgress(a,'fba')+'% sections documented · '+esc(roleName(assessmentStatus(a)))+'</small></button>').join('')||'<div class="crf-empty">No active FBA drafts in your assigned caseload.</div>';
-      $('compassRoleCaveat').textContent='Only a BCBA account may sign off on an FBA. Section completion, readiness checks, and clinical approval are distinct.';
-    }
+    const {goals,assessments}=compassAssignedRecords(),future=new Date();future.setDate(future.getDate()+30);const cutoff=localISO(future);
+    const baselineMissing=goals.filter(g=>g.baseline_percent==null).length;
+    const reviewsDue=goals.filter(g=>g.review_date&&g.review_date<=cutoff).length;
+    const fba=assessments.filter(a=>['fba','fba_bip_data','functional_behavior_assessment'].includes(a.assessment_type));
+    const fbaInProgress=fba.filter(a=>!['completed','cancelled','discontinued'].includes(assessmentStatus(a))).length;
+    $('compassRoleFocusTitle').textContent='Student Support & Progress';
+    $('compassRoleFocusDesc').textContent='IEP goals, behavioral assessments, clinical reviews, and student priorities in one place';
+    $('compassRoleMetrics').innerHTML=compassMetric('Active IEP Goals',goals.length,'Across assigned students')+compassMetric('Baselines Missing',baselineMissing,'Goals without recorded baseline')+compassMetric('Reviews Due',reviewsDue,'IEP reviews within 30 days or overdue')+compassMetric('FBAs in Progress',fbaInProgress,'Open functional behavior assessments');
+    const list=compassUnifiedRoleItems(goals,assessments);
+    const filtered=list.filter(x=>compassRoleFilter==='all'||x.type===compassRoleFilter);
+    const limit=compassRoleExpanded?50:8;
+    $('compassRoleItems').innerHTML=filtered.length?filtered.slice(0,limit).map(x=>{
+      const action=x.type==='iep'?'data-role-goal="'+esc(x.studentId)+'" data-role-goal-id="'+esc(x.key.slice(5))+'"':'data-role-fba="'+esc(x.studentId)+'" data-role-fba-id="'+esc(x.recordId)+'"';
+      return '<button class="crf-item" type="button" '+action+'><div class="crf-item-main"><strong>'+esc(x.student)+'</strong><span>'+esc(x.title)+'</span><small>'+esc(x.reason)+'</small></div><span class="crf-item-tag '+(x.flag==='Overdue'?'overdue':x.flag==='Due Soon'?'soon':x.type==='assessment'?'assessment':'iep')+'">'+esc(x.flag)+'</span></button>';
+    }).join(''):'<div class="crf-empty">No outstanding '+(compassRoleFilter==='all'?'IEP or assessment':compassRoleFilter==='iep'?'IEP':'assessment')+' priorities for assigned students.</div>';
+    $('compassRoleQueueCount').textContent=filtered.length+' item'+(filtered.length===1?'':'s');
+    $('compassRoleFilters').querySelectorAll('[data-role-filter]').forEach(button=>{const selected=button.dataset.roleFilter===compassRoleFilter;button.classList.toggle('active',selected);button.setAttribute('aria-pressed',String(selected))});
+    const more=$('compassRoleShowMore');more.hidden=filtered.length<=8;
+    more.textContent=compassRoleExpanded?'Show fewer priorities':'Show more priorities ('+(filtered.length-8)+' remaining)';
+    $('compassRoleCaveat').textContent=compassRoleExpanded&&filtered.length>50?'Showing the first 50 priorities. Open My Caseload or Assessments for more records. Clinical sign-off remains BCBA-only.':'Only assigned students appear here. IEP progress review and BCBA clinical sign-off remain distinct professional actions.';
   }
   function compassGoalEvidence(goal){
     const ids=new Set(linkedIds(goal.id)),sessions=(state.sessions||[]).filter(s=>s.selected_goal_id===goal.id&&ids.has(s.student_compass_program_id));
@@ -2229,9 +2255,14 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     $('clinicalFinalizeBtn')?.addEventListener('click',compassFinalizeFBA);
     $('clinicalReopenBtn')?.addEventListener('click',compassReopenFBA);
     document.addEventListener('click',async e=>{
-      const role=e.target.closest('[data-role-view]');if(role&&compassIsManagerRole()){compassRoleView=role.dataset.roleView;renderRoleFocus();return}
-      const goal=e.target.closest('[data-role-goal]');if(goal){await openStudent(goal.dataset.roleGoal);showProfileTab('goals');return}
-      const fba=e.target.closest('[data-role-fba]');if(fba){state.assessmentStudent=studentById(fba.dataset.roleFba);state.assessmentType='fba';state.assessmentRecord=assessmentRecordFor(fba.dataset.roleFba,'fba');showPage('assessments');renderAssessmentWorkspace();return}
+      const filter=e.target.closest('[data-role-filter]');if(filter&&$('compassRoleFilters')?.contains(filter)){compassRoleFilter=filter.dataset.roleFilter;compassRoleExpanded=false;renderRoleFocus();return}
+      if(e.target.closest('#compassRoleShowMore')){compassRoleExpanded=!compassRoleExpanded;renderRoleFocus();return}
+      const goal=e.target.closest('[data-role-goal]');if(goal&&homeScopeIds().has(goal.dataset.roleGoal)){await openStudent(goal.dataset.roleGoal);showProfileTab('goals');return}
+      const fba=e.target.closest('[data-role-fba]');if(fba&&homeScopeIds().has(fba.dataset.roleFba)){
+        const rec=state.globalAssessments.find(a=>a.id===fba.dataset.roleFbaId&&a.student_id===fba.dataset.roleFba);
+        if(!rec)return;
+        state.assessmentStudent=studentById(rec.student_id);state.assessmentType='fba';state.assessmentRecord=rec;
+        showPage('assessments');renderAssessmentWorkspace();return}
     });
   }
 
