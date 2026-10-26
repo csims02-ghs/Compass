@@ -3463,7 +3463,21 @@ if(removed.length){
         access_token:session.access_token},e.origin);
       return;
     }
-    if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-program-session-saved'){try{await loadStudentProfile()}catch(syncErr){console.warn('COMPASS goal and progress refresh deferred',syncErr)}return}if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-next-program'){if(state.activeProgramListRun){await advanceProgramList()}else{toast('Next Program is available when a Program List is running.','error')}return}if(e.data?.type==='compass-offline-session-save'&&e.data.row){await queueOfflineSession(e.data.row);return}if(e.data?.type==='compass-program-session-saved'){toast('Program session saved to COMPASS.');if(state.activeProgramListRun&&!state.activeProgramListRun.offline){await advanceProgramList();return}if(state.currentStudent)loadStudentProfile().then(()=>loadGlobalData());else loadGlobalData()}});
+    if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-program-session-saved'){try{await loadStudentProfile()}catch(syncErr){console.warn('COMPASS goal and progress refresh deferred',syncErr)}return}if(e.source===$('runnerFrame')?.contentWindow&&e.data?.type==='compass-next-program'){
+    if(state.activeProgramListRun){await advanceProgramList();return}
+    const assignmentId=String(e.data.assignment_id||'');
+    const current=state.studentPrograms.find(sp=>sp.id===assignmentId&&sp.student_id===state.currentStudent?.id&&sp.status==='active');
+    if(!current){toast('Assigned student program not found. Reopen Student Profile.','error');return}
+    const available=state.studentPrograms.filter(sp=>sp.student_id===current.student_id&&sp.status==='active'&&
+      (programById(sp.program_id)?.program_status!=='on_hold'||state.profile?.role==='platform_admin'))
+      .sort((a,b)=>Number(a.display_order||0)-Number(b.display_order||0));
+    const position=available.findIndex(sp=>sp.id===assignmentId);
+    const next=position>=0?available[position+1]:null;
+    if(!next?.view_token){toast('This was the last active program assigned to the student.','success');return}
+    const definition=programById(next.program_id);
+    await openRunner(next.id,next.view_token,definition?.program_name||'Next Program');
+    return
+  }if(e.data?.type==='compass-offline-session-save'&&e.data.row){await queueOfflineSession(e.data.row);return}if(e.data?.type==='compass-program-session-saved'){toast('Program session saved to COMPASS.');if(state.activeProgramListRun&&!state.activeProgramListRun.offline){await advanceProgramList();return}if(state.currentStudent)loadStudentProfile().then(()=>loadGlobalData());else loadGlobalData()}});
 
   $('assessmentDataCollectionBtn')?.addEventListener('click',()=>{state.dataCollectionStudent=assessmentStudent();showPage('data-collection')});
   $('openBehaviorDataBtn')?.addEventListener('click',()=>{state.dataCollectionStudent=state.currentStudent;showPage('data-collection')});
