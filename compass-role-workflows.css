@@ -1,14 +1,11 @@
 /* COMPASS role-aware professional review tools, October 2026.
    All styles are scoped to SPED/BCBA UI and do not change RBT runner. */
-#compassRoleFocus[hidden],#iepEvidenceReviewPanel[hidden],#clinicalReadinessPanel[hidden],#compassRoleViewSwitch[hidden]{display:none!important}
+#compassRoleFocus[hidden],#iepEvidenceReviewPanel[hidden],#clinicalReadinessPanel[hidden]{display:none!important}
 #page-home .compass-role-focus{margin-top:17px;border:1px solid #deeaf5;border-radius:15px;padding:20px;min-width:0;background:#fff;box-shadow:0 4px 16px rgba(20,52,92,.045)}
 #page-home .crf-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 #page-home .crf-eyebrow{font-size:10px;letter-spacing:.095em;color:#4674ad;font-weight:850}
 #page-home .crf-head h2{font-size:19px;letter-spacing:-.3px;color:#123961;margin:3px 0 4px;font-weight:850}
 #page-home .crf-head p{font-size:12px;color:#637f9c;margin:0}
-#page-home .crf-switch{display:flex;background:#edf3fc;border-radius:10px;padding:3px;gap:2px;border:1px solid #dce8f3}
-#page-home .crf-switch button{border:0;border-radius:8px;background:transparent;color:#527494;padding:8px 15px;font-size:12px;font-weight:800;cursor:pointer}
-#page-home .crf-switch button.active{background:#fff;color:#155bbb;box-shadow:0 2px 8px rgba(15,45,88,.1)}
 #page-home .crf-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
 #page-home .crf-metric{display:flex;flex-direction:column;gap:4px;border:1px solid #e0eaf5;border-radius:11px;background:#f7faff;padding:15px;min-width:0}
 #page-home .crf-metric small{font-size:11px;color:#23476d;font-weight:750}
@@ -22,6 +19,33 @@
 #page-home .crf-item small{font-size:10px;color:#69829e;grid-column:1/-1}
 #page-home .crf-empty{font-size:12px;color:#67809e;grid-column:1/-1;border:1px dashed #d7e7f2;border-radius:9px;padding:16px;background:#fcfdff}
 #page-home .crf-caveat{margin:12px 0 0;font-size:11px;line-height:1.45;color:#657f9b}
+
+/* Unified Student Support & Progress priorities — no discipline toggle. */
+#page-home .crf-queue-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:21px;margin-bottom:11px}
+#page-home .crf-queue-head h3{color:#143c69;font-size:15px;font-weight:860;letter-spacing:-.15px}
+#page-home .crf-queue-head p{font-size:11px;color:#7087a2;margin:4px 0 0}
+#page-home .crf-queue-count{font-size:11px;color:#4c75a2;background:#eff5fd;border:1px solid #deebf8;border-radius:30px;padding:7px 11px;font-weight:800}
+#page-home .crf-filters{display:inline-flex;align-items:center;gap:3px;border:1px solid #d9e5f4;border-radius:11px;background:#eff4fc;padding:3px;margin-bottom:14px;max-width:100%;flex-wrap:wrap}
+#page-home .crf-filters button{padding:9px 15px;min-height:34px;border:0;border-radius:8px;background:transparent;color:#557392;font-size:11px;font-weight:840;cursor:pointer}
+#page-home .crf-filters button.active,#page-home .crf-filters button[aria-pressed="true"]{background:#fff;color:#125bc0;box-shadow:0 2px 7px rgba(15,54,102,.1)}
+#page-home .crf-filters button:focus-visible,#page-home .crf-item:focus-visible,#page-home #compassRoleShowMore:focus-visible{outline:3px solid #92bbf8;outline-offset:2px}
+#page-home .crf-items{margin-top:0;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:9px}
+#page-home .crf-item{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:84px;padding:13px 14px}
+#page-home .crf-item-main{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;flex:1}
+#page-home .crf-item-main strong{font-size:11px;font-weight:870;color:#144882}
+#page-home .crf-item-main span{font-size:12px;color:#153b6b;font-weight:750;line-height:1.25;overflow-wrap:anywhere}
+#page-home .crf-item-main small{font-size:10px;color:#67819e;line-height:1.4}
+#page-home .crf-item-tag{align-self:flex-start;flex:none;border-radius:7px;border:1px solid #dfe8f5;padding:5px 8px;background:#e9f1ff;color:#2661af;font-size:10px;font-weight:850}
+#page-home .crf-item-tag.assessment{background:#f0eaff;color:#7045bf;border-color:#e7ddff}
+#page-home .crf-item-tag.overdue{background:#ffe9ed;color:#ac364a;border-color:#f5d8de}
+#page-home .crf-item-tag.soon{background:#fff2d7;color:#8c5e11;border-color:#efdfb8}
+#page-home .crf-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:14px}
+#page-home .crf-footer .crf-caveat{font-size:11px;color:#69819c;line-height:1.45;margin:0;flex:1}
+#page-home #compassRoleShowMore{font-size:11px;white-space:nowrap;color:#1761c7}
+#page-home #compassRoleShowMore[hidden]{display:none!important}
+@media(max-width:780px){#page-home .crf-items{grid-template-columns:1fr}#page-home .crf-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:450px){#page-home .crf-filters{width:100%;display:flex}#page-home .crf-filters button{flex:1;padding:9px 5px;font-size:10px}#page-home .crf-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 #iepEvidenceReviewPanel{margin-top:18px}
 #iepEvidenceReviewPanel>.panel-head{align-items:flex-start;gap:12px;flex-wrap:wrap}
 #iepEvidenceReviewPanel .panel-head p{font-size:12px;line-height:1.4;margin:5px 0 0}
