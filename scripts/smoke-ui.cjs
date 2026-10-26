@@ -271,6 +271,39 @@ console.log('COMPASS_UNIFIED_SPED_BCBA_QUEUE_PASS');
 
    console.log('CASELOAD_BROWSER_LAYOUT_PASS '+JSON.stringify({width,caseloadAudit}));
 
+   const programsAudit=await page.evaluate(()=>{
+     const home=document.getElementById('page-home'),view=document.getElementById('page-programs');
+     home.classList.remove('active');home.hidden=true;home.style.display='none';
+     view.classList.add('active');view.hidden=false;view.style.display='block';
+     const rect=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};
+     const cards=[...view.querySelectorAll('.compass-programs-metrics > article')].map(rect);
+     const editAnchor=view.querySelector('#programEditButtonAnchor');
+     const body=view.querySelector('#programLibraryBody');
+     const fixture=document.createElement('tr');
+     fixture.innerHTML='<td>Fixture Program</td><td>Receptive</td><td>ELA</td><td>Visual check</td><td>Active</td><td>Oct 26, 2026</td><td><div class="cp-row-actions"><button class="btn small" data-preview-library-program="fixture">Preview</button><button class="btn small cp-program-open">Open</button></div></td>';
+     body.appendChild(fixture);
+     const last=fixture.querySelector('td:last-child'),lastRect=rect(last),buttons=[...fixture.querySelectorAll('button')].map(rect);
+     const audit={cards,headers:[...view.querySelectorAll('.cp-program-table thead th')].map(n=>n.textContent.trim()),
+       editAnchor:!!editAnchor,assign:!!view.querySelector('#assignFromLibraryBtn'),domain:!!view.querySelector('#programSkillDomainFilter'),
+       sort:!!view.querySelector('#programLibrarySort'),page:!!view.querySelector('#programNextPage'),
+       preview:!!fixture.querySelector('[data-preview-library-program]'),actionCell:lastRect,buttons,
+       tableRight:rect(view.querySelector('.cp-program-table')).right,scrollRight:rect(view.querySelector('.cp-table-scroll')).right,
+       metricsRight:rect(view.querySelector('.compass-programs-metrics')).right,
+       headerRight:rect(view.querySelector('.compass-program-library')).right};
+     fixture.remove();
+     view.classList.remove('active');view.hidden=true;view.style.display='none';
+     home.classList.add('active');home.hidden=false;home.style.display='block';
+     return audit;
+   });
+   assert.equal(programsAudit.cards.length,4,'All four Programs dashboard metrics must remain');
+   assert(programsAudit.cards.every(c=>Math.abs(c.y-programsAudit.cards[0].y)<=2),'Program metrics must remain in one row at desktop widths');
+   assert.deepEqual(programsAudit.headers,['Program Name','Program Type / Skill','Domain','Description','Status','Last Updated','Actions'],'Program library must show approved columns');
+   assert(programsAudit.assign&&programsAudit.editAnchor&&programsAudit.domain&&programsAudit.sort&&programsAudit.page&&programsAudit.preview,'Program Library workflow controls must be present');
+   assert(programsAudit.cards.every(c=>c.right<=width+2),'Program summary cards overflow desktop viewport');
+   assert(programsAudit.buttons.every(b=>b.width>30&&b.height>=28),'Program action buttons must remain readable');
+   console.log('PROGRAM_LIBRARY_DESIGN_PASS '+JSON.stringify({width,programsAudit}));
+
+
    const nav=await page.evaluate(()=>{
      const sidebar=document.querySelector('#sidebar'),scroll=document.querySelector('#compassSidebarScroll');
      const toggle=document.querySelector('#compassAdditionalToggle'),additional=document.querySelector('#compassAdditionalNav');
