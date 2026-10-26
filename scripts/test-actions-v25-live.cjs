@@ -77,6 +77,20 @@ window.__COMPASS_STUDENT_RUNTIME__={
    assert.equal(five.type,'probe');
    assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false);
    await page.locator('#backBtn').click();
+   for(const [benchmark,count] of [['2',10],['3',20],['4',40]]){
+     await page.locator('#benchmarkSelect').selectOption(benchmark);
+     await page.locator('#circuitSelect').selectOption('probe');
+     assert(await page.locator('#targetSelect').isDisabled(),'Full benchmark must lock target selector');
+     await page.locator('#runBtn').click();
+     for(let step=0;step<count;step++)await page.evaluate(()=>{
+       document.querySelector('[data-score="correct"]').click();
+       document.getElementById('saveNextBtn').click();
+     });
+     await page.waitForFunction(()=>window.COMPASS_REVIEW_TEST?.getRun()?.syncedProbeId);
+     const scored=await page.evaluate(()=>window.COMPASS_REVIEW_TEST.getRun().events.length);
+     assert.equal(scored,count,'Benchmark '+benchmark+' must record every target');
+     await page.locator('#backBtn').click();
+   }
    await page.locator('#benchmarkSelect').selectOption('5');
    await page.locator('#circuitSelect').selectOption('probe');
    assert(await page.locator('#targetSelect').isDisabled());
@@ -109,7 +123,7 @@ window.__COMPASS_STUDENT_RUNTIME__={
        hasOverflow:document.documentElement.scrollWidth>innerWidth+3}));
    assert.equal(res.run.events.length,100);
    assert.equal(res.run.events.filter(e=>e.material_verified===true).length,100,'Every scored full-probe event requires accessible materials');
-   assert.equal(res.calls.filter(x=>x.action==='save_probe').length,2);
+   assert.equal(res.calls.filter(x=>x.action==='save_probe').length,5);
    assert.equal(res.calls.filter(x=>x.action==='save_probe').at(-1).events.length,100);
    assert.equal(res.calls.filter(x=>x.action==='save_session').length,0);
    await page.locator('#backBtn').click();
@@ -119,6 +133,9 @@ window.__COMPASS_STUDENT_RUNTIME__={
    await page.locator('#saveSetupBtn').click();
    await page.waitForFunction(()=>window.__qaCalls.some(x=>x.action==='save_setup'));
    await page.locator('#runBtn').click();
+   const behaviorInitially=await page.evaluate(()=>window.COMPASS_REVIEW_TEST.getRun().behaviors);
+   assert(Object.prototype.hasOwnProperty.call(behaviorInitially,'Non-Compliance'),'Assigned student behavior should load automatically');
+   await page.locator('#behaviorList .inc').first().click();
    const opportunities=await page.evaluate(()=>window.COMPASS_REVIEW_TEST.getRun().steps.length);
    for(let i=0;i<opportunities;i++)await page.evaluate(index=>{
      const outcome=index===0?'incorrect':index===1?'prompted':'correct';
@@ -141,6 +158,7 @@ window.__COMPASS_STUDENT_RUNTIME__={
    assert(sessionCalls[0].counts.independent_correct>=1,'Remaining independent target trials retained');
    assert(sessionCalls[0].counts.independent_correct<opportunities-1,'Prompted must not count as independent correct');
    assert.equal(sessionCalls[0].goal_id,'test-goal');
+   assert.equal(sessionCalls[0].behavior_counts['Non-Compliance'],1,'Inherited student behavior must save with the teaching session');
    assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false);
    assert.equal(errors.length,0,errors.join('\n'));
    console.log('ACTIONS_V25_LIVE_PROBE_PASS',JSON.stringify({width:size.width,
