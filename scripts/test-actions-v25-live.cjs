@@ -160,6 +160,21 @@ window.__COMPASS_STUDENT_RUNTIME__={
    assert.equal(sessionCalls[0].goal_id,'test-goal');
    assert.equal(sessionCalls[0].behavior_counts['Non-Compliance'],1,'Inherited student behavior must save with the teaching session');
    assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false);
+   await page.locator('#backBtn').click();
+   await page.evaluate(()=>{window.__qaDeny=true});
+   await page.locator('#runBtn').click();
+   const retryTrials=await page.evaluate(()=>window.COMPASS_REVIEW_TEST.getRun().steps.length);
+   for(let i=0;i<retryTrials;i++)await page.evaluate(()=>{
+     document.querySelector('[data-score="correct"]').click();
+     document.getElementById('saveNextBtn').click();
+   });
+   await page.waitForFunction(()=>document.getElementById('validation').textContent.includes('save failed'));
+   assert.equal(await page.locator('#nextProgramBtn').isDisabled(),true,'Saving failure must block Next Program');
+   assert.equal(await page.locator('#saveNextBtn').innerText(),'Retry COMPASS Save');
+   await page.evaluate(()=>{window.__qaDeny=false});
+   await page.locator('#saveNextBtn').click();
+   await page.waitForFunction(()=>window.COMPASS_REVIEW_TEST?.getRun()?.syncedSessionId);
+   assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false,'Confirmed retry unlocks Next Program');
    assert.equal(errors.length,0,errors.join('\n'));
    console.log('ACTIONS_V25_LIVE_PROBE_PASS',JSON.stringify({width:size.width,
      targets:basics.targets,benchmarks:basics.bench,embeddedImages:basics.embedded,
