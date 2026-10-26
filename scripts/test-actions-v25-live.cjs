@@ -84,6 +84,25 @@ window.__COMPASS_STUDENT_RUNTIME__={
    assert.equal(res.calls.filter(x=>x.action==='save_probe').length,2);
    assert.equal(res.calls.filter(x=>x.action==='save_probe').at(-1).events.length,100);
    assert.equal(res.calls.filter(x=>x.action==='save_session').length,0);
+   await page.locator('#backBtn').click();
+   await page.locator('#circuitSelect').selectOption({index:0});
+   await page.locator('#benchmarkSelect').selectOption('1');
+   await page.locator('#goalSelect').selectOption('test-goal');
+   await page.locator('#saveSetupBtn').click();
+   await page.waitForFunction(()=>window.__qaCalls.some(x=>x.action==='save_setup'));
+   await page.locator('#runBtn').click();
+   const opportunities=await page.evaluate(()=>window.COMPASS_REVIEW_TEST.getRun().steps.length);
+   for(let i=0;i<opportunities;i++)await page.evaluate(()=>{
+     document.querySelector('[data-score="correct"]').click();
+     document.getElementById('saveNextBtn').click();
+   });
+   await page.waitForFunction(()=>window.COMPASS_REVIEW_TEST?.getRun()?.syncedSessionId);
+   const sessionCalls=await page.evaluate(()=>window.__qaCalls.filter(x=>x.action==='save_session'));
+   assert.equal(sessionCalls.length,1,'Teaching run must invoke student-specific save');
+   assert.equal(sessionCalls[0].program_version,25);
+   assert.equal(sessionCalls[0].trial_events.length,opportunities);
+   assert.equal(sessionCalls[0].goal_id,'test-goal');
+   assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false);
    assert.equal(errors.length,0,errors.join('\n'));
    console.log('ACTIONS_V25_LIVE_PROBE_PASS',JSON.stringify({width:size.width,
      targets:basics.targets,benchmarks:basics.bench,embeddedImages:basics.embedded,
