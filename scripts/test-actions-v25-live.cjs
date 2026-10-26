@@ -169,6 +169,16 @@ window.__COMPASS_STUDENT_RUNTIME__={
      document.getElementById('saveNextBtn').click();
    });
    await page.waitForFunction(()=>document.getElementById('validation').textContent.includes('save failed'));
+   console.log('ACTIONS_FAILED_SAVE_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({
+     validation:document.getElementById('validation').textContent,
+     nextDisabled:document.getElementById('nextProgramBtn').disabled,
+     nextHidden:document.getElementById('nextProgramBtn').hidden,
+     retryDisabled:document.getElementById('saveNextBtn').disabled,
+     run:window.COMPASS_REVIEW_TEST.getRun()?.id,
+     syncedSessionId:window.COMPASS_REVIEW_TEST.getRun()?.syncedSessionId||null,
+     calls:window.__qaCalls.filter(x=>x.action==='save_session').length,
+     denial:window.__qaDeny
+   }))));
    assert.equal(await page.locator('#nextProgramBtn').isDisabled(),true,'Saving failure must block Next Program');
    assert.equal(await page.locator('#saveNextBtn').innerText(),'Retry COMPASS Save');
    await page.evaluate(()=>{window.__qaDeny=false});
