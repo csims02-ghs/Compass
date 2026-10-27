@@ -649,6 +649,10 @@ body{display:block!important;width:100%;min-width:0}
 .edit-programs-modal .program-edit-actions{grid-column:5!important;grid-row:1!important;justify-self:end!important;align-self:start!important;flex-wrap:wrap!important}
 .edit-programs-modal .program-primary-label,.edit-programs-modal .program-add-label{font-size:12px;font-weight:780;color:#315273;display:grid;gap:4px}
 .edit-programs-modal .program-add-label{font-weight:650}
+.edit-programs-modal .program-primary-row{display:grid;grid-template-columns:minmax(150px,1fr) auto;align-items:end;gap:10px;min-width:0}
+.edit-programs-modal .program-primary-row .program-goal-line{flex-wrap:nowrap}
+.edit-programs-modal .program-primary-row .program-goal-type{min-width:0;display:none}
+@media(max-width:750px){.edit-programs-modal .program-primary-row{grid-template-columns:1fr!important}.edit-programs-modal .program-primary-row .program-goal-line{justify-content:flex-start}}
 .edit-programs-modal .program-goal-line{display:flex;align-items:end;gap:7px;min-width:0;flex-wrap:wrap}
 .edit-programs-modal .program-goal-type{font-size:12px;min-width:65px;font-weight:780;align-self:center;color:#2363a0}
 .edit-programs-modal .program-goal-line select{min-width:160px;max-width:240px;flex:1}
@@ -3237,10 +3241,11 @@ function activeStudentProgramsOrdered(){
       const ids=linkedIds(sp),p=primaryId(sp),extras=ids.filter(id=>id!==p);
       const programName=programById(sp.program_id)?.program_name||'Program';
       return '<div class="program-goals-control" data-program-goals="'+esc(sp.id)+'">'+
-        '<label class="program-primary-label">IEP Goal'+
+        '<div class="program-primary-row"><label class="program-primary-label">IEP Goal'+
           '<select class="control" data-primary-goal="'+esc(sp.id)+'" aria-label="Primary IEP Goal for '+esc(programName)+'">'+
             optionsFor(p)+'</select></label>'+
-        (p?goalFields(p,sp.id,true):'<small class="muted">Choose a linked IEP goal for tracking and graphs.</small>')+
+        (p?goalFields(p,sp.id,true):'<small class="muted">Choose an IEP goal to link.</small>')+
+        '</div>'+
         extras.map(id=>goalFields(id,sp.id)).join('')+
         '<label class="program-add-label">+ Multiple Goals'+
         '<select class="control" data-add-goal="'+esc(sp.id)+'" aria-label="Add another IEP goal">'+
@@ -3269,7 +3274,7 @@ function activeStudentProgramsOrdered(){
     openModal('Edit Programs',toolbar+
       '<div id="editProgramsList" class="program-edit-list">'+
       (body||'<div class="empty-state compact">No assigned programs.</div>')+'</div>'+
-      '<div class="program-edit-note">Select multiple programs to remove them together. Removing an assignment keeps all prior session, trial, and graph history. Use ↑ and ↓ to change order.</div>',
+      '<div class="program-edit-note">Link one or several IEP goals per program. Enter the IEP Goal # (1–20) and its Target %. These are the student’s IEP goal fields and follow the goal into Program Setup and IEP graphs. Removing a program preserves historical data. Use ↑ and ↓ to reorder.</div>',
       ()=>{
         $('modal').classList.add('edit-programs-modal');
         $('modalBackdrop').classList.add('edit-programs-backdrop');
