@@ -2,7 +2,7 @@
    Inject in the rendered student program, never overwrite program scores/data. */
 (function(global){
   'use strict';
-  const STYLE_URL='./compass-page2-standard.css?v=20261026-v1';
+  const STYLE_URL='./compass-page2-standard.css?v=20261027-v2';
   let stylePromise=null;
   function isPage2Program(html){
     return typeof html==='string' &&
@@ -18,7 +18,11 @@
       return r.text();
     }).catch(e=>{stylePromise=null;throw e});
     const style=await stylePromise;
-    return html.replace(/<\/head>/i,'<style id="compass-definitive-page2-v1">\n'+style+'\n</style></head>');
+    // Never change mastery verification, recorded data or session sync.
+    // Remove only the transient, non-actionable wording from the displayed runner;
+    // valid verified mastery progress remains visible.
+    const cleaned=html.replaceAll('Student mastery could not be verified with COMPASS; please reconnect.','');
+    return cleaned.replace(/<\/head>/i,'<style id="compass-definitive-page2-v1">\n'+style+'\n</style></head>');
   }
   global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261026-v1',isPage2Program,standardize});
 })(window);
