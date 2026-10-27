@@ -17,6 +17,8 @@ const mount=$("bpSetupMount"),label=document.createElement("h2");label.className
 const extra=document.createElement("div");extra.className="setup-grid copy-extra-fields";
 extra.innerHTML='<div class="setup-field"><label for="bpCircuit">Circuit</label><select id="bpCircuit"><option value="teaching">N/A · Teaching</option><option value="probe">Probe Benchmark</option></select></div><div class="setup-field"><label for="bpMasteryDays">Mastery qualifying dates</label><input id="bpMasteryDays" type="number" min="1" max="15" value="3"></div>';
 mount.appendChild(extra);setup.classList.add("bp-setup");mount.appendChild(setup);$("setupBody").hidden=false;
+const oldInstructions=$("cp107Instructions");
+if(oldInstructions){const guide=$("bpPageOne").querySelector(".bp-guide");guide.insertBefore(oldInstructions,$("bpRun"));oldInstructions.open=true;}
 const groups=(Array.isArray(C.benchmark_sets)?C.benchmark_sets:[]).map((b,i)=>({
  id:Number(b.id)||i+1,key:"copy-b"+(Number(b.id)||i+1),label:"Benchmark "+(Number(b.id)||i+1)+" — "+b.name,
  members:(Array.isArray(C.targets)?C.targets:[]).filter(t=>Number(t.metadata?.benchmark)===Number(b.id)).map(t=>Number(t.id))
@@ -33,6 +35,9 @@ const drawing=document.getElementById("cp107DrawingWorkspace");
 if(drawing)$("bpChoicesMount").appendChild(drawing);
 const paperNote=document.createElement("div");paperNote.id="copyPaperNote";paperNote.hidden=true;paperNote.textContent="Copy the model on separate paper. Staff score the learner’s response."; $("bpChoicesMount").appendChild(paperNote);
 const staffTask=document.createElement("div");staffTask.id="copyStaffTask";$("bpScoringMount").appendChild(staffTask);
+const retry=document.createElement("button");retry.type="button";retry.id="copyRetrySave";retry.className="bp-btn";retry.textContent="Retry Saving";retry.hidden=true;
+$("bpScoring").insertBefore(retry,$("bpNextProgram"));
+retry.addEventListener("click",()=>window.__COPY_RETRY_SAVE__?.());
 $("bpChoicesMount").appendChild(choices);$("bpScoringMount").append(top,response);$("bpBehaviorMount").appendChild(behavior);
 workspace.hidden=true;workspace.style.display="none";
 const $text=(id,v)=>{if($(id))$(id).textContent=String(v)};
@@ -108,11 +113,12 @@ function syncVisual(){
 if(typeof renderAll==="function"){const originalRender=renderAll;renderAll=function(){originalRender();syncVisual()}}
 function begin(){
  if(!$("setupTarget")?.value)return;
- const mastery=Number($("setupMastery")?.value);
+ const mastery=Number($("setupMastery")?.value),days=Number($("bpMasteryDays")?.value);
+ if(!Number.isInteger(days)||days<1||days>15){alert("Qualifying mastery dates must be from 1 to 15.");return;}
  if(!Number.isFinite(mastery)||mastery<0||mastery>100){alert("Mastery must be between 0 and 100 percent.");return}
  $("setupScoring").value="staff";
  if(typeof applySetup==="function")applySetup(true);
- mode="run";complete=false;seen=new Set();recorded=[];syncState="pending";
+ mode="run";complete=false;seen=new Set();recorded=[];syncState="pending";$("copyRetrySave").hidden=true;
  $("bpPageOne").hidden=true;$("bpPageTwo").hidden=false;$("bpBack").hidden=false;
  $("bpNextProgram").disabled=true;
  $text("bpSaveStatus","Score each T/D step · awaiting completion.");
@@ -120,12 +126,13 @@ function begin(){
 }
 $("bpRun").addEventListener("click",begin);
 $("bpBack").addEventListener("click",()=>{
- if(mode==="run"&&!complete&&recorded.length&&!confirm("Return to setup? Complete or save the current run first."))return;
+ if(mode==="run"&&recorded.length&&(!complete||syncState!=="saved")){$text("bpSaveStatus","Finish and save the run before returning to setup.");return;}
  mode="setup";$("bpPageTwo").hidden=true;$("bpPageOne").hidden=false;$("bpBack").hidden=true;
  if(imageOnly)toggleImages();$text("bpStepText","Program Setup → Run Program");
 });
 $("bpEnd").addEventListener("click",()=>{
- if(!confirm("End this session? Unsaved work may be queued for retry."))return;
+ if(mode==="run"&&recorded.length&&(!complete||syncState!=="saved")){$text("bpSaveStatus","Finish and confirm save before ending.");return;}
+ if(!confirm("End this session?"))return;
  if(typeof endSession==="function")endSession();
  window.__COMPASS_STUDENT_RUNTIME__?.autoSave?.("end_session",true);
  $text("bpStepText","Session ended");
@@ -146,9 +153,11 @@ function onScore(result){
   return recorded.map(x=>({
    trial_number:x.step,trial_type:x.type==="Distractor"?"D":"T",
    result:x.result==="correct"?"independent_correct":x.result==="prompted"?"prompted":"incorrect",
-   target_name:targetName,target_key:targetRow?.key||null,
+   target_name:x.target||targetName,target_key:C.targets.find(t=>t.name===(x.target||targetName))?.key||targetRow?.key||null,
    benchmark_key:benchmark?.key||null,goal_id:window.__COMPASS_ACTIVE_GOAL_ID__||null,
-   occurred_at:x.time,source:"copying_shapes_v25_step"
+   occurred_at:x.time,source:"copying_shapes_v25_step",probe:$("bpCircuit").value==="probe",
+   writing_method:$("cp107WritingMethod")?.value||"tablet",skill_type:$("setupSkillType").value,
+   instructional_date:new Date(x.time).toLocaleDateString("en-CA")
   }));
  };
  window.__COMPASS_TRIAL_CAPTURE__=capture;
@@ -168,17 +177,22 @@ function onScore(result){
     trial_events:capture.getEvents(),behavior_counts:typeof counts==="object"?{...counts}:{},instructional_date:new Date().toLocaleDateString("en-CA"),
     mastery_percentage:Number($("setupMastery").value),mastery_dates_required:Number($("bpMasteryDays").value),
     writing_method:$("cp107WritingMethod")?.value||"tablet",target_key:chosen?.key||null};
+ const commit=()=>{
  const saver=probe?runtime?.securePost?.({action:"save_probe",...metadata}):runtime?.autoSave?.("program_complete",true);
+ $("copyRetrySave").hidden=true;
  if(saver){
   Promise.resolve(saver).then(result=>{
    syncState=(result?.ok||probe&&result?.probe_saved)?"saved":"failed";
    $text("bpSaveStatus",syncState==="saved"?(probe?"Benchmark probe saved to COMPASS.":"Teaching session saved to COMPASS."):"Save not confirmed; retry before continuing.");
    $("bpNextProgram").disabled=syncState!=="saved";
-  }).catch(()=>{syncState="failed";$text("bpSaveStatus","Save failed; retry before continuing.");$("bpNextProgram").disabled=true});
+   $("copyRetrySave").hidden=syncState==="saved";
+  }).catch(()=>{syncState="failed";$text("bpSaveStatus","Save failed; retry before continuing.");$("bpNextProgram").disabled=true;$("copyRetrySave").hidden=false});
  }else{
   syncState="unverified";$text("bpSaveStatus",probe?"Probe saving requires a connected COMPASS session.":"Signed-in COMPASS save bridge not detected.");
-  $("bpNextProgram").disabled=true;
+  $("bpNextProgram").disabled=true;$("copyRetrySave").hidden=false;
  }
+ };
+ window.__COPY_RETRY_SAVE__=commit;commit();
 }
 [["correctBtn","correct"],["incorrectBtn","incorrect"],["promptedBtn","prompted"]].forEach(([id,result])=>{
  $(id)?.addEventListener("click",()=>onScore(result));
