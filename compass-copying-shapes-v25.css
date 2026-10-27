@@ -93,8 +93,8 @@ html.bp-v25,html.bp-v25 body{height:100%;overflow:hidden!important;background:#f
 .copy-v25 .bp-title{font-size:clamp(17px,1.8vw,21px)}
 .copy-v25 #bpPageOne .bp-setup{min-width:0;overflow-y:auto!important;overflow-x:hidden!important}
 .copy-v25 #bpPageOne .bp-setup #setupBody{overflow:visible!important}
-body[data-cp107="1"] #setupBody .setup-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;min-width:0!important;gap:10px!important}
-body[data-cp107="1"] #setupBody .setup-grid>*{grid-column:auto!important;grid-row:auto!important;min-width:0!important}
+html.copy-v25 body[data-cp107="1"] #setupBody .setup-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;min-width:0!important;gap:10px!important}
+html.copy-v25 body[data-cp107="1"] #setupBody .setup-grid>*{grid-column:auto!important;grid-row:auto!important;min-width:0!important}
 .copy-v25 #setupBody .cp107-pos-scoring-writing{grid-template-columns:1fr 1fr!important;grid-column:1/-1!important}
 .copy-v25 #setupBody .cp107-pos-target{grid-column:1/-1!important}
 .copy-v25 #setupBody .cp107-pos-actions{grid-column:1/-1!important;display:flex!important}
@@ -128,3 +128,5 @@ body[data-cp107="1"] #setupBody .setup-grid>*{grid-column:auto!important;grid-ro
 .copy-v25 #bpRoot.bp-images-only #copyVisualModel{flex-basis:clamp(170px,34vh,270px)}
 @media(max-height:730px){.copy-v25 #copyVisualModel{flex-basis:115px}.copy-v25 #cp107DrawingWorkspace .cp107-canvas-shell{min-height:105px!important}.copy-v25 #bpInstruction{min-height:48px;padding:5px!important;font-size:20px}.copy-v25 #bpMaterial{padding:7px!important}}
 @media (orientation:portrait) and (max-width:900px){.copy-v25 #bpPageOne::before{content:"Rotate iPad to landscape for COMPASS Copying Shapes";display:block;background:#fff2d5;color:#854d0e;padding:10px;border-radius:8px}.copy-v25 #bpPageTwo::before{content:"Rotate to landscape";display:block;background:#fff2d5;color:#854d0e;padding:10px;border-radius:8px}}
+
+.copy-v25 #copyRetrySave{min-height:38px;border-color:#b68e3b;background:#fff9ea;color:#805400;font-size:12px}
