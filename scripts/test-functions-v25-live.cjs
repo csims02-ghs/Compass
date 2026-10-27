@@ -37,6 +37,7 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    await page.locator('#bpRun').click();
    await page.locator('#bpPageTwo').waitFor({state:'visible'});
    const metrics=await page.evaluate(()=>{const a=document.querySelector('#bpMaterial').getBoundingClientRect(),b=document.querySelector('#bpScoring').getBoundingClientRect(),n=document.querySelector('#behaviorItems');return {ratio:a.width/(a.width+b.width),behaviors:n.querySelectorAll('.behavior').length,scroll:n.scrollHeight>n.clientHeight,old:document.querySelector('#workspace').getBoundingClientRect().height};});
+   console.log('FUNCTIONS_V25_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({context:window.__COMPASS_STUDENT_RUNTIME__?.context?.behaviors,exists:typeof setBehaviorDefinitions,defs:typeof behaviorDefinitions==='undefined'?null:behaviorDefinitions,container:document.getElementById('behaviorItems')?.outerHTML.slice(0,950),state:window.__COMPASS_FUNCTIONS_V25__?.getState()}))));
    assert(metrics.ratio>.60&&metrics.ratio<.76,'Page2 ratio '+JSON.stringify(metrics));
    assert.equal(metrics.behaviors,8);assert(metrics.scroll);assert.equal(metrics.old,0);
    await page.locator('#bpImages').click();
