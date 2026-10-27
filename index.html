@@ -636,6 +636,40 @@ body{display:block!important;width:100%;min-width:0}
 
 </style>
 
+<style id="compass-edit-programs-iep-matrix">
+/* COMPASS edit-programs IEP matrix: checkbox, name, setup, IEP goals, actions */
+.edit-programs-modal .program-edit-row{
+ display:grid!important;grid-template-columns:46px minmax(145px,.9fr) minmax(120px,.55fr) minmax(310px,2.1fr) auto!important;
+ align-items:start!important;gap:12px!important;padding:14px!important;min-height:86px!important;
+}
+.edit-programs-modal .program-edit-checkbox{grid-column:1!important;grid-row:1!important;justify-self:center!important;align-self:start!important;padding-top:10px!important}
+.edit-programs-modal .program-edit-details{grid-column:2!important;grid-row:1!important;justify-self:start!important;text-align:left!important;align-self:center!important}
+.edit-programs-modal .program-edit-setup{grid-column:3;grid-row:1;align-self:start;min-height:44px;white-space:nowrap}
+.edit-programs-modal .program-goals-control{grid-column:4;grid-row:1;display:grid;gap:7px;min-width:0}
+.edit-programs-modal .program-edit-actions{grid-column:5!important;grid-row:1!important;justify-self:end!important;align-self:start!important;flex-wrap:wrap!important}
+.edit-programs-modal .program-primary-label,.edit-programs-modal .program-add-label{font-size:12px;font-weight:780;color:#315273;display:grid;gap:4px}
+.edit-programs-modal .program-add-label{font-weight:650}
+.edit-programs-modal .program-goal-line{display:flex;align-items:end;gap:7px;min-width:0;flex-wrap:wrap}
+.edit-programs-modal .program-goal-type{font-size:12px;min-width:65px;font-weight:780;align-self:center;color:#2363a0}
+.edit-programs-modal .program-goal-line select{min-width:160px;max-width:240px;flex:1}
+.edit-programs-modal .program-goal-number,.edit-programs-modal .program-goal-percent{display:grid;gap:3px;font-size:11px;font-weight:740;color:#42627e}
+.edit-programs-modal .program-goal-number input{width:75px}
+.edit-programs-modal .program-goal-percent input{width:89px}
+.edit-programs-modal .program-goals-control .control{min-height:39px;padding:7px;border:1px solid #c9d9ec;border-radius:9px;background:#fff}
+.edit-programs-modal .program-goal-save-status{font-size:11px;color:#466682}
+@media(max-width:1120px){
+ .edit-programs-modal .program-edit-row{grid-template-columns:40px minmax(130px,.9fr) minmax(110px,.6fr) minmax(225px,2fr)!important}
+ .edit-programs-modal .program-edit-actions{grid-column:2 / -1!important;grid-row:2!important;justify-self:start!important}
+}
+@media(max-width:680px){
+ .edit-programs-modal .program-edit-row{grid-template-columns:42px minmax(0,1fr)!important;row-gap:8px!important}
+ .edit-programs-modal .program-edit-checkbox{grid-column:1!important;grid-row:1!important}
+ .edit-programs-modal .program-edit-details{grid-column:2!important;grid-row:1!important}
+ .edit-programs-modal .program-edit-setup{grid-column:2!important;grid-row:2!important;justify-self:start}
+ .edit-programs-modal .program-goals-control{grid-column:1 / -1!important;grid-row:3!important}
+ .edit-programs-modal .program-edit-actions{grid-column:1 / -1!important;grid-row:4!important}
+}
+</style>
 <style id="compass-acquisition-data-modal-styles">
 /* Responsive single-assignment acquisition sheet: never scroll horizontally. */
 #modal.acquisition-data-modal{
@@ -3177,16 +3211,54 @@ function activeStudentProgramsOrdered(){
     const rows=activeStudentProgramsOrdered().filter(sp=>sp.student_id===studentId);
     const selected=new Set();
     let processing=false;
+    const studentGoals=(state.goals||[]).filter(g=>g.student_id===studentId&&g.status!=='discontinued');
+    const getGoal=id=>studentGoals.find(g=>g.id===id);
+    const goalLabel=g=>'IEP Goal '+(g.annual_goal_number||'—')+' · '+String(g.title||g.goal_area||'Untitled goal');
+    const optionsFor=(value,exclude=[])=>'<option value="">Select IEP Goal</option>'+
+      studentGoals.filter(g=>g.id===value||!exclude.includes(g.id)).map(g=>
+        '<option value="'+esc(g.id)+'"'+(g.id===value?' selected':'')+'>'+esc(goalLabel(g))+'</option>').join('');
+    const linkedIds=sp=>[...new Set((state.goalLinks||[]).filter(l=>l.student_compass_program_id===sp.id&&getGoal(l.goal_id)).map(l=>l.goal_id))];
+    const primaryId=sp=>{
+      const ids=linkedIds(sp),cfg=sp.instance_config||{},
+        configured=cfg.primary_iep_goal_id||cfg.programSetup?.goalSelect||cfg.programSetup?.setupIepGoal||'';
+      return ids.includes(configured)?configured:(ids[0]||'');
+    };
+    const goalFields=(id,spid,primary=false)=>{
+      const g=getGoal(id);if(!g)return '';
+      return '<div class="program-goal-line" data-goal-line="'+esc(id)+'">'+
+        (primary?'<span class="program-goal-type">Primary</span>':
+          '<select class="control" data-change-extra-goal="'+esc(spid)+'" data-old-goal="'+esc(id)+'" aria-label="Change additional IEP goal">'+optionsFor(id,[...linkedIds(rows.find(x=>x.id===spid)||{})])+'</select>')+
+        '<label class="program-goal-number">Goal #<input class="control" type="number" inputmode="numeric" min="1" max="20" step="1" placeholder="#" value="'+(g.annual_goal_number??'')+'" data-goal-number="'+esc(id)+'" aria-label="IEP goal number"></label>'+
+        '<label class="program-goal-percent">Target %<input class="control" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="'+esc(g.target_percent??80)+'" data-goal-percent="'+esc(id)+'" aria-label="IEP goal target percentage"></label>'+
+        (primary?'':'<button class="btn small" type="button" data-unlink-extra="'+esc(spid)+'" data-goal-id="'+esc(id)+'" title="Unlink additional goal">×</button>')+
+        '</div>';
+    };
+    const goalsBlock=sp=>{
+      const ids=linkedIds(sp),p=primaryId(sp),extras=ids.filter(id=>id!==p);
+      const programName=programById(sp.program_id)?.program_name||'Program';
+      return '<div class="program-goals-control" data-program-goals="'+esc(sp.id)+'">'+
+        '<label class="program-primary-label">IEP Goal'+
+          '<select class="control" data-primary-goal="'+esc(sp.id)+'" aria-label="Primary IEP Goal for '+esc(programName)+'">'+
+            optionsFor(p)+'</select></label>'+
+        (p?goalFields(p,sp.id,true):'<small class="muted">Choose a linked IEP goal for tracking and graphs.</small>')+
+        extras.map(id=>goalFields(id,sp.id)).join('')+
+        '<label class="program-add-label">+ Multiple Goals'+
+        '<select class="control" data-add-goal="'+esc(sp.id)+'" aria-label="Add another IEP goal">'+
+          optionsFor('',ids)+'</select></label>'+
+        '<div class="program-goal-save-status" role="status" aria-live="polite" data-goal-status="'+esc(sp.id)+'"></div>'+
+      '</div>';
+    };
     const body=rows.map((sp,i)=>{
       const p=programById(sp.program_id),name=p?.program_name||'Program',id=esc(sp.id);
       return '<div class="program-edit-row" data-program-edit-row="'+id+'">'+
+        '<label class="program-edit-checkbox"><input type="checkbox" data-select-assigned="'+id+'" aria-label="Select '+esc(name)+'"></label>'+
+        '<div class="program-edit-details"><strong>'+(i+1)+'. '+esc(name)+'</strong><small>'+esc(programDomain(p))+' · '+esc(roleName(sp.status))+'</small></div>'+
+        '<button class="btn program-edit-setup" type="button" data-edit-setup="'+id+'" aria-label="Open '+esc(name)+' Program Setup">Program Setup</button>'+
+        goalsBlock(sp)+
         '<div class="program-edit-actions">'+
         '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="-1" '+(i===0?'disabled':'')+' title="Move up" aria-label="Move '+esc(name)+' up">↑</button>'+
         '<button class="btn move-btn" type="button" data-move-assigned="'+id+'" data-move-dir="1" '+(i===rows.length-1?'disabled':'')+' title="Move down" aria-label="Move '+esc(name)+' down">↓</button>'+
         '<button class="btn danger" type="button" data-remove-assigned="'+id+'" aria-label="Remove '+esc(name)+'">Remove</button></div>'+
-        '<div class="program-edit-details"><strong>'+(i+1)+'. '+esc(name)+'</strong>'+
-        '<small>'+esc(programDomain(p))+' · '+esc(roleName(sp.status))+' · Goal '+Number(sp.goal_percentage??80)+'%</small></div>'+
-        '<label class="program-edit-checkbox"><input type="checkbox" data-select-assigned="'+id+'" aria-label="Select '+esc(name)+'"></label>'+
         '</div>';
     }).join('');
     const toolbar='<div class="program-bulk-toolbar" aria-label="Bulk program selection">'+
@@ -3220,6 +3292,122 @@ function activeStudentProgramsOrdered(){
         }
         // Move buttons retain their original disabled state after busy/idle transitions.
         list.querySelectorAll('button:disabled').forEach(btn=>btn.dataset.originalDisabled='true');
+        async function saveLinkedGoals(sp,primary,desired){
+          if(state.currentStudent?.id!==studentId)throw Error('Student changed. Reopen Edit Programs.');
+          const available=new Set(studentGoals.map(g=>g.id)),valid=[...new Set(desired.filter(id=>available.has(id)))];
+          if(primary&&!available.has(primary))throw Error('Unknown IEP goal');
+          if(primary&&!valid.includes(primary))valid.unshift(primary);
+          const old=linkedIds(sp),newLinks=valid.filter(id=>!old.includes(id)),removed=old.filter(id=>!valid.includes(id));
+          const cfg=sp.instance_config&&typeof sp.instance_config==='object'?sp.instance_config:{};
+          const setup={...(cfg.programSetup||{}),goalSelect:primary||''};
+          const nextCfg={...cfg,primary_iep_goal_id:primary||null,
+            additional_iep_goal_ids:valid.filter(id=>id!==primary),programSetup:setup};
+          const target=getGoal(primary)?.target_percent;
+          const patch={instance_config:nextCfg,...(target==null?{}:{goal_percentage:Number(target)})};
+          // Existing links remain in place until the updated assignment is confirmed.
+          const {data:saved,error:saveErr}=await sb.from('student_compass_programs')
+            .update(patch).eq('id',sp.id).eq('student_id',studentId).select('id,instance_config,goal_percentage').maybeSingle();
+          if(saveErr||!saved)throw Error(saveErr?.message||'Program goal settings were not saved');
+          if(newLinks.length){
+            const {error}=await sb.from('student_iep_goal_compass_programs').insert(
+              newLinks.map(goalId=>({goal_id:goalId,student_compass_program_id:sp.id})));
+            if(error)throw Error('IEP goal link could not be added: '+error.message);
+          }
+          if(removed.length){
+            const {error}=await sb.from('student_iep_goal_compass_programs').delete()
+              .eq('student_compass_program_id',sp.id).in('goal_id',removed);
+            if(error)throw Error('IEP goal link could not be removed: '+error.message);
+          }
+          sp.instance_config=saved.instance_config;
+          sp.goal_percentage=saved.goal_percentage;
+          state.goalLinks=(state.goalLinks||[]).filter(l=>l.student_compass_program_id!==sp.id)
+            .concat(valid.map(id=>({goal_id:id,student_compass_program_id:sp.id})));
+        }
+        async function saveGoalField(input){
+          const goalId=input.dataset.goalNumber||input.dataset.goalPercent;
+          const goal=getGoal(goalId);if(!goal)return;
+          const pct=!!input.dataset.goalPercent;
+          const raw=String(input.value).trim();
+          if((!pct&&raw!==''&&(!/^\d+$/.test(raw)||Number(raw)<1||Number(raw)>20))||
+             (pct&&(raw===''||!Number.isFinite(Number(raw))||Number(raw)<0||Number(raw)>100))){
+            input.setCustomValidity(pct?'Enter a percentage between 0 and 100':'Enter a whole goal number from 1 to 20');
+            input.reportValidity();return;
+          }
+          input.setCustomValidity('');
+          const name=pct?'target_percent':'annual_goal_number';
+          const value=raw===''?null:Number(raw);
+          if(Number(goal[name])===value||(goal[name]==null&&value==null))return;
+          input.disabled=true;
+          const {data,error}=await sb.from('student_iep_goals').update({[name]:value})
+            .eq('id',goalId).eq('student_id',studentId).select('*').maybeSingle();
+          input.disabled=false;
+          if(error||!data){toast(error?.message||'Could not update IEP goal','error');return}
+          Object.assign(goal,data);
+          // This percentage belongs to the IEP goal itself and follows every
+          // program linked to that goal, including the IEP progress graph.
+          if(pct){
+            const related=rows.filter(sp=>primaryId(sp)===goalId);
+            for(const relatedSp of related){
+              const {error:programError}=await sb.from('student_compass_programs')
+                .update({goal_percentage:Number(value)}).eq('id',relatedSp.id).eq('student_id',studentId);
+              if(!programError)relatedSp.goal_percentage=Number(value);
+            }
+          }
+          list.querySelectorAll('[data-goal-number="'+goalId+'"]').forEach(el=>{if(el!==input)el.value=data.annual_goal_number??''});
+          list.querySelectorAll('[data-goal-percent="'+goalId+'"]').forEach(el=>{if(el!==input)el.value=data.target_percent??80});
+          toast('IEP Goal '+(pct?'percentage':'number')+' saved.','success');
+        }
+        async function handleGoalChange(input){
+          if(processing)return;
+          const spid=input.dataset.primaryGoal||input.dataset.addGoal||input.dataset.changeExtraGoal;
+          const sp=rows.find(x=>x.id===spid);if(!sp)return;
+          const box=input.closest('.program-goals-control'),before=primaryId(sp),
+            linked=linkedIds(sp),value=input.value;
+          let primary=before,desired=linked.slice();
+          if(input.hasAttribute('data-primary-goal')){
+            primary=value;if(value&&!desired.includes(value))desired.push(value);
+          }else if(input.hasAttribute('data-add-goal')){
+            if(value&&!desired.includes(value))desired.push(value);
+            if(!primary&&value)primary=value;
+          }else if(input.hasAttribute('data-change-extra-goal')){
+            const old=input.dataset.oldGoal;
+            desired=desired.filter(id=>id!==old);
+            if(value&&!desired.includes(value))desired.push(value);
+          }
+          const status=box?.querySelector('[data-goal-status]');
+          if(status)status.textContent='Saving IEP goal links…';
+          processing=true;refreshSelection();
+          try{
+            await saveLinkedGoals(sp,primary,desired);
+            if(box)box.outerHTML=goalsBlock(sp);
+            renderGoals();renderGoalAchievement();
+          }catch(error){
+            toast(error?.message||'IEP goals could not be saved. Reload and try again.','error');
+            await loadStudentProfile();
+          }finally{processing=false;refreshSelection()}
+        }
+        list.addEventListener('change',e=>{
+          const input=e.target;
+          if(input.matches('[data-primary-goal],[data-add-goal],[data-change-extra-goal]')){
+            handleGoalChange(input);return;
+          }
+          if(input.matches('[data-goal-number],[data-goal-percent]')){
+            saveGoalField(input);return;
+          }
+        });
+        list.addEventListener('click',async e=>{
+          const extra=e.target.closest('[data-unlink-extra]');
+          if(!extra||processing)return;
+          const sp=rows.find(x=>x.id===extra.dataset.unlinkExtra);if(!sp)return;
+          processing=true;refreshSelection();
+          try{
+            await saveLinkedGoals(sp,primaryId(sp),linkedIds(sp).filter(id=>id!==extra.dataset.goalId));
+            const box=list.querySelector('[data-program-goals="'+sp.id+'"]');
+            if(box)box.outerHTML=goalsBlock(sp);
+            renderGoals();renderGoalAchievement();
+          }catch(error){toast(error?.message||'Could not unlink IEP goal','error')}
+          finally{processing=false;refreshSelection()}
+        });
         list.addEventListener('change',e=>{
           const input=e.target.closest('input[data-select-assigned]');
           if(!input||processing)return;
@@ -3262,6 +3450,11 @@ function activeStudentProgramsOrdered(){
         });
         list.addEventListener('click',async e=>{
           if(processing)return;
+          const setup=e.target.closest('[data-edit-setup]');
+          if(setup){const sp=rows.find(x=>x.id===setup.dataset.editSetup);
+            if(sp){closeModal();await openRunner(sp.id,sp.view_token,programById(sp.program_id)?.program_name||'Program')}
+            return;
+          }
           const move=e.target.closest('[data-move-assigned]');
           if(move){await moveAssignedProgram(move.dataset.moveAssigned,Number(move.dataset.moveDir));return}
           const remove=e.target.closest('[data-remove-assigned]');
