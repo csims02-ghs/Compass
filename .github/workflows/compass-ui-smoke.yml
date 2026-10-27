@@ -13,6 +13,7 @@ on:
       - 'compass-page2-standard.css'
       - 'compass-page2-standard.js'
       - 'scripts/test-page2-standard.cjs'
+      - 'scripts/test-page2-images-only.cjs'
 permissions:
   contents: read
 jobs:
@@ -38,6 +39,7 @@ jobs:
           node scripts/test-aac-auth-handoff.cjs
           node scripts/test-actions-v25-live.cjs
           node scripts/test-page2-standard.cjs
+          node scripts/test-page2-images-only.cjs
       - name: Attach screenshots
         if: always()
         uses: actions/upload-artifact@v4
