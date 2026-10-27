@@ -1,0 +1,29 @@
+name: Fine Motor Imitation V25 stress test
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'compass-fine-motor-imitation-v25.js'
+      - 'compass-fine-motor-imitation-v25.css'
+      - 'compass-page2-standard.js'
+      - 'scripts/test-fine-motor-imitation-v25-live.cjs'
+      - '.github/workflows/fine-motor-imitation-v25-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fine-motor-stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Browser dependency
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          google-chrome --version
+      - name: Stress test live Fine Motor program with V25 adapter
+        run: node scripts/test-fine-motor-imitation-v25-live.cjs
