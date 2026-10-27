@@ -64,3 +64,9 @@
  #runPage .behavior-row label{font-size:12px!important;}
  #runPage .score-card{overflow-y:auto!important;}
 }
+
+/* Page 2 visual cleanup: the large run title and transient reconnect notice are not displayed.
+   Setup / End Session controls remain visible; real verified mastery progress remains available. */
+body:has(#runPage.active) .topbar .brand{display:none!important;}
+body:has(#runPage.active) .topbar{justify-content:flex-end!important;padding-block:5px!important;}
+#runPage #masteryRunProgress:empty{display:none!important;margin:0!important;padding:0!important;min-height:0!important;}
