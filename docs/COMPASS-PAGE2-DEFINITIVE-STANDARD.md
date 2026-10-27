@@ -28,3 +28,12 @@ The shared visual standard is injected **only** where Page 2 layout IDs `runPage
 ## Page 2 banner and mastery notices (2026-10-27)
 
 Hide the large `COMPASS · [program name]` brand heading **only while Page 2 is active**; retain functional Setup and End Session controls. Suppress the specific transient `Student mastery could not be verified with COMPASS; please reconnect.` display text, but retain the underlying mastery verification state, calculations and persistence. Verified mastery and instructional-date information may still display when available. Collapse the empty progress notice so no placeholder gap is left. Apply using the shared standardizer and stylesheet; do not add duplicate per-program CSS. Previously downloaded offline HTML is re-standardized when launched.
+
+## Images Only presentation mode (2026-10-27)
+
+- On Page 2, the **same Images Only button** must toggle between **Images Only** and **Exit Images Only**, retaining its DOM identity and existing program/session state.
+- Entering Images Only temporarily hides the entire staff scoring/behavior panel, collapses SD and staff-only captions in the student material area, and stretches the *actual instructional picture choices* across the available page width and height without vertical scrolling.
+- The Exit Images Only button remains visible in the student-material header. Exiting restores the original 70/30 scoring layout and the button to its prior location, with all target responses, behavior counters, student context and saved progress preserved.
+- For matching programs, preserve the matching sample along with its choices; for programs without digital images, retain the program's existing material/verification guidance. Never fabricate an image.
+- Five or fewer selected student behaviors appear in one compact column on the normal Page 2, without a separate behavior scrollbar and with **Save & Next Step** visible.
+- Implement in the shared `compass-page2-standard.js` and `compass-page2-standard.css`, not standalone per-program patches. Run `node scripts/test-page2-images-only.cjs` and `node scripts/test-page2-standard.cjs` before publishing.
