@@ -1,0 +1,45 @@
+/* COMPASS Functions V25 supplementary layout; uses shared isolated V25 shell. */
+html.functions-v25 #bpSetupMount{overflow:auto;min-height:0}
+.functions-v25 .func-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 12px}
+.functions-v25 .func-settings label{font-size:13px;color:#345c84;font-weight:850;min-width:0}
+.functions-v25 .func-settings select,.functions-v25 .func-settings input{display:block;margin-top:6px;width:100%;min-width:0;min-height:44px;padding:8px 10px;background:#fbfdff;border:1px solid #bfd4ed;border-radius:9px;color:#153c6c;font:700 14px Arial,sans-serif}
+.functions-v25 .func-settings input:disabled{background:#f1f6fc;color:#5d7794}
+.functions-v25 #bpMaterial{min-width:0;display:flex;flex-direction:column}
+.functions-v25 #bpContext{font-size:14px;text-align:left;margin:4px 0 9px;font-weight:800}
+.functions-v25 #funcMaterial{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:13px;border:1px solid #cbdff5;border-radius:15px;background:linear-gradient(160deg,#edf5ff,#fff);padding:clamp(14px,3vw,36px);overflow:auto}
+.functions-v25 #funcMaterialKind{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#326bad;background:#e0edff;padding:7px 12px;border-radius:20px}
+.functions-v25 #funcPrompt{text-align:center;font-size:clamp(30px,4vw,72px);font-weight:900;line-height:1.18;letter-spacing:-.02em;overflow-wrap:anywhere;color:#133766;max-width:100%}
+.functions-v25 #funcSupport{text-align:center;font-size:clamp(13px,1.18vw,18px);font-weight:600;color:#4b6785;line-height:1.45;max-width:90%}
+.functions-v25 #funcSteps{margin:4px 0;padding-left:28px;width:min(740px,96%);font-weight:800;font-size:clamp(18px,2vw,31px);line-height:1.4;color:#204e7e}
+.functions-v25 #funcSteps li{margin-bottom:10px}
+.functions-v25 #funcStaffReminder{flex:0 0 auto;padding:9px;color:#54738e;font-size:12px;font-weight:650}
+.functions-v25 #bpScoring #behaviorItems{max-height:200px!important;overflow-y:auto;overscroll-behavior:contain}
+.functions-v25 #bpScoring #behaviorItems>.behavior{min-height:48px!important;max-height:48px!important}
+.functions-v25 #bpScoring #behaviorItems>.behavior button{min-width:40px!important;min-height:40px!important;font-size:20px!important}
+.functions-v25 #bpScoring .response-row{gap:8px}
+.functions-v25 #bpScoring .response-row .action{min-height:48px!important;font-size:15px}
+.functions-v25 #bpSaveStatus{font-size:12px;line-height:1.3;font-weight:750;min-height:28px}
+.functions-v25 #funcRetry{width:100%;border-color:#deaa48;color:#9a6113;background:#fff6e4}
+.functions-v25 #bpRoot.bp-images-only #funcMaterial{height:100%;padding:clamp(20px,4vw,60px)}
+.functions-v25 #bpRoot.bp-images-only #funcPrompt{font-size:clamp(46px,6vw,100px)}
+.functions-v25 #bpRoot.bp-images-only #funcSupport,.functions-v25 #bpRoot.bp-images-only #funcStaffReminder{display:none!important}
+.functions-v25 #bpRoot.bp-images-only #funcMaterialKind{font-size:16px}
+.functions-v25 #bpPageTwo{grid-template-columns:minmax(0,7fr) minmax(290px,3fr)}
+.functions-v25 #bpScoring #behaviorBar{flex:0 0 auto}
+.functions-v25 #bpScoring #bpNextProgram{min-height:48px}
+@media(max-height:760px){
+ .functions-v25 .func-settings{gap:6px}
+ .functions-v25 #funcPrompt{font-size:clamp(27px,3vw,48px)}
+ .functions-v25 #funcMaterial{padding:12px}
+ .functions-v25 #funcStaffReminder{padding:3px;font-size:11px}
+ .functions-v25 #bpScoring #behaviorItems{max-height:188px!important}
+ .functions-v25 #bpScoring #behaviorItems>.behavior{min-height:46px!important;max-height:46px!important}
+}
+@media(max-width:850px) and (orientation:portrait){
+ .functions-v25 #bpRoot:before{content:"Rotate to landscape to run Functions";display:flex;align-items:center;justify-content:center;padding:14px;font-size:16px;font-weight:900;text-align:center;background:#fff4dd;color:#66420b}
+ .functions-v25 #bpPageTwo{display:none!important}
+ .functions-v25 #bpPageOne{display:block}
+ .functions-v25 #bpPageOne>.bp-panel{margin-bottom:12px}
+ .functions-v25 .func-settings{grid-template-columns:minmax(0,1fr)}
+}
+.functions-v25 [hidden]{display:none!important}
