@@ -63,7 +63,7 @@ const assert=require('node:assert/strict');
     const openModal=(_title,html,onReady)=>{area.innerHTML=html;onReady()};
     const fx=new Function('state','sb','activeStudentProgramsOrdered','programById','programDomain',
       'roleName','esc','openModal','$','toast','confirm','closeModal','loadStudentProfile',
-      'moveAssignedProgram','removeAssignedProgram','renderGoals','renderGoalAchievement','openRunner',
+      'moveAssignedProgram','removeAssignedProgram','renderGoals','renderGoalAchievement','openStudentProgramHub',
       main.slice(start,end)+';return {openEditPrograms};');
     const app=fx(state,db,()=>[sp],()=>({program_name:'Actions'}),()=> 'Communication',
       x=>x,x=>String(x).replace(/[&<>"']/g,''),openModal,find,()=>{},()=>false,
@@ -100,8 +100,8 @@ const assert=require('node:assert/strict');
       'Missing goal link insert');
     check(graphRefreshes>=2,'IEP graph did not refresh on goal changes');
     area.querySelector('[data-edit-setup]').click();await flush();
-    check(openCalls.length===1&&openCalls[0][0]===sp.id&&openCalls[0][1]===sp.view_token,
-      'Program Setup did not open correct assigned student program');
+    check(openCalls.length===1&&openCalls[0][0]===sp.id&&openCalls[0][1]===studentId,
+      'Program Setup did not open the selected assignment in the Program Hub');
     area.remove();
     return {program:sp.program_id,goalFields:true,number:goals[0].annual_goal_number,
       percent:goals[0].target_percent,selectedPrimary:sp.instance_config.primary_iep_goal_id,
