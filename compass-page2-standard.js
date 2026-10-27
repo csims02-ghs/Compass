@@ -19,7 +19,8 @@
       {code:'CP-COLORS',slug:'colors',tag:'compass-colors-v25',version:'20261027-v5'},
       {code:'CP-CLOTHING-IDENTIFICATION',slug:'clothing',tag:'compass-clothing-v25',version:'20261027-v5'},
       {code:'CP-107-COPYING-SHAPES-AND-VISUAL-MOTOR-INTEGRATION',slug:'copying-shapes',tag:'compass-copying-shapes-v25',version:'20261027-v1'},
-      {code:'CP-127-FINE-MOTOR-IMITATION',slug:'fine-motor-imitation',tag:'compass-fine-motor-imitation-v25',version:'20261027-v1'}
+      {code:'CP-127-FINE-MOTOR-IMITATION',slug:'fine-motor-imitation',tag:'compass-fine-motor-imitation-v25',version:'20261027-v1'},
+      {code:'CP-DIR-VISUAL-087',slug:'functions',tag:'compass-functions-v25',version:'20261027-v1'}
     ];
     const updated=adapters.find(a=>html.includes('"program_code":"'+a.code+'"')||
       html.includes('"program_code": "'+a.code+'"'));
@@ -38,7 +39,13 @@
         return response.text();
       };
       const [css,js]=await Promise.all([read('css'),read('js')]);
-      return html.replace(/<\/head>/i,'<style id="'+marker+'">'+css+'</style></head>')
+      let shared='';
+      if(updated.slug==='functions'){
+        const response=await fetch('./compass-body-parts-v25.css?v=20261027-v4',{cache:'no-store'});
+        if(!response.ok)throw Error('Functions V25 shared layout assets are unavailable');
+        shared=await response.text();
+      }
+      return html.replace(/<\/head>/i,'<style id="'+marker+'">'+shared+'\n'+css+'</style></head>')
         .replace(/<\/body>/i,'<script id="'+scriptId+'">'+js+'<'+'/script></body>');
     }
     if(!isPage2Program(html))return html;
