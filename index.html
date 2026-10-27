@@ -727,22 +727,18 @@ body{display:block!important;width:100%;min-width:0}
 </style>
 
 <style id="compass-iep-goal-select-styles">
-/* IEP Goal Description inputs: repeatable, ordered, accessible and compact. */
-#goalForm .goal-descriptions{min-width:0;display:grid;gap:11px}
-#goalForm .goal-description-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-#goalForm .goal-description-heading{font-weight:800;font-size:18px;color:var(--text)}
-#goalForm .goal-description-add{display:inline-flex;align-items:center;justify-content:center;min-height:38px;border:1px solid #b9d0f4;border-radius:10px;padding:8px 13px;background:#edf4ff;color:#1859af;font-weight:800}
-#goalForm .goal-description-add:hover{background:#dfeeff}
-#goalForm .goal-description-list{display:grid;gap:15px}
-#goalForm .goal-description-row{display:grid;gap:7px;min-width:0}
-#goalForm .goal-description-subtitle{font-size:13px;font-weight:750;color:#506c8f}
-#goalForm .goal-description-line{display:grid;grid-template-columns:minmax(0,1fr) 40px;gap:9px;align-items:start}
-#goalForm .goal-description-input{display:block;width:100%;min-height:128px;min-width:0;resize:vertical;border:1px solid #ccdbec;border-radius:13px;padding:12px 14px;color:var(--text);background:#fff}
-#goalForm .goal-description-input:focus-visible{outline:3px solid rgba(35,109,239,.2);border-color:#6b9cff}
-#goalForm .goal-description-delete{height:40px;width:40px;border:1px solid #efc7cc;border-radius:10px;background:#fff5f6;color:#bd3341;font-size:23px;font-weight:700;line-height:1}
-#goalForm .goal-description-delete:hover:not(:disabled){background:#ffebed}
-#goalForm .goal-description-delete:disabled{opacity:.38;cursor:not-allowed}
-@media(max-width:520px){#goalForm .goal-description-toolbar{align-items:flex-start}#goalForm .goal-description-heading{font-size:16px}}
+/* Annual IEP Goal Description — one editor with bracket-delimited numbered sections. */
+#goalForm .annual-goal-description{display:grid;gap:9px;min-width:0}
+#goalForm .annual-goal-description>label{font-size:18px;font-weight:800;color:var(--text)}
+#goalForm #goalDescription{width:100%;min-width:0;min-height:160px;resize:vertical;padding:13px 15px;border:1px solid #ccdbec;border-radius:13px;background:#fff;color:var(--text);line-height:1.55}
+#goalForm #goalDescription:focus-visible{outline:3px solid rgba(35,109,239,.2);border-color:#6b9cff}
+#goalForm .annual-goal-format-help{display:block;font-size:12px;line-height:1.55;color:var(--muted);font-weight:500}
+#goalForm .annual-goal-preview{border:1px solid #dbe5f1;border-radius:10px;padding:9px 13px;background:#f8fbff}
+#goalForm .annual-goal-preview summary{cursor:pointer;font-weight:700;font-size:13px;color:#195ba9}
+#goalForm .annual-goal-preview ol{margin:11px 0 3px;padding-left:23px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+#goalForm .annual-goal-preview li+li{margin-top:10px}
+.goal-card .annual-goal-numbered-sections{margin:12px 0 15px;padding-left:26px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap}
+.goal-card .annual-goal-numbered-sections li+li{margin-top:12px}
 
 /* Annual IEP goal & educational-domain selectors. Preserve all other form fields. */
 #goalForm .compass-iep-select-row{align-items:start;gap:14px}
@@ -2606,7 +2602,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const goal=(state.goals||[]).find(g=>g.id===link?.goal_id);
     return goal?(goal.annual_goal_number?'Goal '+goal.annual_goal_number+' · ':'')+(goal.title||'IEP Goal'):'—';
   }
-  function renderGoals(){const a=$('goalsList'),b=$('serviceGoalsList');a.innerHTML='';b.innerHTML='';for(const g of state.goals){const cur=g.current_percent==null?0:Number(g.current_percent),target=Number(g.target_percent||80),pct=target?Math.min(100,Math.round(cur/target*100)):0,linked=linkedIds(g.id).map(id=>programById(state.studentPrograms.find(sp=>sp.id===id)?.program_id)?.program_name).filter(Boolean);const div=document.createElement('div');div.className='goal-card';div.innerHTML=`<div class="panel-head"><div><h3>${esc(g.title)}</h3><small class="muted">${g.annual_goal_number?'IEP Goal '+Number(g.annual_goal_number)+' · ':''}${esc(g.goal_area||'Goal Area not assigned')} · ${esc(roleName(g.status))}</small></div><div class="button-row"><button class="btn small" data-edit-goal="${g.id}">Edit</button><button class="btn small danger" data-delete-goal="${g.id}">Delete</button></div></div><p>${esc(g.description||'')}</p><small class="muted">Baseline ${g.baseline_percent??'—'}% · Current ${g.current_percent??'—'}% · Target ${g.target_percent??80}%</small><div class="goal-progress"><span style="width:${pct}%"></span></div><small class="muted">${linked.length?'Linked: '+esc(linked.join(', ')):'No programs linked'}</small>`;a.appendChild(div);const si=document.createElement('div');si.className='stack-item';si.innerHTML=`<strong>${esc(g.title)}</strong><small>${esc(g.goal_area||'Goal')} · target ${g.target_percent??80}% · ${linked.length} linked program${linked.length===1?'':'s'}</small>`;b.appendChild(si)}if(!state.goals.length){a.innerHTML='<div class="empty-state compact">No IEP goals entered yet.</div>';b.innerHTML='<div class="empty-state compact">No IEP goals entered yet.</div>'}$('overviewGoals').innerHTML=state.goals.filter(g=>g.status==='active').slice(0,5).map(g=>`<div class="stack-item"><strong>${esc(g.title)}</strong><small>${esc(g.goal_area||'IEP Goal')} · ${g.current_percent??'—'} / ${g.target_percent??80}%</small></div>`).join('')||'<div class="empty-state compact">No active IEP goals yet.</div>'}
+  function renderGoals(){const a=$('goalsList'),b=$('serviceGoalsList');a.innerHTML='';b.innerHTML='';for(const g of state.goals){const cur=g.current_percent==null?0:Number(g.current_percent),target=Number(g.target_percent||80),pct=target?Math.min(100,Math.round(cur/target*100)):0,linked=linkedIds(g.id).map(id=>programById(state.studentPrograms.find(sp=>sp.id===id)?.program_id)?.program_name).filter(Boolean);const div=document.createElement('div');div.className='goal-card';div.innerHTML=`<div class="panel-head"><div><h3>${esc(g.title)}</h3><small class="muted">${g.annual_goal_number?'IEP Goal '+Number(g.annual_goal_number)+' · ':''}${esc(g.goal_area||'Goal Area not assigned')} · ${esc(roleName(g.status))}</small></div><div class="button-row"><button class="btn small" data-edit-goal="${g.id}">Edit</button><button class="btn small danger" data-delete-goal="${g.id}">Delete</button></div></div>${renderAnnualGoalDescriptionSections(g)}<small class="muted">Baseline ${g.baseline_percent??'—'}% · Current ${g.current_percent??'—'}% · Target ${g.target_percent??80}%</small><div class="goal-progress"><span style="width:${pct}%"></span></div><small class="muted">${linked.length?'Linked: '+esc(linked.join(', ')):'No programs linked'}</small>`;a.appendChild(div);const si=document.createElement('div');si.className='stack-item';si.innerHTML=`<strong>${esc(g.title)}</strong><small>${esc(g.goal_area||'Goal')} · target ${g.target_percent??80}% · ${linked.length} linked program${linked.length===1?'':'s'}</small>`;b.appendChild(si)}if(!state.goals.length){a.innerHTML='<div class="empty-state compact">No IEP goals entered yet.</div>';b.innerHTML='<div class="empty-state compact">No IEP goals entered yet.</div>'}$('overviewGoals').innerHTML=state.goals.filter(g=>g.status==='active').slice(0,5).map(g=>`<div class="stack-item"><strong>${esc(g.title)}</strong><small>${esc(g.goal_area||'IEP Goal')} · ${g.current_percent??'—'} / ${g.target_percent??80}%</small></div>`).join('')||'<div class="empty-state compact">No active IEP goals yet.</div>'}
   function renderPrograms(){
     const b=$('studentProgramsBody');b.innerHTML='';
     const rows=activeStudentProgramsOrdered();
@@ -3555,52 +3551,61 @@ function buildGoalProgramChoices(goal=null){
  return {groups,html,priorLinked,visibleAssignmentIds};
 }
 
-/* Multi-description IEP goals: keep ordered fields while retaining the plain-text description for reports. */
-function goalDescriptionValues(goal){
- const fields=Array.isArray(goal?.description_items)?goal.description_items.filter(value=>typeof value==='string'):[];
- return fields.length?fields:[String(goal?.description||'')];
-}
-function goalDescriptionRow(value,index){
- const id='goalDescription'+index;
- return '<div class="goal-description-row" data-goal-description-row>'+
-  '<label class="goal-description-subtitle" for="'+id+'">Description '+(index+1)+'</label>'+
-  '<div class="goal-description-line"><textarea id="'+id+'" class="goal-description-input" data-goal-description aria-label="Description '+(index+1)+'">'+esc(value)+'</textarea>'+
-  '<button class="goal-description-delete" type="button" data-remove-goal-description aria-label="Remove description '+(index+1)+'" title="Remove description '+(index+1)+'">×</button></div></div>';
-}
-function renderGoalDescriptionFields(goal){
- return '<div class="goal-descriptions"><div class="goal-description-toolbar"><span class="goal-description-heading">Description</span>'+
-  '<button class="btn small goal-description-add" id="goalAddDescription" type="button" aria-label="Add another description">＋ Add Description</button></div>'+
-  '<div id="goalDescriptionList" class="goal-description-list">'+goalDescriptionValues(goal).map(goalDescriptionRow).join('')+'</div></div>';
-}
-function wireGoalDescriptionFields(){
- const list=$('goalDescriptionList'),add=$('goalAddDescription');if(!list||!add)return;
- let nextId=list.querySelectorAll('[data-goal-description]').length;
- function updateControls(){
-  const rows=[...list.querySelectorAll('[data-goal-description-row]')];
-  rows.forEach((row,index)=>{
-   const label=row.querySelector('label'),field=row.querySelector('textarea'),button=row.querySelector('[data-remove-goal-description]');
-   const title='Description '+(index+1);
-   label.textContent=title;field.setAttribute('aria-label',title);
-   button.disabled=rows.length===1;
-   button.setAttribute('aria-label','Remove '+title.toLowerCase());
-   button.title=button.disabled?'At least one description must remain':'Remove '+title.toLowerCase();
-  });
+/* One annual-goal text field: square brackets delimit numbered display paragraphs. */
+function annualGoalBracketsValid(value){
+ let inSection=false;
+ for(const character of String(value||'')){
+  if(character==='['){if(inSection)return false;inSection=true}
+  if(character===']'){if(!inSection)return false;inSection=false}
  }
- add.addEventListener('click',()=>{
-  list.insertAdjacentHTML('beforeend',goalDescriptionRow('',nextId++));
-  updateControls();
-  list.lastElementChild.querySelector('textarea').focus();
- });
- list.addEventListener('click',event=>{
-  const button=event.target.closest('[data-remove-goal-description]');
-  if(!button||button.disabled||list.querySelectorAll('[data-goal-description-row]').length<=1)return;
-  button.closest('[data-goal-description-row]').remove();
-  updateControls();
- });
- updateControls();
+ return !inSection;
+}
+function parseAnnualGoalDescription(value){
+ const source=String(value||'').trim();
+ if(!source)return [];
+ const sections=[],matcher=/\[([^\[\]]*?)\]/gs;
+ let last=0,match;
+ const pushLoose=text=>{for(const paragraph of text.split(/\n\s*\n/)){if(paragraph.trim())sections.push(paragraph.trim())}};
+ while((match=matcher.exec(source))!==null){
+  pushLoose(source.slice(last,match.index));
+  if(match[1].trim())sections.push(match[1].trim());
+  last=matcher.lastIndex;
+ }
+ pushLoose(source.slice(last));
+ return sections;
+}
+function annualGoalDescriptionSections(goal){
+ if(goal&&Array.isArray(goal.description_items)&&goal.description_items.length)
+  return goal.description_items.filter(item=>typeof item==='string').flatMap(parseAnnualGoalDescription);
+ return parseAnnualGoalDescription(goal?.description||'');
+}
+function renderAnnualGoalDescriptionField(goal){
+ const descriptions=annualGoalDescriptionSections(goal);
+ const editorValue=descriptions.map(section=>'['+section+']').join('\n\n');
+ return '<div class="annual-goal-description">'+
+   '<label for="goalDescription">Annual Goal Description</label>'+
+   '<textarea id="goalDescription" rows="7" aria-describedby="goalDescriptionHelp" placeholder="[Annual goal statement]\n\n[Objective 1]\n\n[Objective 2]">'+esc(editorValue)+'</textarea>'+
+   '<small id="goalDescriptionHelp" class="annual-goal-format-help">To separate paragraphs or objectives, put each one inside [square brackets]. Brackets will not appear in the displayed goal; each section will be numbered automatically.</small>'+
+   '<details class="annual-goal-preview"><summary id="goalDescriptionPreviewSummary">Preview numbered sections</summary><ol id="goalDescriptionPreviewList"></ol></details>'+
+ '</div>';
+}
+function wireAnnualGoalDescriptionField(){
+ const field=$('goalDescription'),list=$('goalDescriptionPreviewList'),summary=$('goalDescriptionPreviewSummary');
+ if(!field||!list||!summary)return;
+ const refresh=()=>{
+  const entries=parseAnnualGoalDescription(field.value);
+  summary.textContent='Preview numbered sections ('+entries.length+')';
+  list.innerHTML=entries.map(text=>'<li>'+esc(text)+'</li>').join('');
+ };
+ field.addEventListener('input',refresh);
+ refresh();
+}
+function renderAnnualGoalDescriptionSections(goal){
+ const entries=annualGoalDescriptionSections(goal);
+ return entries.length?'<ol class="annual-goal-numbered-sections">'+entries.map(text=>'<li>'+esc(text)+'</li>').join('')+'</ol>':'<p class="muted">No description recorded.</p>';
 }
 
-function openGoalModal(goal=null){const programChoices=buildGoalProgramChoices(goal),checks=programChoices.html,descriptionMarkup=renderGoalDescriptionFields(goal);openModal(goal?'Edit IEP Goal':'Add IEP Goal',`<form id="goalForm" class="form-stack"><div class="two-col compass-iep-select-row"><label>Annual Goal Selection<select id="goalAnnualNumber" ${goal?'':'required'} aria-label="Annual Goal Selection">${annualGoalSelectOptions(goal)}</select></label><label>Goal Area<select id="goalArea" ${goal?'':'required'} aria-label="Goal Area">${goalAreaSelectOptions(goal)}</select></label></div><label>Title<input id="goalTitle" required value="${esc(goal?.title||'')}"></label>${descriptionMarkup}<div class="two-col"><label>Baseline %<input id="goalBaseline" type="number" min="0" max="100" value="${goal?.baseline_percent??''}"></label><label>Target %<input id="goalTarget" type="number" min="0" max="100" value="${goal?.target_percent??80}"></label></div><div class="two-col"><label>Current %<input id="goalCurrent" type="number" min="0" max="100" value="${goal?.current_percent??''}"></label><label>Status<select id="goalStatus"><option value="active">Active</option><option value="draft">Draft</option><option value="met">Met</option><option value="on_hold">On Hold</option><option value="discontinued">Discontinued</option></select></label></div><div class="two-col"><label>Start Date<input id="goalStart" type="date" value="${goal?.start_date||todayISO()}"></label><label>Review Date<input id="goalReview" type="date" value="${goal?.review_date||''}"></label></div><fieldset><legend>Linked Student Programs</legend><div class="form-stack">${checks||'<span class="muted">Assign programs first to link them.</span>'}</div></fieldset><button class="btn primary" type="submit">Save IEP Goal</button></form>`,()=>{$('goalStatus').value=goal?.status||'active';wireGoalDescriptionFields();$('goalForm').addEventListener('submit',async e=>{e.preventDefault();const descriptionItems=qsa('[data-goal-description]',$('goalForm')).map(field=>field.value.trim());if(!descriptionItems.length){toast('Keep at least one Description field.','error');return}const payload={student_id:state.currentStudent.id,annual_goal_number:$('goalAnnualNumber').value===''?null:Number($('goalAnnualNumber').value),goal_area:$('goalArea').value.trim()||null,title:$('goalTitle').value.trim(),description:descriptionItems.filter(Boolean).join('\n\n'),description_items:descriptionItems,baseline_percent:$('goalBaseline').value===''?null:Number($('goalBaseline').value),target_percent:Number($('goalTarget').value||80),current_percent:$('goalCurrent').value===''?null:Number($('goalCurrent').value),status:$('goalStatus').value,start_date:$('goalStart').value||todayISO(),review_date:$('goalReview').value||null};let id=goal?.id,savedGoal=null;if(id){const {data,error}=await sb.from('student_iep_goals').update(payload).eq('id',id).select('*').single();if(error){toast(error.message,'error');return}savedGoal=data}else{const {data,error}=await sb.from('student_iep_goals').insert(payload).select('*').single();if(error){toast(error.message,'error');return}savedGoal=data;id=data.id}const selectedProgramIds=new Set(qsa('input[name="goalProgram"]:checked',$('goalForm')).map(x=>x.value));
+function openGoalModal(goal=null){const programChoices=buildGoalProgramChoices(goal),checks=programChoices.html,descriptionMarkup=renderAnnualGoalDescriptionField(goal);openModal(goal?'Edit IEP Goal':'Add IEP Goal',`<form id="goalForm" class="form-stack"><div class="two-col compass-iep-select-row"><label>Annual Goal Selection<select id="goalAnnualNumber" ${goal?'':'required'} aria-label="Annual Goal Selection">${annualGoalSelectOptions(goal)}</select></label><label>Goal Area<select id="goalArea" ${goal?'':'required'} aria-label="Goal Area">${goalAreaSelectOptions(goal)}</select></label></div><label>Title<input id="goalTitle" required value="${esc(goal?.title||'')}"></label>${descriptionMarkup}<div class="two-col"><label>Baseline %<input id="goalBaseline" type="number" min="0" max="100" value="${goal?.baseline_percent??''}"></label><label>Target %<input id="goalTarget" type="number" min="0" max="100" value="${goal?.target_percent??80}"></label></div><div class="two-col"><label>Current %<input id="goalCurrent" type="number" min="0" max="100" value="${goal?.current_percent??''}"></label><label>Status<select id="goalStatus"><option value="active">Active</option><option value="draft">Draft</option><option value="met">Met</option><option value="on_hold">On Hold</option><option value="discontinued">Discontinued</option></select></label></div><div class="two-col"><label>Start Date<input id="goalStart" type="date" value="${goal?.start_date||todayISO()}"></label><label>Review Date<input id="goalReview" type="date" value="${goal?.review_date||''}"></label></div><fieldset><legend>Linked Student Programs</legend><div class="form-stack">${checks||'<span class="muted">Assign programs first to link them.</span>'}</div></fieldset><button class="btn primary" type="submit">Save IEP Goal</button></form>`,()=>{$('goalStatus').value=goal?.status||'active';wireAnnualGoalDescriptionField();$('goalForm').addEventListener('submit',async e=>{e.preventDefault();const descriptionText=$('goalDescription').value;if(!annualGoalBracketsValid(descriptionText)){toast('Each [section] needs one opening and one closing bracket.','error');$('goalDescription').focus();return}const descriptionItems=parseAnnualGoalDescription(descriptionText);const payload={student_id:state.currentStudent.id,annual_goal_number:$('goalAnnualNumber').value===''?null:Number($('goalAnnualNumber').value),goal_area:$('goalArea').value.trim()||null,title:$('goalTitle').value.trim(),description:descriptionItems.filter(Boolean).join('\n\n'),description_items:descriptionItems,baseline_percent:$('goalBaseline').value===''?null:Number($('goalBaseline').value),target_percent:Number($('goalTarget').value||80),current_percent:$('goalCurrent').value===''?null:Number($('goalCurrent').value),status:$('goalStatus').value,start_date:$('goalStart').value||todayISO(),review_date:$('goalReview').value||null};let id=goal?.id,savedGoal=null;if(id){const {data,error}=await sb.from('student_iep_goals').update(payload).eq('id',id).select('*').single();if(error){toast(error.message,'error');return}savedGoal=data}else{const {data,error}=await sb.from('student_iep_goals').insert(payload).select('*').single();if(error){toast(error.message,'error');return}savedGoal=data;id=data.id}const selectedProgramIds=new Set(qsa('input[name="goalProgram"]:checked',$('goalForm')).map(x=>x.value));
 const chosenAssignmentIds=new Set();
 // An existing linked historical assignment remains linked when its group stays checked.
 for(const g of programChoices.groups){
