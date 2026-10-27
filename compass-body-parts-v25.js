@@ -3,7 +3,7 @@
 'use strict';
 const cfg=window.COMPASS_PROGRAM_CONFIG||{};
 if(cfg.program_code!=='CP-BODY-PARTS'||window.__COMPASS_BP_V25__)return;
-window.__COMPASS_BP_V25__={version:'25.3',ready:false};
+window.__COMPASS_BP_V25__={version:'25.4',ready:false};
 const $bp=id=>document.getElementById(id);
 const main=document.querySelector('.app .main'),setup=document.querySelector('.program-setup'),work=$bp('workspace'),beh=$bp('behaviorBar');
 if(!main||!setup||!work||!beh)return;
@@ -128,12 +128,12 @@ function start(){
  $bp('setupScoring').value='staff';
  if(typeof applySetup==='function')applySetup(true);
  records=[];finished=false;startedAt=new Date().toISOString();sync='pending';
- mode='run';$bp('bpPageOne').hidden=true;$bp('bpPageTwo').hidden=false;$bp('bpBack').hidden=false;
+ mode='run';$bp('bpPageOne').hidden=true;$bp('bpPageTwo').hidden=false;$bp('bpBack').hidden=false;root.classList.add('bp-running');
  $bp('bpNextProgram').disabled=true;text('bpSaveStatus','Score each step · cloud sync pending.');
  syncDisplay();
 }
 $bp('bpRun').addEventListener('click',start);
-$bp('bpBack').addEventListener('click',()=>{mode='setup';$bp('bpPageTwo').hidden=true;$bp('bpPageOne').hidden=false;$bp('bpBack').hidden=true;if(imageOnly)toggleImages();text('bpStepText','Program Setup → Run Program')});
+$bp('bpBack').addEventListener('click',()=>{mode='setup';root.classList.remove('bp-running');$bp('bpPageTwo').hidden=true;$bp('bpPageOne').hidden=false;$bp('bpBack').hidden=true;if(imageOnly)toggleImages();text('bpStepText','Program Setup → Run Program')});
 $bp('bpEnd').addEventListener('click',()=>{if(!confirm('End session? Unsynced data may be lost.'))return;if(typeof endSession==='function')endSession();text('bpStepText','Session ended')});
 for(const [id,name] of [['correctBtn','correct'],['incorrectBtn','incorrect'],['promptedBtn','prompted']]){
  const btn=$bp(id);if(!btn)continue;
