@@ -55,6 +55,7 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    await page.locator('#setupTarget').selectOption('Shirt');
    await page.locator('#bpRun').click();
    await page.locator('#bpPageTwo').waitFor({state:'visible'});
+   await page.waitForFunction(()=>[...document.querySelectorAll('#bpMaterial #choices img')].some(i=>i.complete&&i.naturalWidth>0),null,{timeout:6000});
    const render=await page.evaluate(()=>{
     const m=document.querySelector('#bpMaterial'),s=document.querySelector('#bpScoring');
     const ims=[...document.querySelectorAll('#bpMaterial #choices img')];
@@ -87,7 +88,7 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    for(let i=0;i<n;i++){
     const how=sequence[i%sequence.length];
     await page.locator(how==='correct'?'#correctBtn':how==='incorrect'?'#incorrectBtn':'#promptedBtn').click();
-    if(i<n-1)await page.waitForFunction(step=>Number(document.querySelector('#trialNum').textContent)===step,{timeout:3000},i+2);
+    if(i<n-1)await page.waitForFunction(step=>Number(document.querySelector('#trialNum').textContent)===step,i+2,{timeout:3000});
    }
    await page.waitForFunction(()=>document.querySelector('#bpSaveStatus').textContent.includes('saved to COMPASS'),null,{timeout:7000});
    const saved=await page.evaluate(()=>{
