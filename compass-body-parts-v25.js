@@ -290,6 +290,9 @@ window.addEventListener('message',event=>{
  const originalActions=inner.querySelector('.setup-actions');if(originalActions){originalActions.hidden=true;originalActions.style.display='none';}
  function readPrefs(){try{return JSON.parse(localStorage.getItem('compass:body-parts:strict-firstpage:v1')||'{}')}catch(_){return {}}}
  const prefs=readPrefs();
+ const assignment=window.__COMPASS_STUDENT_RUNTIME__?.context?.assignment_id||
+   window.__COMPASS_STUDENT_SESSION__?.context?.assignment_id;
+ if(assignment)status.textContent='Student assignment settings loaded.';
  if(prefs.materials&&Array.from(materials.options).some(o=>o.value===prefs.materials))materials.value=prefs.materials;
  if(prefs.teaching==='generalization')teaching.value='generalization';
  if(Number(prefs.days)>=1&&Number(prefs.days)<=30)days.value=String(prefs.days);
@@ -306,7 +309,7 @@ window.addEventListener('message',event=>{
   const group=selected.match(/(?:Benchmark\s*)?(\d+)/i);
   const number=group?group[1]:selected.replace(/^Practice\s*/,'');
   const selectedTarget=tgt?.selectedOptions?.[0]?.textContent||'Ready';
-  byId('bpStrictPill').textContent='Benchmark '+number+' · '+selectedTarget;
+  byId('bpStrictPill').textContent=(/^All\b/i.test(selected)?'All Targets':(/^Practice\b/i.test(selected)?selected:'Benchmark '+number))+' · '+selectedTarget;
   const sd=byId('bpStrictSd');if(sd)sd.textContent='“Show me '+selectedTarget.toLowerCase()+'.”';
  }
  function markDirty(){status.textContent='Unsaved setup changes.';status.dataset.state='dirty';}
