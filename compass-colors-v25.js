@@ -68,10 +68,16 @@ if(preRenderChoices)renderChoices=function(){
   choices.innerHTML="";choices.style.gridTemplateColumns="minmax(0,1fr)";
   choices.appendChild(ownChoice(currentStep.animal));return;
  }
- preRenderChoices();
  if(skill==="Receptive"||skill==="Matching"){
-  for(const b of choices.querySelectorAll(".choice")){b.setAttribute("aria-label","Choose color swatch");const img=b.querySelector("img");if(img)img.alt="Color swatch";}
+  const targetShade=currentStep.animal;
+  const pool=studentColors().map(item=>item.name).filter(name=>name!==targetShade);
+  const howMany=Math.max(2,Math.min(pool.length+1,Number($("setupArray")?.value)||3));
+  const colors=typeof shuffle==="function"?shuffle([targetShade,...shuffle(pool).slice(0,howMany-1)]):[targetShade,...pool.slice(0,howMany-1)];
+  choices.replaceChildren();choices.style.gridTemplateColumns="repeat("+Math.min(4,colors.length)+",minmax(0,1fr))";
+  colors.forEach(name=>choices.appendChild(ownChoice(name)));
+  return;
  }
+ preRenderChoices();
 };
 function syncVisual(){
  if(!running)return;
