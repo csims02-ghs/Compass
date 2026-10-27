@@ -18,7 +18,7 @@
       {code:'CP-BODY-PARTS',slug:'body-parts',tag:'compass-body-parts-v25',version:'20261027-v5'},
       {code:'CP-COLORS',slug:'colors',tag:'compass-colors-v25',version:'20261027-v5'},
       {code:'CP-CLOTHING-IDENTIFICATION',slug:'clothing',tag:'compass-clothing-v25',version:'20261027-v5'},
-      {code:'CP-107-COPYING-SHAPES-AND-VISUAL-MOTOR-INTEGRATION',slug:'copying-shapes',tag:'compass-copying-shapes-v25',version:'20261027-v1'},
+      {code:'CP-107-COPYING-SHAPES-AND-VISUAL-MOTOR-INTEGRATION',slug:'copying-shapes',tag:'compass-copying-shapes-v25',version:'20261027-v2'},
       {code:'CP-127-FINE-MOTOR-IMITATION',slug:'fine-motor-imitation',tag:'compass-fine-motor-imitation-v25',version:'20261027-v1'},
       {code:'CP-DIR-VISUAL-087',slug:'functions',tag:'compass-functions-v25',version:'20261027-v1'}
     ];
