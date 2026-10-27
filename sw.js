@@ -1,7 +1,7 @@
 /* COMPASS service worker: online navigation is authoritative; caches are offline fallbacks only. */
-const CACHE='compass-shell-v43';
+const CACHE='compass-shell-v44';
 const RELEASE='v20261010-3';
-const CORE=['./','./compass-page2-standard.js?v=20261027-v2','./compass-page2-standard.css?v=20261027-v2','./index.html','./compass-admin-ui.js','./index-profile-charts-v5-20261017.html','./program-hub.html','./manifest.webmanifest',
+const CORE=['./','./compass-page2-standard.js?v=20261027-v3','./compass-page2-standard.css?v=20261027-v3','./index.html','./compass-admin-ui.js','./index-profile-charts-v5-20261017.html','./program-hub.html','./manifest.webmanifest',
 './release/v20261010-3/part01.txt?release=v20261010-3-program-hub-v4',
 './release/v20261010-3/part02.txt?release=v20261010-3-program-hub-v4',
 './release/v20261010-3/part03.txt?release=v20261010-3-program-hub-v4',
