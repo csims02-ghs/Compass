@@ -24,7 +24,7 @@
     if(updated){
       const marker='compass-'+updated.slug+'-v25-ui';
       if(html.includes('id="'+marker+'"'))return html;
-      if(!/<\\/head>/i.test(html)||!/<\\/body>/i.test(html))throw Error('V25 runner document incomplete for '+updated.code);
+      if(!/<\/head>/i.test(html)||!/<\/body>/i.test(html))throw Error('V25 runner document incomplete for '+updated.code);
       // Adapters are only installed on their matching production runner markup.
       if(!/class=["'][^"']*program-setup/.test(html)||!/id=["']workspace["']/.test(html)||
          !/id=["']behaviorBar["']/.test(html))throw Error('V25 production markup missing for '+updated.code);
@@ -35,8 +35,8 @@
         return response.text();
       };
       const [css,js]=await Promise.all([read('css'),read('js')]);
-      return html.replace(/<\\/head>/i,'<style id="'+marker+'">'+css+'</style></head>')
-        .replace(/<\\/body>/i,'<script id="compass-'+updated.slug+'-v25-logic">'+js+'<'+'/script></body>');
+      return html.replace(/<\/head>/i,'<style id="'+marker+'">'+css+'</style></head>')
+        .replace(/<\/body>/i,'<script id="compass-'+updated.slug+'-v25-logic">'+js+'<'+'/script></body>');
     }
     if(!isPage2Program(html))return html;
     if(html.includes('id="compass-definitive-page2-v3"'))return html;
