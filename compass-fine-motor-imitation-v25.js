@@ -14,7 +14,7 @@ const extras=document.createElement('div');extras.className='fmi-v25-extra setup
 const setupMount=el('bpSetupMount');setupMount.appendChild(extras);setup.classList.add('bp-setup');setupMount.appendChild(setup);
 if(el('setupBody'))el('setupBody').hidden=false;
 // The older generic V25 audit inserted a second benchmark selector. Keep the specialist four-benchmark control only.
-const duplicateBenchmark=el('compassV251Benchmark');if(duplicateBenchmark){const row=duplicateBenchmark.closest('.setup-field')||duplicateBenchmark.parentElement;if(row)row.hidden=true;}
+const duplicateBenchmark=el('compassV251Benchmark');if(duplicateBenchmark){const row=duplicateBenchmark.closest('.setup-field')||duplicateBenchmark.parentElement;if(row)row.hidden=true;duplicateBenchmark.hidden=true;duplicateBenchmark.style.setProperty('display','none','important');duplicateBenchmark.setAttribute('aria-hidden','true');}
 const originalInstructions=el('fineMotorInstructions');if(originalInstructions)el('bpGuide').insertBefore(originalInstructions,el('bpRun'));
 el('bpChoicesMount').appendChild(el('choices'));el('bpScoringMount').append(work.querySelector('.trial-top'),work.querySelector('.response-row'));el('bpBehaviorMount').appendChild(beh);
 work.hidden=true;work.style.display='none';
