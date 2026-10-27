@@ -5,13 +5,13 @@ const URL='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
 const earlyStudentContext='<script id="compass-animals-student-context-v1">window.COMPASS_CONTEXT='+JSON.stringify({
  studentId:'test-student-animals',studentCompassProgramId:'test-assignment-animals',
  assignmentId:'test-assignment-animals',behaviors:['Noncompliance'],
- iepGoals:[{id:'test-goal',title:'Synthetic IEP Animal Goal'}],instanceConfig:{}
+ iepGoals:[{id:'test-goal',title:'Synthetic IEP Animal Goal',annual_goal_number:1,target_percent:80}],instanceConfig:{}
 })+'</'+'script>';
 const fixture=String.raw`<script id="animals-synthetic-student-qa">
 window.__COMPASS_STUDENT_RUNTIME__={
  context:{assignment_id:'test-assignment-animals',student_id:'test-student-animals',student_name:'Synthetic Animal Learner',
    studentCompassProgramId:'test-assignment-animals',staff_id:'test-staff',primary_behaviors:['Noncompliance'],secondary_behaviors:[],
-   iep_goals:[{id:'test-goal',title:'Synthetic IEP Animal Goal'}],instance_config:{programSetup:null},targets:[]},
+   iep_goals:[{id:'test-goal',title:'Synthetic IEP Animal Goal',annual_goal_number:1,target_percent:80}],instance_config:{programSetup:null},targets:[]},
  securePost:async p=>{
    if(window.__qaDeny)throw Error('Synthetic authorization denied');
    window.__qaCalls.push(p);
@@ -64,6 +64,8 @@ window.__COMPASS_STUDENT_RUNTIME__={
    assert(basics.pageSetup&&basics.pageRun);
    assert.equal(await page.locator('#benchmarkSelect option').count(),5);
    assert.equal(await page.locator('#goalSelect option').count(),2);
+   const iepOption=await page.locator('#goalSelect option[value="test-goal"]').innerText();
+   assert(iepOption.includes('IEP Goal 1')&&iepOption.includes('80%'),'Student setup must display linked IEP Goal # and Target %');
    await page.locator('#benchmarkSelect').selectOption('1');
    await page.locator('#circuitSelect').selectOption('probe');
    assert(await page.locator('#targetSelect').isDisabled(),'Full probe must lock target selector');
