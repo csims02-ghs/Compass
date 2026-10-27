@@ -77,6 +77,7 @@ function renderList(){const z=$('search').value.trim().toLowerCase();$('programL
 const V25_COUNT_CODE='CP-1TO1-COUNT';
 function usesV25Counting(sp){return sp?.program?.program_code===V25_COUNT_CODE}
 function usesBodyParts(sp){return sp?.program?.program_code==='CP-BODY-PARTS'}
+function usesV25Adapter(sp){return usesV25Counting(sp)||['CP-BODY-PARTS','CP-COLORS','CP-CLOTHING-IDENTIFICATION'].includes(sp?.program?.program_code)}
 function runtimeEndpoint(sp){
  if(usesV25Counting(sp))return `${SUPABASE_URL}/functions/v1/compass-program-runner?program_code=${encodeURIComponent(V25_COUNT_CODE)}&preview_version=25&format=html`;
  return `${SUPABASE_URL}/functions/v1/compass-student-program-runtime?assignment_id=${encodeURIComponent(sp.id)}&token=${encodeURIComponent(sp.view_token||'')}&staff_id=${encodeURIComponent(S.session.user.id)}`;
@@ -96,7 +97,7 @@ async function loadRunner(sp,seq){
    $('loading').hidden=true;
    frame.hidden=false;
    status(usesV25Counting(sp)?'1:1 Counting V25 ready — student context loading.':name+' ready.','ok');
-   if(usesV25Counting(sp)||usesBodyParts(sp))sendV25Context(sp).catch(e=>status('Student context could not load: '+e.message,'error'));
+   if(usesV25Adapter(sp))sendV25Context(sp).catch(e=>status('Student context could not load: '+e.message,'error'));
    try{frame.contentWindow.scrollTo(0,0)}catch(_){}
   };
   frame.onerror=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;status(name+' could not render.','error')};
@@ -133,7 +134,7 @@ async function openAt(i){
 $('programList').onclick=e=>{const b=e.target.closest('[data-index]');if(b)openAt(Number(b.dataset.index))};$('hubMenuBtn').onclick=()=>setHubMenu(!document.querySelector('.app').classList.contains('drawer-open'));$('hubMenuClose').onclick=()=>setHubMenu(false);$('hubBackdrop').onclick=()=>setHubMenu(false);$('search').oninput=renderList;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index-1));['nextBtn','bottomNextBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index+1));$('fullscreenBtn').onclick=toggleFullscreen;$('closeBtn').onclick=closeHub;
 const v25SavesInFlight=new Set(),v25SavesConfirmed=new Set();
 async function sendV25Context(sp){
- if((!usesV25Counting(sp)&&!usesBodyParts(sp))||sp.id!==S.programs[S.index]?.id||!S.session?.user)return;
+ if(!usesV25Adapter(sp)||sp.id!==S.programs[S.index]?.id||!S.session?.user)return;
  let goals=[];
  try{
   const {data,error}=await sb.from('student_iep_goal_compass_programs')
