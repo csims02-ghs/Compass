@@ -5,6 +5,10 @@ on:
     paths:
       - 'compass-colors-v25.js'
       - 'compass-colors-v25.css'
+      - 'compass-page2-standard.js'
+      - 'index.html'
+      - 'program-hub.html'
+      - 'sw.js'
       - 'scripts/test-colors-v25-live.cjs'
       - '.github/workflows/colors-v25-smoke.yml'
   workflow_dispatch:
