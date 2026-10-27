@@ -24,3 +24,7 @@ This is the authoritative design contract for future COMPASS instructional progr
 Run `node scripts/test-page2-standard.cjs` with installed Playwright and Chrome. Test 1, 3, 5, 8 behaviors, long labels, 1024x768, 1366x768, 1440x900 and 1920x1080 viewports. Confirm no row is clipped with five behaviors, labels don't overlap count buttons, touch targets remain at least 38px, the Save action is visible, and source records are not touched.
 
 The shared visual standard is injected **only** where Page 2 layout IDs `runPage` and `behaviorList` and `run-grid` are present. Older runners with different markup must be migrated separately; merely injecting CSS does not make an incompatible runner conform.
+
+## Page 2 banner and mastery notices (2026-10-27)
+
+Hide the large `COMPASS · [program name]` brand heading **only while Page 2 is active**; retain functional Setup and End Session controls. Suppress the specific transient `Student mastery could not be verified with COMPASS; please reconnect.` display text, but retain the underlying mastery verification state, calculations and persistence. Verified mastery and instructional-date information may still display when available. Collapse the empty progress notice so no placeholder gap is left. Apply using the shared standardizer and stylesheet; do not add duplicate per-program CSS. Previously downloaded offline HTML is re-standardized when launched.
