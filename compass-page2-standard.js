@@ -22,8 +22,8 @@
         return response.text();
       };
       const [bpCss,bpJs]=await Promise.all([
-        fetchAsset('./compass-body-parts-v25.css?v=20261027-v1'),
-        fetchAsset('./compass-body-parts-v25.js?v=20261027-v1')
+        fetchAsset('./compass-body-parts-v25.css?v=20261027-v2'),
+        fetchAsset('./compass-body-parts-v25.js?v=20261027-v2')
       ]);
       const head='<style id="compass-body-parts-v25-ui">'+bpCss+'</style>';
       const boot='<script id="compass-body-parts-v25-logic">'+bpJs+'<'+'/script>';
