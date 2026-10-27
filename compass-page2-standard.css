@@ -70,3 +70,110 @@
 body:has(#runPage.active) .topbar .brand{display:none!important;}
 body:has(#runPage.active) .topbar{justify-content:flex-end!important;padding-block:5px!important;}
 #runPage #masteryRunProgress:empty{display:none!important;margin:0!important;padding:0!important;min-height:0!important;}
+
+
+/* COMPASS definitive Page 2 · student-facing Images Only, one reversible button.
+   The right-side behavior/scoring panel is preserved in DOM, but hidden ONLY in image mode. */
+#runPage .run-grid.no-controls{
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;max-width:none!important;min-height:0!important;
+  height:100%!important;overflow:hidden!important;gap:0!important;
+  padding:6px 10px!important;
+}
+#runPage .run-grid.no-controls .score-card{display:none!important;}
+#runPage .run-grid.no-controls .material-card{
+  width:100%!important;max-width:none!important;justify-self:stretch!important;
+  height:100%!important;min-height:0!important;padding:10px 14px!important;
+  overflow:hidden!important;gap:6px!important;
+}
+#runPage .run-grid.no-controls .material-top{
+  flex:0 0 auto!important;min-height:43px!important;
+  justify-content:flex-end!important;align-items:center!important;
+}
+#runPage .run-grid.no-controls .material-top .run-title,
+#runPage .run-grid.no-controls .material-top .material-tag,
+#runPage .run-grid.no-controls #sdPrompt,
+#runPage .run-grid.no-controls #stageContext,
+#runPage .run-grid.no-controls #studentSelection,
+#runPage .run-grid.no-controls #materialHint{display:none!important;}
+#runPage .run-grid.no-controls #imagesOnlyBtn{
+  display:inline-flex!important;justify-content:center;align-items:center!important;
+  min-height:42px!important;padding:8px 15px!important;
+  color:#1155a1!important;background:#eff6ff!important;
+  border:1px solid #9fc5f4!important;border-radius:10px!important;
+  font-size:13px!important;font-weight:850!important;white-space:nowrap!important;
+}
+#runPage .run-grid.no-controls .material-main{
+  display:flex!important;flex:1 1 auto!important;min-height:0!important;
+  width:100%!important;padding:0!important;margin:0!important;
+  align-items:stretch!important;justify-content:center!important;
+  gap:0!important;overflow:hidden!important;
+}
+#runPage .run-grid.no-controls #taskStage{
+  width:100%!important;height:100%!important;min-height:0!important;
+  flex:1 1 auto!important;display:flex!important;flex-direction:column!important;
+  align-items:stretch!important;justify-content:center!important;
+  gap:10px!important;overflow:hidden!important;
+}
+#runPage .run-grid.no-controls #taskStage > .choice-grid{
+  display:grid!important;width:100%!important;
+  flex:1 1 auto!important;min-height:0!important;max-height:100%!important;
+  grid-template-columns:repeat(var(--ncols,3),minmax(0,1fr))!important;
+  gap:clamp(9px,1.3vw,18px)!important;align-items:stretch!important;
+  align-content:stretch!important;overflow:hidden!important;
+}
+#runPage .run-grid.no-controls #taskStage .stim-card{
+  height:100%!important;min-height:0!important;max-height:100%!important;
+  min-width:0!important;padding:clamp(5px,.6vw,12px)!important;overflow:hidden!important;
+}
+#runPage .run-grid.no-controls #taskStage .stim-card img{
+  height:100%!important;width:100%!important;max-height:100%!important;
+  object-fit:contain!important;min-height:0!important;
+}
+#runPage .run-grid.no-controls #taskStage > .task-hero{
+  flex:1 1 auto!important;min-height:0!important;max-height:100%!important;
+  overflow:hidden!important;
+}
+#runPage .run-grid.no-controls #taskStage:has(> .choice-grid) > .task-hero{
+  flex:0 1 25%!important;
+}
+#runPage .run-grid.no-controls #taskStage .task-hero img{
+  width:100%!important;height:100%!important;max-height:100%!important;object-fit:contain!important;
+}
+/* Five compact behaviors in normal scoring view, with visible Save action. */
+#runPage .run-grid:not(.no-controls) .score-card{
+  gap:4px!important;overscroll-behavior:contain;min-height:0!important;
+}
+#runPage .run-grid:not(.no-controls) .score-card .score-stats .stat{
+  padding:4px 2px!important;
+}
+#runPage .run-grid:not(.no-controls) .score-card .score-buttons{
+  gap:4px!important;
+}
+#runPage .run-grid:not(.no-controls) .score-card .score-buttons button{
+  min-height:40px!important;padding:4px 7px!important;
+}
+#runPage .run-grid:not(.no-controls) .behavior-head{min-height:23px!important;}
+#runPage .run-grid:not(.no-controls) .behavior-list{
+  gap:4px!important;grid-auto-rows:46px!important;max-height:none!important;
+  overflow:visible!important;flex:0 0 auto!important;
+}
+#runPage .run-grid:not(.no-controls) .behavior-row{
+  height:46px!important;min-height:46px!important;max-height:46px!important;
+  padding:3px 6px!important;box-sizing:border-box!important;
+}
+#runPage .run-grid:not(.no-controls) .behavior-row .freq button{
+  width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;
+}
+#runPage .run-grid:not(.no-controls) .behavior-list:has(> .behavior-row:nth-child(6)){
+  max-height:246px!important;overflow-y:auto!important;
+}
+#runPage .run-grid:not(.no-controls) .save-next{
+  min-height:44px!important;position:sticky!important;bottom:0!important;
+}
+@media(max-height:730px){
+ #runPage .run-grid:not(.no-controls) .score-card{overflow-y:auto!important;}
+ #runPage .run-grid:not(.no-controls) .behavior-list{grid-auto-rows:44px!important;}
+ #runPage .run-grid:not(.no-controls) .behavior-row{height:44px!important;min-height:44px!important;max-height:44px!important;}
+ #runPage .run-grid:not(.no-controls) .behavior-row .freq button{width:38px!important;height:38px!important;}
+}
