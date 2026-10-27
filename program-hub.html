@@ -76,6 +76,7 @@ const lifecycle=p=>p?.program_status==='on_hold'?'on_hold':'active';
 function renderList(){const z=$('search').value.trim().toLowerCase();$('programList').innerHTML=S.programs.map((x,i)=>{const n=x.program?.program_name||'Program',d=x.program?.program_config?.domain||x.program?.program_config?.category||x.program?.description||'';if(z&&!(`${n} ${d}`.toLowerCase().includes(z)))return'';const hold=lifecycle(x.program)==='on_hold',locked=hold&&!S.isPlatformAdmin;return `<button class="program${i===S.index?' active':''}" data-index="${i}"${locked?' disabled aria-label="Program On Hold"':''}><span class="num">${String(i+1).padStart(2,'0')}</span><span><strong>${esc(n)}</strong><small>${esc(d)}</small></span><span>${locked?'⏸':'›'}</span></button>`}).join('')||'<div style="padding:12px;color:#64748b">No matching programs.</div>'}
 const V25_COUNT_CODE='CP-1TO1-COUNT';
 function usesV25Counting(sp){return sp?.program?.program_code===V25_COUNT_CODE}
+function usesBodyParts(sp){return sp?.program?.program_code==='CP-BODY-PARTS'}
 function runtimeEndpoint(sp){
  if(usesV25Counting(sp))return `${SUPABASE_URL}/functions/v1/compass-program-runner?program_code=${encodeURIComponent(V25_COUNT_CODE)}&preview_version=25&format=html`;
  return `${SUPABASE_URL}/functions/v1/compass-student-program-runtime?assignment_id=${encodeURIComponent(sp.id)}&token=${encodeURIComponent(sp.view_token||'')}&staff_id=${encodeURIComponent(S.session.user.id)}`;
@@ -95,7 +96,7 @@ async function loadRunner(sp,seq){
    $('loading').hidden=true;
    frame.hidden=false;
    status(usesV25Counting(sp)?'1:1 Counting V25 ready — student context loading.':name+' ready.','ok');
-   if(usesV25Counting(sp))sendV25Context(sp).catch(e=>status('Student context could not load: '+e.message,'error'));
+   if(usesV25Counting(sp)||usesBodyParts(sp))sendV25Context(sp).catch(e=>status('Student context could not load: '+e.message,'error'));
    try{frame.contentWindow.scrollTo(0,0)}catch(_){}
   };
   frame.onerror=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;status(name+' could not render.','error')};
@@ -132,7 +133,7 @@ async function openAt(i){
 $('programList').onclick=e=>{const b=e.target.closest('[data-index]');if(b)openAt(Number(b.dataset.index))};$('hubMenuBtn').onclick=()=>setHubMenu(!document.querySelector('.app').classList.contains('drawer-open'));$('hubMenuClose').onclick=()=>setHubMenu(false);$('hubBackdrop').onclick=()=>setHubMenu(false);$('search').oninput=renderList;['prevBtn','bottomPrevBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index-1));['nextBtn','bottomNextBtn'].forEach(x=>$(x).onclick=()=>openAt(S.index+1));$('fullscreenBtn').onclick=toggleFullscreen;$('closeBtn').onclick=closeHub;
 const v25SavesInFlight=new Set(),v25SavesConfirmed=new Set();
 async function sendV25Context(sp){
- if(!usesV25Counting(sp)||sp.id!==S.programs[S.index]?.id||!S.session?.user)return;
+ if((!usesV25Counting(sp)&&!usesBodyParts(sp))||sp.id!==S.programs[S.index]?.id||!S.session?.user)return;
  let goals=[];
  try{
   const {data,error}=await sb.from('student_iep_goal_compass_programs')
@@ -234,7 +235,7 @@ addEventListener('message',async e=>{
  if(msg.event==='attention_upsert'){status('Interrupted run recorded on this device; central Needs Attention synchronization is not yet enabled.','error')}
 });
 
-addEventListener('message',e=>{if(e.source!==$('runnerFrame').contentWindow)return;if(e.data?.type==='compass-next-program')openAt(S.index+1);if(e.data?.type==='compass-previous-program')openAt(S.index-1);if(e.data?.type==='compass-program-session-saved')status('Program session saved to COMPASS.','ok')});
+addEventListener('message',e=>{if(e.source!==$('runnerFrame').contentWindow)return;if(e.data?.type==='compass-next-program')openAt(S.index+1);if(e.data?.type==='compass-previous-program')openAt(S.index-1);if(e.data?.type==='compass-program-session-saved'){status('Program session saved to COMPASS.','ok');const sp=S.programs[S.index];if(usesBodyParts(sp)&&e.data.assignment_id===sp.id)$('runnerFrame').contentWindow?.postMessage({type:'COMPASS_BODY_PARTS_SYNC_CONFIRMED',sessionId:e.data.session_id},location.origin)}});
 if(!studentId){status('No student was selected. Return to COMPASS and open Run Programs again.','error');return}const {data:{session}}=await sb.auth.getSession();if(!session?.user){status('COMPASS sign-in was not found in this tab. Return to the main site and reopen Run Programs.','error');return}S.session=session;const {data:profile}=await sb.from('profiles').select('role,active').eq('id',session.user.id).maybeSingle();S.isPlatformAdmin=profile?.role==='platform_admin'&&profile?.active===true;const {data:student,error:se}=await sb.from('students').select('id,display_label,student_code,grade_level,selected_behaviors,secondary_behaviors,status').eq('id',studentId).maybeSingle();if(se||!student){status(se?.message||'Student could not be loaded.','error');return}S.student=student;const {data:assigned,error:ae}=await sb.from('student_compass_programs').select('id,student_id,program_id,view_token,status,display_order,goal_percentage').eq('student_id',studentId).eq('status','active').order('display_order',{ascending:true});if(ae){status(ae.message,'error');return}const ids=[...new Set((assigned||[]).map(x=>x.program_id).filter(Boolean))];let catalog=[];if(ids.length){const {data,error}=await sb.from('compass_programming_programs').select('id,program_code,program_name,description,program_config,program_status,active').in('id',ids);if(error){status(error.message,'error');return}catalog=data||[]}const map=new Map(catalog.map(p=>[p.id,p]));S.programs=(assigned||[]).map(x=>({...x,program:map.get(x.program_id)})).filter(x=>x.program).sort((a,b)=>(Number(a.display_order||0)-Number(b.display_order||0))||String(a.id).localeCompare(String(b.id)));renderStudent();renderList();nav();status(S.programs.length?'Programs loaded.':'This student has no active assigned programs.',S.programs.length?'ok':'');if(S.programs.length){const f=S.programs.findIndex(x=>x.id===initial),i=f>=0?f:0;setTimeout(()=>openAt(i),180)}
 })().catch(e=>{console.error(e);const s=document.getElementById('status');if(s){s.textContent=e.message||'Program Hub could not start.';s.className='status error'}})
 </script></body></html>
