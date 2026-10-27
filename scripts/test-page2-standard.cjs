@@ -27,9 +27,13 @@ async function main(){
  const cleanedFixture=await standard.standardize(messageFixture);
  assert(!cleanedFixture.includes(warning),'Transient reconnect wording should be removed');
  assert(cleanedFixture.includes('COMPASS · Actions'),'Runner identification remains in source for compatibility');
- assert(processed.includes('id="compass-definitive-page2-v1"'));
- assert.equal((processed.match(/id="compass-definitive-page2-v1"/g)||[]).length,1);
+ assert(processed.includes('id="compass-definitive-page2-v2"'));
+ assert.equal((processed.match(/id="compass-definitive-page2-v2"/g)||[]).length,1);
  assert.equal(await standard.standardize(processed),processed,'Standard must not double inject');
+ const legacyPack=dummy.replace('</head>','<style id="compass-definitive-page2-v1">.old{padding:80px}</style></head>');
+ const migratedPack=await standard.standardize(legacyPack);
+ assert(!migratedPack.includes('id="compass-definitive-page2-v1"'),'Old offline runner styling must be removed');
+ assert.equal((migratedPack.match(/id="compass-definitive-page2-v2"/g)||[]).length,1,'Offline runner must have one current style');
  assert.equal(await standard.standardize('<html><head></head><body>Legacy</body></html>'),'<html><head></head><body>Legacy</body></html>','Incompatible runners must remain unchanged');
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
  try {
