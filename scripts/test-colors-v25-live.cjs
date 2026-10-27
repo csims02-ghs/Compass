@@ -1,5 +1,5 @@
 'use strict';
-const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {chromium}=require('playwright');
 const base=path.resolve(__dirname,'..');
 const js=fs.readFileSync(path.join(base,'compass-colors-v25.js'),'utf8');
@@ -12,9 +12,16 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
  const raw=await response.text();
  assert(raw.includes('COMPASS_PROGRAM_CONFIG'),'Colors configuration not provided');
  assert(raw.includes('multi-select-workspace'),'Preserve multi-select runner');
- const html=raw.includes('id="compass-colors-v25-css"')?raw:
-   raw.replace('</head>','<style id="compass-colors-v25-css">'+css+'</style></head>')
-      .replace('</body>','<script id="compass-colors-v25-js">'+js+'<'+'/script></body>');
+ // Test the actual production injector, including its idempotence and safe program scope.
+ const standardizer=fs.readFileSync(path.join(base,'compass-page2-standard.js'),'utf8');
+ const win={};vm.runInNewContext(standardizer,{window:win,fetch:async(resource)=>({
+   ok:true,text:async()=>resource.includes('colors-v25.css')?css:js
+ })});
+ const html=await win.COMPASS_PAGE2_STANDARD.standardize(raw);
+ assert(html.includes('id="compass-colors-v25-css"')&&html.includes('id="compass-colors-v25-js"'),'Live adapter injection absent');
+ const repeated=await win.COMPASS_PAGE2_STANDARD.standardize(html);
+ assert.equal(repeated,html,'Colors V25 should never inject duplicate scripts or styles');
+ assert(!win.COMPASS_PAGE2_STANDARD.isPage2Program(raw),'Colors must use isolated V25 adapter rather than generic runner CSS');
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
  try{
   for(const viewport of [{width:1024,height:768},{width:1366,height:768},{width:1440,height:900},{width:1920,height:1080}]){
