@@ -45,8 +45,9 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
     ready:window.__COMPASS_FMI_V25__?.ready,
     oldOuterVisible:getComputedStyle(document.querySelector('.main>.topbar')).display!=='none'
    }));
-   assert(setup.code==='CP-127-FINE-MOTOR-IMITATION'&&setup.targets===40&&setup.ready&&setup.circuit&&setup.benchmarking.length===1&&setup.benchmarking[0].count===4&&!setup.oldOuterVisible,'Setup invalid: '+JSON.stringify(setup));
-   const benchmarkId=setup.benchmarking[0].id;
+   assert(setup.code==='CP-127-FINE-MOTOR-IMITATION'&&setup.targets===40&&setup.ready&&setup.circuit&&setup.benchmarking.some(x=>x.id==='setupFineMotorBenchmark'&&x.count===4)&&!setup.oldOuterVisible,'Setup invalid: '+JSON.stringify(setup));
+   const benchmarkId='setupFineMotorBenchmark';
+   assert(await page.locator('#compassV251Benchmark').isHidden(),'Obsolete benchmark selector should not appear in V25 setup');
    await page.locator('#'+benchmarkId).selectOption('1');
    await page.locator('#setupChain').selectOption('CIRCUIT');
    await page.locator('#bpRun').click();
