@@ -11,6 +11,25 @@
       /class=["'][^"']*run-grid/.test(html);
   }
   async function standardize(html){
+    if(typeof html!=='string')return html;
+    // Body Parts is intentionally isolated from the legacy master runner shared by
+    // other programs. It receives its own V25 adapter, not generic CSS patches.
+    if(/["']program_code["']\s*:\s*["']CP-BODY-PARTS["']/.test(html)){
+      if(html.includes('id="compass-body-parts-v25-ui"'))return html;
+      const fetchAsset=async path=>{
+        const response=await fetch(path,{cache:'no-store'});
+        if(!response.ok)throw new Error('Body Parts visual assets unavailable: '+path);
+        return response.text();
+      };
+      const [bpCss,bpJs]=await Promise.all([
+        fetchAsset('./compass-body-parts-v25.css?v=20261027-v1'),
+        fetchAsset('./compass-body-parts-v25.js?v=20261027-v1')
+      ]);
+      const head='<style id="compass-body-parts-v25-ui">'+bpCss+'</style>';
+      const boot='<script id="compass-body-parts-v25-logic">'+bpJs+'<'+'/script>';
+      if(!/<\/head>/i.test(html)||!/<\/body>/i.test(html))throw Error('Body Parts runner document incomplete');
+      return html.replace(/<\/head>/i,head+'</head>').replace(/<\/body>/i,boot+'</body>');
+    }
     if(!isPage2Program(html))return html;
     if(html.includes('id="compass-definitive-page2-v3"'))return html;
     // Existing offline packs may carry the previous injected style.
