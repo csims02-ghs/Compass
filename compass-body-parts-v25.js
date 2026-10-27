@@ -144,6 +144,7 @@ for(const [id,name] of [['correctBtn','correct'],['incorrectBtn','incorrect'],['
   }else{
    finished=true;$bp('bpNextProgram').disabled=false;
    text('bpSaveStatus','Run complete · Awaiting COMPASS save confirmation.');
+   try{window.__COMPASS_STUDENT_RUNTIME__?.markProgramComplete?.()}catch(e){console.warn('Body Parts sync trigger pending',e)}
    window.parent.postMessage({type:'COMPASS_BODY_PARTS_RUN_COMPLETE',studentId,run:{
      id:'BP-'+(crypto.randomUUID?.()||Date.now()),records,startedAt,recordedAt:new Date().toISOString(),
      benchmark:bench.value,target,avatar,behavior_counts:{...counts},instructionalDate:new Date().toISOString().slice(0,10)
