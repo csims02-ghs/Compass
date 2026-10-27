@@ -25,6 +25,11 @@
     const updated=adapters.find(a=>html.includes('"program_code":"'+a.code+'"')||
       html.includes('"program_code": "'+a.code+'"'));
     if(updated){
+      // Body Parts now has a first-class V25 (two-page) runner in Supabase.
+      // Its native setupPage/runPage/behaviorList/run-grid markup is *not*
+      // compatible with the previous legacy .program-setup/#workspace adapter.
+      // Pass the native V25 runner through unchanged; do not fetch/inject old JS.
+      if(updated.code==='CP-BODY-PARTS' && isPage2Program(html))return html;
       const marker=updated.slug==='colors'?'compass-colors-v25-css':'compass-'+updated.slug+'-v25-ui';
       const scriptId=updated.slug==='colors'?'compass-colors-v25-js':'compass-'+updated.slug+'-v25-logic';
       if(html.includes('id="'+marker+'"')&&html.includes('id="'+scriptId+'"'))return html;
@@ -68,5 +73,5 @@
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
     return runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>');
   }
-  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261027-v7',isPage2Program,standardize});
+  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261027-v8',isPage2Program,standardize});
 })(window);
