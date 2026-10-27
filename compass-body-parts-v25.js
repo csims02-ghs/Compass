@@ -67,7 +67,7 @@ root.innerHTML=`<header id="bpHeader">
  <button id="bpRun" type="button" class="bp-btn primary bp-run">Run Program →</button></aside></section>
  <section class="bp-page" id="bpPageTwo" hidden>
  <div class="bp-panel" id="bpMaterial"><div class="bp-panel-head"><h2 class="bp-h3">Student Material</h2></div>
- <div id="bpInstruction">Ready</div><div id="bpContext"></div><div id="bpChoicesMount"></div></div>
+ <div id="bpInstruction">Ready</div><div id="bpContext"></div><div id="bpSelfNote" hidden style="background:#eef6ff;border:1px solid #c4def9;border-radius:12px;padding:18px;text-align:center;color:#22548b;font-weight:800">Student identifies the named body part on their own body. Staff observes and scores the response.</div><div id="bpChoicesMount"></div></div>
  <aside class="bp-panel" id="bpScoring"><div class="bp-panel-head"><h2 class="bp-h3">Trial &amp; Scoring</h2><button id="bpImages" type="button" class="bp-btn">▣ Images Only</button></div>
  <div id="bpScoringMount"></div><div id="bpBehaviorMount"></div>
  <div id="bpSaveStatus" role="status">Session sync has not been confirmed.</div>
@@ -105,14 +105,18 @@ function toggleImages(){
  imageButton.textContent=imageOnly?'← Exit Images Only':'▣ Images Only';
  imageButton.setAttribute('aria-pressed',String(imageOnly));
 }
-imageButton.addEventListener('click',toggleImages);
+imageButton.addEventListener('click',()=>{if(!imageButton.disabled)toggleImages()});
 function syncDisplay(){
  const step=typeof trial==='number'?trial+1:1,total=Array.isArray(plan)?plan.length:0;
  const q=typeof current==='function'?current():null;
- text('bpInstruction',q?.instruction||$bp('instruction')?.textContent||'Show me the body part.');
- text('bpContext','Step '+step+' / '+total+' · '+(q?.type||'Target')+' · '+(q?.animal||target||'Body Part'));
+ const self=$bp('bpSelf')?.value==='self',name=q?.animal||target||'Body Part';
+ text('bpInstruction',self?'Show me your '+name.toLowerCase()+'.':q?.instruction||$bp('instruction')?.textContent||'Show me the body part.');
+ text('bpContext','Step '+step+' / '+total+' · '+(q?.type||'Target')+' · '+name+(self?' · Self Identification':''));
  text('bpStepText','Run Program · Step '+step+' of '+total);
- choices.style.maxWidth='none';choices.style.width='100%';
+ choices.style.maxWidth='none';choices.style.width='100%';choices.style.display=self?'none':'grid';
+ const modeNote=$bp('bpSelfNote');
+ if(modeNote)modeNote.hidden=!self;
+ const imgBtn=$bp('bpImages');if(imgBtn)imgBtn.disabled=self;
 }
 const priorRender=typeof renderAll==='function'?renderAll:null;
 if(priorRender)renderAll=function(){priorRender();syncDisplay()};
