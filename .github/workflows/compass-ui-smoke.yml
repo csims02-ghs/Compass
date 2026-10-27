@@ -9,6 +9,10 @@ on:
       - 'scripts/test-aac-auth-handoff.cjs'
       - 'scripts/test-actions-v25-live.cjs'
       - 'index.html'
+      - 'program-hub.html'
+      - 'compass-page2-standard.css'
+      - 'compass-page2-standard.js'
+      - 'scripts/test-page2-standard.cjs'
 permissions:
   contents: read
 jobs:
@@ -33,6 +37,7 @@ jobs:
           node scripts/test-bulk-edit.cjs
           node scripts/test-aac-auth-handoff.cjs
           node scripts/test-actions-v25-live.cjs
+          node scripts/test-page2-standard.cjs
       - name: Attach screenshots
         if: always()
         uses: actions/upload-artifact@v4
