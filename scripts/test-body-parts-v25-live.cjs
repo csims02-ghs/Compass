@@ -31,12 +31,21 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    assert(setup.ready&&setup.avatars===6&&setup.benchmarks>=5&&setup.targets>0,'Setup invalid '+JSON.stringify(setup));
    await page.locator('#bpRun').click();
    await page.locator('#bpPageTwo').waitFor({state:'visible'});
+   const heading=await page.evaluate(()=>({
+     headingHidden:getComputedStyle(document.querySelector('#bpHeader>div:first-child')).display==='none',
+     setupVisible:getComputedStyle(document.querySelector('#bpBack')).display!=='none',
+     endVisible:getComputedStyle(document.querySelector('#bpEnd')).display!=='none',
+     adapterVersion:window.__COMPASS_BP_V25__?.version
+   }));
+   assert(heading.headingHidden&&heading.setupVisible&&heading.endVisible&&heading.adapterVersion==='25.4','Page 2 clean header must retain controls: '+JSON.stringify(heading));
+
    const pictures=await page.evaluate(()=>{
     const a=document.querySelector('#bpMaterial').getBoundingClientRect(),b=document.querySelector('#bpScoring').getBoundingClientRect();
     const img=[...document.querySelectorAll('#bpMaterial #choices img')];
     return {count:img.length,decoded:img.every(x=>x.complete&&x.naturalWidth>0),ratio:a.width/(a.width+b.width)};
    });
    assert(pictures.count>=2&&pictures.decoded,'Body Parts clipart images must decode');
+   assert(pictures.ratio>0.55&&pictures.ratio<0.76,'Body Parts student material must take majority width');
    assert(pictures.ratio>.56&&pictures.ratio<.76,'70/30 balance lost');
    await page.evaluate(()=>window.postMessage({type:'COMPASS_DEMO_V18_CONTEXT',student:{id:'synthetic-student',behaviors:['Noncompliance','Elopement','Self Injury','Tantrums','Screaming']}},location.origin));
    await page.waitForTimeout(100);
