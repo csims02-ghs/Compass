@@ -1,0 +1,29 @@
+name: Functions V25 stress test
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'compass-functions-v25.js'
+      - 'compass-functions-v25.css'
+      - 'compass-page2-standard.js'
+      - 'scripts/test-functions-v25-live.cjs'
+      - '.github/workflows/functions-v25-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  functions-stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test dependency
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          google-chrome --version
+      - name: Verify live Functions V25 instruction, session, and probe workflows
+        run: node scripts/test-functions-v25-live.cjs
