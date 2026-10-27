@@ -130,3 +130,6 @@ html.bp-v25,html.bp-v25 body{height:100%;overflow:hidden!important;background:#f
 @media(min-width:900px){.fmi-v25 #bpPageTwo{grid-template-columns:minmax(0,7fr) minmax(300px,3fr)}}
 @media(max-width:1100px){.fmi-v25 #bpScoring{padding:9px!important;gap:4px}.fmi-v25 #bpInstruction{min-height:59px;font-size:22px}.fmi-v25 #bpChoicesMount .fmi-provider{font-size:13px}}
 @media(orientation:portrait) and (max-width:900px){.fmi-v25 #bpPageOne:before{content:"Rotate iPad to landscape to run Fine Motor Imitation";display:block;padding:12px;background:#fff2d8;border-radius:10px;color:#8a4e16}.fmi-v25 #bpPageTwo:before{content:"Rotate to landscape for staff scoring";display:block;padding:12px;background:#fff2d8;border-radius:10px;color:#8a4e16}}
+
+/* Hide the obsolete global V25 audit benchmark selector. Native Fine Motor benchmark remains. */
+.fmi-v25 #compassV251Benchmark,.fmi-v25 .setup-field:has(#compassV251Benchmark),.fmi-v25 label:has(#compassV251Benchmark){display:none!important}
