@@ -1,7 +1,7 @@
 /* COMPASS service worker: online navigation is authoritative; caches are offline fallbacks only. */
-const CACHE='compass-shell-v47';
+const CACHE='compass-shell-v48';
 const RELEASE='v20261010-3';
-const CORE=['./','./compass-page2-standard.js?v=20261027-v6','./compass-page2-standard.css?v=20261027-v3','./compass-body-parts-v25.js','./compass-body-parts-v25.css','./compass-colors-v25.js','./compass-colors-v25.css','./compass-clothing-v25.js','./compass-clothing-v25.css','./compass-colors-v25.js?v=20261027-v25-5','./compass-colors-v25.css?v=20261027-v25-5','./index.html','./compass-admin-ui.js','./index-profile-charts-v5-20261017.html','./program-hub.html','./manifest.webmanifest',
+const CORE=['./','./compass-page2-standard.js?v=20261027-v8','./compass-page2-standard.css?v=20261027-v3','./compass-body-parts-v25.js','./compass-body-parts-v25.css','./compass-fine-motor-imitation-v25.js?v=20261027-v1','./compass-fine-motor-imitation-v25.css?v=20261027-v1','./compass-colors-v25.js','./compass-colors-v25.css','./compass-clothing-v25.js','./compass-clothing-v25.css','./compass-colors-v25.js?v=20261027-v25-5','./compass-colors-v25.css?v=20261027-v25-5','./index.html','./compass-admin-ui.js','./index-profile-charts-v5-20261017.html','./program-hub.html','./manifest.webmanifest',
 './release/v20261010-3/part01.txt?release=v20261010-3-program-hub-v4',
 './release/v20261010-3/part02.txt?release=v20261010-3-program-hub-v4',
 './release/v20261010-3/part03.txt?release=v20261010-3-program-hub-v4',
