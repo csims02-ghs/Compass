@@ -172,5 +172,211 @@ window.addEventListener('message',event=>{
  if(m.type==='COMPASS_BODY_PARTS_SYNC_CONFIRMED'){sync='confirmed';text('bpSaveStatus','Session saved to COMPASS.');}
  if(m.type==='COMPASS_BODY_PARTS_SYNC_FAILED'){sync='failed';text('bpSaveStatus','COMPASS save could not be confirmed. '+(m.message||''));}
 });
+
+/* Body Parts strict Actions Page 1 visual clone. Existing runner controls remain authoritative. */
+(function installBodyPartsStrictActionsPage(){
+ const byId=id=>document.getElementById(id);
+ const shell=byId('bpRoot'),page=byId('bpPageOne'),setupCard=byId('bpSetupMount');
+ const guide=page?.querySelector('.bp-guide'),runnerSetup=page?.querySelector('.program-setup');
+ const inner=byId('setupBody'),legacyGrid=inner?.querySelector('.setup-grid');
+ if(!shell||!page||!setupCard||!guide||!runnerSetup||!inner||!legacyGrid)return;
+ shell.classList.add('bp-actions-clone');
+ const header=byId('bpHeader');
+ const title=header.querySelector('.bp-title');title.textContent='COMPASS • Body Parts';
+ const oldSub=byId('bpStepText');oldSub.hidden=true;
+ const run=byId('bpRun'),end=byId('bpEnd'),back=byId('bpBack');
+ header.querySelector('.bp-header-actions').appendChild(run);
+ run.classList.add('bp-strict-run');
+ end.hidden=true;
+ run.addEventListener('click',()=>{run.hidden=true;end.hidden=false;});
+ back.addEventListener('click',()=>{run.hidden=false;end.hidden=true;});
+ const banner=document.createElement('div');banner.id='bpStrictBanner';banner.innerHTML=
+  '<div><h2>Body Parts — Program Setup</h2><p>Choose the benchmark and instructional target, then begin the selected DTI chain.</p></div>'+
+  '<span id="bpStrictPill" aria-live="polite">Benchmark · Ready</span>';
+ page.prepend(banner);
+ const cards=document.createElement('div');cards.id='bpStrictCards';page.appendChild(cards);
+ cards.appendChild(setupCard);cards.appendChild(guide);
+ const cardHead=setupCard.querySelector('.bp-h3');
+ cardHead.textContent='⚙   Program Setup';cardHead.classList.add('bp-strict-cardhead');
+ const setupScroll=document.createElement('div');setupScroll.id='bpStrictScroll';
+ setupCard.appendChild(setupScroll);setupScroll.appendChild(runnerSetup);
+ const form=document.createElement('div');form.id='bpStrictForm';form.className='bp-strict-form';
+ inner.insertBefore(form,legacyGrid);
+ const control=(id)=>byId(id);
+ function field(label,id,aria){
+  const node=control(id);if(!node)return null;
+  const wrap=document.createElement('label');wrap.className='bp-strict-field';
+  const name=document.createElement('span');name.className='bp-strict-label';name.textContent=label;
+  wrap.appendChild(name);wrap.appendChild(node);
+  node.setAttribute('aria-label',aria||label);
+  form.appendChild(wrap);return node;
+ }
+ const bm=field('Benchmark','bpBenchmark','Select body-parts benchmark');
+ const tgt=field('Target','setupTarget','Select body-parts target');
+ const dti=field('DTI Chain','setupChain');
+ const preview=document.createElement('div');preview.id='bpStrictDti';
+ preview.innerHTML='<div class="bp-strict-previewtop"><strong>DTI Chain Preview</strong><small>T = target; D = reviewed distractor</small></div><div id="bpStrictSteps"></div>';
+ form.appendChild(preview);
+ const skill=field('Skill Type','setupSkillType');
+ const scoring=field('Scoring Mode','setupScoring');
+ const array=field('Array Size','setupArray');
+ const cd=document.createElement('label');cd.className='bp-strict-field';
+ cd.innerHTML='<span class="bp-strict-label">Custom Distractor</span>';
+ const distractor=control('customDistractor'),enable=control('useCustomDistractor');
+ const distractorSlot=document.createElement('select');distractorSlot.id='bpStrictDistractor';
+ [
+  ['review','Review / Previously Taught'],
+  ['mastered','Use Mastered Target'],
+  ['motor','Motor Imitation (Do This)'],
+  ['none','No additional distractor']
+ ].forEach(([v,label])=>distractorSlot.add(new Option(label,v)));
+ cd.appendChild(distractorSlot);form.appendChild(cd);
+ if(enable){enable.checked=false;enable.hidden=true;enable.style.display='none';cd.appendChild(enable);}
+ if(distractor){distractor.hidden=true;distractor.style.display='none';cd.appendChild(distractor);}
+ const goal=field('IEP Goal','setupIepGoal');
+ const mastery=field('Mastery %','setupMastery');
+ const materials=document.createElement('select');materials.id='bpStrictMaterials';
+ materials.setAttribute('aria-label','Body Parts Materials');
+ materials.add(new Option('Picture / On-Screen','picture'));
+ materials.add(new Option('On Self / Real Body Part','self'));
+ for(let i=1;i<=6;i++)materials.add(new Option('Picture / Avatar '+i,'avatar-'+(i-1)));
+ const materialsRow=document.createElement('label');materialsRow.className='bp-strict-field';
+ materialsRow.innerHTML='<span class="bp-strict-label">Materials</span>';materialsRow.appendChild(materials);form.appendChild(materialsRow);
+ const teaching=document.createElement('select');teaching.id='bpStrictTeaching';
+ teaching.add(new Option('Teaching','teaching'));
+ teaching.add(new Option('Generalization','generalization'));
+ const teachingRow=document.createElement('label');teachingRow.className='bp-strict-field';
+ teachingRow.innerHTML='<span class="bp-strict-label">Teaching Mode</span>';teachingRow.appendChild(teaching);form.appendChild(teachingRow);
+ const trials=document.createElement('select');trials.id='bpStrictTrials';trials.add(new Option('1 complete DTI chain per run','1'));
+ const trialRow=document.createElement('label');trialRow.className='bp-strict-field';trialRow.innerHTML='<span class="bp-strict-label">Trials per Run</span>';trialRow.appendChild(trials);form.appendChild(trialRow);
+ const days=document.createElement('input');days.id='bpStrictDays';days.type='number';days.min='1';days.max='30';days.value='3';
+ const daysRow=document.createElement('label');daysRow.className='bp-strict-field';daysRow.innerHTML='<span class="bp-strict-label">Mastery Days</span>';daysRow.appendChild(days);form.appendChild(daysRow);
+ const minOpp=document.createElement('input');minOpp.id='bpStrictOpportunities';minOpp.type='number';minOpp.min='1';minOpp.max='50';minOpp.value='4';
+ const oppRow=document.createElement('label');oppRow.className='bp-strict-field';oppRow.innerHTML='<span class="bp-strict-label">Min Opportunities / Day</span>';oppRow.appendChild(minOpp);form.appendChild(oppRow);
+ const circuit=document.createElement('select');circuit.id='bpStrictCircuit';circuit.add(new Option('N/A — Teaching','na'));
+ const circuitRow=document.createElement('label');circuitRow.className='bp-strict-field';circuitRow.innerHTML='<span class="bp-strict-label">Circuit</span>';circuitRow.appendChild(circuit);form.appendChild(circuitRow);
+ const hidden=page.querySelector('.bp-setup .setup-grid');if(hidden){hidden.hidden=true;hidden.style.display='none';}
+ const extras=setupCard.querySelector(':scope > .setup-grid');if(extras){extras.hidden=true;extras.style.display='none';}
+ // Existing native response and avatar controls remain connected through Materials.
+ const self=control('bpSelf'),avatarSel=control('bpAvatar');
+ function updateMaterials(){
+  if(!self||!avatarSel)return;
+  const v=materials.value;
+  if(v==='self'){self.value='self';self.dispatchEvent(new Event('change',{bubbles:true}));}
+  else{self.value='picture';self.dispatchEvent(new Event('change',{bubbles:true}));
+   if(v.startsWith('avatar-')){avatarSel.value=v.slice(7);avatarSel.dispatchEvent(new Event('change',{bubbles:true}));}}
+ }
+ materials.addEventListener('change',()=>{updateMaterials();markDirty();});
+ // Keep real legacy distractor source; do not invent mastered records.
+ function updateDistractor(){
+  if(!enable||!distractor)return;
+  const v=distractorSlot.value;
+  enable.checked=v!=='none';distractor.disabled=v==='none';distractor.hidden=true;
+  const opts=Array.from(distractor.options);
+  let selected=opts.find(o=>v==='motor'&&/do this|motor|clap/i.test(o.textContent||''));
+  if(!selected)selected=opts.find(o=>v==='mastered'&&/mastered/i.test(o.textContent||''));
+  if(!selected)selected=opts.find(o=>v==='review'&&/review|previously taught/i.test(o.textContent||''));
+  if(selected)distractor.value=selected.value;
+  if(typeof window.toggleCustomDistractor==='function')window.toggleCustomDistractor();
+  distractor.hidden=true;distractor.style.display='none';
+  markDirty();
+ }
+ distractorSlot.addEventListener('change',updateDistractor);
+ const dock=document.createElement('div');dock.id='bpStrictSaveDock';
+ dock.innerHTML='<span id="bpStrictSaveStatus" role="status" aria-live="polite">Program setup ready.</span><button type="button" id="bpStrictSave" class="bp-btn primary">Save Setup</button>';
+ setupCard.appendChild(dock);
+ const save=byId('bpStrictSave'),status=byId('bpStrictSaveStatus');
+ const originalActions=inner.querySelector('.setup-actions');if(originalActions){originalActions.hidden=true;originalActions.style.display='none';}
+ function readPrefs(){try{return JSON.parse(localStorage.getItem('compass:body-parts:strict-firstpage:v1')||'{}')}catch(_){return {}}}
+ const prefs=readPrefs();
+ if(prefs.materials&&Array.from(materials.options).some(o=>o.value===prefs.materials))materials.value=prefs.materials;
+ if(prefs.teaching==='generalization')teaching.value='generalization';
+ if(Number(prefs.days)>=1&&Number(prefs.days)<=30)days.value=String(prefs.days);
+ if(Number(prefs.minOpp)>=1&&Number(prefs.minOpp)<=50)minOpp.value=String(prefs.minOpp);
+ if(prefs.distractor&&Array.from(distractorSlot.options).some(o=>o.value===prefs.distractor))distractorSlot.value=prefs.distractor;
+ updateMaterials();updateDistractor();
+ function chainPreview(){
+  const v=String(dti?.value||cfg.default_chain||'T,T,D,T,D,D,T,T');
+  const steps=v.includes(',')?v.split(','):(/^[TD]+$/.test(v)?v.split(''):[]);
+  byId('bpStrictSteps').textContent=steps.filter(x=>x==='T'||x==='D').join('  ');
+ }
+ function displayTarget(){
+  const selected=bm?.selectedOptions?.[0]?.textContent||'Benchmark';
+  const group=selected.match(/(?:Benchmark\s*)?(\d+)/i);
+  const number=group?group[1]:selected.replace(/^Practice\s*/,'');
+  const selectedTarget=tgt?.selectedOptions?.[0]?.textContent||'Ready';
+  byId('bpStrictPill').textContent='Benchmark '+number+' · '+selectedTarget;
+  const sd=byId('bpStrictSd');if(sd)sd.textContent=String('“Show me '+selectedTarget.toLowerCase()+'.“').replace('.“','.”');
+ }
+ function markDirty(){status.textContent='Unsaved setup changes.';status.dataset.state='dirty';}
+ for(const node of [bm,tgt,dti,skill,scoring,array,goal,mastery,teaching,days,minOpp]){
+  if(node)node.addEventListener('change',()=>{if(node===bm||node===tgt)displayTarget();if(node===dti)chainPreview();markDirty();});
+ }
+ // A strictly styled Actions instruction card; only subject-specific language differs.
+ guide.classList.add('bp-strict-instructions');
+ guide.replaceChildren();
+ const gh=document.createElement('div');gh.className='bp-strict-cardhead';gh.textContent='☷   Instructions';guide.appendChild(gh);
+ const ol=document.createElement('ol');ol.id='bpStrictInstructionList';guide.appendChild(ol);
+ const rows=[
+ 'Prepare the individualized materials and gain attention; allow an accessible ready-to-learn response.',
+ '',
+ 'Receptive, Expressive, Tact, and Matching Body Parts identification using the learner’s selected picture or self-identification materials.',
+ 'Allow independent response time. Score Correct, Incorrect, or Prompted after observing the actual response.',
+ 'Track student-assigned behavior occurrences independently of instructional trial outcomes.',
+ 'One complete DTI chain equals a run. Target and review steps retain individual scores; reviewed distractor scores do not increase target mastery.',
+ 'Record each T and D step. The final scored step saves the completed run and enables Next Program after confirmation.',
+ 'Mastery requires independent target performance on separate qualifying instructional dates; repeat runs on one date count as one date.',
+ 'Probe Benchmark is distinct from teaching data and must not count toward teaching mastery.'
+ ];
+ rows.forEach((s,i)=>{
+  const li=document.createElement('li');
+  const n=document.createElement('b');n.className='bp-strict-number';n.textContent=String(i+1);
+  const content=document.createElement('div');content.className='bp-strict-instruction';
+  if(i===1){const strong=document.createElement('strong');strong.textContent='SD: ';content.appendChild(strong);
+   const span=document.createElement('span');span.id='bpStrictSd';content.appendChild(span);}
+  else content.textContent=s;
+  li.append(n,content);ol.appendChild(li);
+ });
+ function updateSd(){
+  const target=tgt?.selectedOptions?.[0]?.textContent||'the body part';
+  byId('bpStrictSd').textContent='“Show me '+target.toLowerCase()+'.”';
+ }
+ function updateAll(){chainPreview();displayTarget();updateSd();}
+ for(const el of [bm,tgt])el?.addEventListener('change',()=>queueMicrotask(updateAll));
+ updateAll();
+ save.addEventListener('click',()=>{
+  const d=Number(days.value),m=Number(minOpp.value),pct=Number(mastery?.value);
+  if(!Number.isInteger(d)||d<1||d>30||!Number.isInteger(m)||m<1||m>50||
+     !Number.isFinite(pct)||pct<1||pct>100){
+   status.dataset.state='error';status.textContent='Correct mastery %, days, or daily opportunities before saving.';return;
+  }
+  try{
+   if(typeof window.saveSetup==='function')window.saveSetup();else if(typeof saveSetup==='function')saveSetup();
+   localStorage.setItem('compass:body-parts:strict-firstpage:v1',JSON.stringify({
+    materials:materials.value,teaching:teaching.value,days:d,minOpp:m,distractor:distractorSlot.value
+   }));
+   status.dataset.state='saved';status.textContent='Setup saved for this device.';
+  }catch(e){status.dataset.state='error';status.textContent='Could not save setup. Please retry.';}
+ });
+ function canStart(){
+  const percent=Number(mastery?.value),d=Number(days.value);
+  return !!tgt?.value&&Number.isFinite(percent)&&percent>=1&&percent<=100&&Number.isInteger(d)&&d>=1&&d<=30;
+ }
+ run.addEventListener('click',event=>{
+  if(!canStart()){
+   event.preventDefault();event.stopImmediatePropagation();run.hidden=false;end.hidden=true;
+   status.dataset.state='error';status.textContent='Select a target and valid mastery settings before running.';
+  }
+ },true);
+ // Layout consistency: no unrelated first-page controls and no student selector.
+ window.__COMPASS_BP_V25__.page1Standard='Actions screenshot strict v1';
+ window.__COMPASS_BP_V25__.checkPageOne=()=>({
+  formFields:form.querySelectorAll('.bp-strict-field').length,
+  instructionItems:ol.children.length,hasChainPreview:!!byId('bpStrictDti'),
+  hasSave:!!save,hasRun:!!run,benchmark:bm?.value,target:tgt?.value,
+  materials:materials.value,responseMode:self?.value,avatar:avatarSel?.value
+ });
+})();
+
 refreshIllustrations();syncDisplay();window.__COMPASS_BP_V25__.ready=true;
 })();
