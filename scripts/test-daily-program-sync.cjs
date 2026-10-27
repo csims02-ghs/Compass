@@ -2,7 +2,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const shell=fs.readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
-const a=shell.indexOf('  // Daily Programs is a live view'),b=shell.indexOf('  function openCreateProgramList(',a);
+const a=shell.indexOf('  const isDailyProgramListName='),b=shell.indexOf('  function openCreateProgramList(',a);
 assert(a>0&&b>a,'Daily Programs implementation not found');
 const source=shell.slice(a,b);
 const assigned=[
