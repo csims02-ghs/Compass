@@ -135,3 +135,13 @@ html.bp-v25 .bp-actions-clone #bpPageTwo{min-height:0}
 
 /* Hide the old generic runner preview so only the Actions-style DTI preview appears on Page 1. */
 html.bp-v25 .bp-actions-clone #bpPageOne #setupPreview{display:none!important}
+
+/* Hotfix: [hidden] MUST override the Actions-style Page 1 layout on Run Program. */
+html.bp-v25 .bp-actions-clone #bpPageOne[hidden],
+html.bp-v25 .bp-actions-clone #bpPageTwo[hidden],
+html.bp-v25 .bp-actions-clone #bpBack[hidden],
+html.bp-v25 .bp-actions-clone #bpRun[hidden],
+html.bp-v25 .bp-actions-clone #bpEnd[hidden]{
+  display:none!important;
+}
+html.bp-v25 .bp-actions-clone #bpPageTwo:not([hidden]){display:grid!important;}
