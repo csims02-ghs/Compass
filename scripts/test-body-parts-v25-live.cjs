@@ -50,6 +50,23 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    await page.waitForTimeout(250);
    const next=await page.locator('#bpContext').innerText();
    assert(next.includes('Step 2 /'),'Scoring must advance to next step: '+next);
+   if(viewport.width===1366){
+    await page.locator('#bpBack').click();
+    await page.locator('#bpBenchmark').selectOption('All 1–30');
+    assert.equal(await page.locator('#setupTarget option').count(),30,'Full Body Parts library must have 30 selectable targets');
+    await page.locator('#setupTarget').selectOption('Tongue');
+    await page.locator('#bpSelf').selectOption('self');
+    await page.locator('#bpRun').click();
+    const self=await page.evaluate(()=>({
+      prompt:document.querySelector('#bpInstruction').textContent,
+      noteVisible:getComputedStyle(document.querySelector('#bpSelfNote')).display!=='none',
+      imagesButtonDisabled:document.querySelector('#bpImages').disabled,
+      choicesHidden:getComputedStyle(document.querySelector('#choices')).display==='none'
+    }));
+    assert(self.prompt.includes('tongue')&&self.noteVisible&&self.imagesButtonDisabled&&self.choicesHidden,
+      'Self Identification must change the instructional task and suppress picture choices: '+JSON.stringify(self));
+    console.log('BODY_PARTS_SELF_IDENTIFICATION_PASS '+JSON.stringify(self));
+   }
    assert.deepEqual(errors,[],'Body Parts JavaScript errors');
    console.log('BODY_PARTS_V25_PASS '+JSON.stringify({viewport,setup,pictures,behavior,imageMode,next}));
    await page.close();
