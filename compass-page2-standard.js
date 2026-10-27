@@ -38,6 +38,24 @@
       return html.replace(/<\/head>/i,'<style id="'+marker+'">'+css+'</style></head>')
         .replace(/<\/body>/i,'<script id="compass-'+updated.slug+'-v25-logic">'+js+'<'+'/script></body>');
     }
+    // Colors v25: isolated adapter loaded only for the Color Identification program.
+    // Retain all 12 stored color targets, multi-select sequences, student assignments and history.
+    if(/["']program_code["']\s*:\s*["']CP-COLORS["']/.test(html)){
+      if(html.includes('id="compass-colors-v25-css"')&&html.includes('id="compass-colors-v25-js"'))return html;
+      const fetchAsset=async path=>{
+        const response=await fetch(path,{cache:'no-store'});
+        if(!response.ok)throw new Error('Colors V25 asset missing: '+path);
+        return response.text();
+      };
+      const [colorsCss,colorsJs]=await Promise.all([
+        fetchAsset('./compass-colors-v25.css?v=20261027-v25-5'),
+        fetchAsset('./compass-colors-v25.js?v=20261027-v25-5')
+      ]);
+      if(!/<\/head>/i.test(html)||!/<\/body>/i.test(html))throw Error('Colors runner HTML is incomplete');
+      return html
+        .replace(/<\/head>/i,'<style id="compass-colors-v25-css">'+colorsCss+'</style></head>')
+        .replace(/<\/body>/i,'<script id="compass-colors-v25-js">'+colorsJs+'<'+'/script></body>');
+    }
     if(!isPage2Program(html))return html;
     if(html.includes('id="compass-definitive-page2-v3"'))return html;
     // Existing offline packs may carry the previous injected style.
@@ -58,5 +76,5 @@
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
     return runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>');
   }
-  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261027-v3',isPage2Program,standardize});
+  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261027-v4',isPage2Program,standardize});
 })(window);
