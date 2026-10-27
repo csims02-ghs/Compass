@@ -81,6 +81,22 @@ function onScore(result){
  const item=typeof current==="function"?current():null;
  seen.add(at);
  recorded.push({step:at+1,type:item?.type||"Target",target:item?.animal||target||"",result,time:new Date().toISOString()});
+ // Explicit per-step trial records prevent prompted responses disappearing from
+ // the generic counter-based legacy capture. Saving remains authenticated.
+ const capture=window.__COMPASS_TRIAL_CAPTURE__||{};
+ capture.getEvents=function(){
+  const targetName=$("setupTarget")?.value||target||"";
+  const targetRow=Array.isArray(C.targets)?C.targets.find(x=>x.name===targetName):null;
+  const benchmark=groups[Number(bench.value)||0];
+  return recorded.map(x=>({
+   trial_number:x.step,trial_type:x.type==="Distractor"?"D":"T",
+   result:x.result==="correct"?"independent_correct":x.result==="prompted"?"prompted":"incorrect",
+   target_name:targetName,target_key:targetRow?.key||null,
+   benchmark_key:benchmark?.key||null,goal_id:window.__COMPASS_ACTIVE_GOAL_ID__||null,
+   occurred_at:x.time,source:"clothing_v25_step"
+  }));
+ };
+ window.__COMPASS_TRIAL_CAPTURE__=capture;
  const total=Array.isArray(plan)?plan.length:0;
  $text("bpSaveStatus","Recorded "+recorded.length+" / "+total+" teaching steps.");
  if(at<total-1){
