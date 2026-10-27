@@ -73,3 +73,9 @@ html.bp-v25,html.bp-v25 body{height:100%;overflow:hidden!important;background:#f
 @media(max-width:1150px){.bp-v25 #bpPageTwo{grid-template-columns:minmax(0,63fr) minmax(290px,37fr)}.bp-v25 #bpScoring .response-row .action{min-height:40px!important}}
 @media(max-height:770px){.bp-v25 .bp-page{padding:8px}.bp-v25 .bp-panel{padding:9px!important}.bp-v25 #bpInstruction{font-size:22px;min-height:56px;padding:5px}.bp-v25 #bpScoring{gap:4px}.bp-v25 #bpScoring .stats .stat{padding:3px}.bp-v25 #bpScoring .response-row .action{min-height:39px!important}.bp-v25 #bpScoring #behaviorItems>.behavior{min-height:42px;max-height:42px}}
 @media(max-width:850px) and (orientation:portrait){.bp-v25 #bpPageTwo{display:block;overflow:auto}.bp-v25 #bpPageOne{display:block}.bp-v25 .bp-guide{margin-top:12px}.bp-v25 #bpMaterial{min-height:460px}.bp-v25 #bpScoring{margin-top:12px;min-height:500px}}
+
+/* Fill the available student-material height in full-width Images Only mode. */
+.bp-v25 #bpChoicesMount{display:flex;flex:1 1 auto;min-height:0;overflow:hidden}
+.bp-v25 #bpChoicesMount>.choices{flex:1 1 auto;height:100%;min-height:0;min-width:0}
+.bp-v25 #bpRoot.bp-images-only #bpChoicesMount{width:100%;height:100%;flex:1 1 auto}
+.bp-v25 #bpRoot.bp-images-only #bpChoicesMount>.choices{height:100%!important}
