@@ -1,0 +1,137 @@
+/* COMPASS Body Parts — isolated V25 instructional UI (2026-10-27) */
+html.bp-v25,html.bp-v25 body{height:100%;overflow:hidden!important;background:#f2f7fd}
+.bp-v25 .app,.bp-v25 .main{height:100%;min-height:0!important;max-width:none!important;padding:0!important;margin:0!important;overflow:hidden!important}
+.bp-v25 .main>.topbar,.bp-v25 .main>.student-card,.bp-v25 .main>.program-card,.bp-v25 .main>.sessionbar,.bp-v25 .main>.footer-nav{display:none!important}
+.bp-v25 #bpRoot{width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;color:#123761;font:600 14px/1.35 Arial,Helvetica,sans-serif}
+.bp-v25 #bpHeader{display:flex;align-items:center;justify-content:space-between;gap:13px;flex:0 0 auto;padding:10px 18px;border-bottom:1px solid #dbe7f5;background:#fff}
+.bp-v25 .bp-title{font-size:21px;font-weight:900;letter-spacing:-.02em;white-space:nowrap}
+.bp-v25 .bp-subtitle{font-size:12px;color:#5a7597}
+.bp-v25 .bp-header-actions{display:flex;gap:8px;align-items:center}
+.bp-v25 .bp-btn{background:#fff;color:#145aa6;border:1px solid #bad4f0;border-radius:10px;font-weight:850;padding:9px 12px;min-height:42px;cursor:pointer;white-space:nowrap}
+.bp-v25 .bp-btn.primary{background:#1c6bdb;color:white;border-color:#1c6bdb}
+.bp-v25 .bp-btn:disabled{opacity:.45;cursor:not-allowed}
+.bp-v25 .bp-page{flex:1 1 auto;min-height:0;width:100%;overflow:auto;padding:12px 16px}
+.bp-v25 #bpPageOne{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.9fr);gap:14px}
+.bp-v25 #bpPageTwo{display:grid;grid-template-columns:minmax(0,7fr) minmax(290px,3fr);gap:12px;align-items:stretch;overflow:hidden}
+.bp-v25 .bp-panel{background:white;border:1px solid #d5e4f4;border-radius:16px;padding:14px;min-width:0;min-height:0;box-shadow:0 3px 9px #183c6010}
+.bp-v25 .bp-h3{font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:#1763af;font-weight:900;margin:0 0 12px}
+.bp-v25 .bp-setup{overflow-y:auto;padding:14px!important;margin:0!important;background:#fff}
+.bp-v25 .bp-setup .setup-header{display:none!important}
+.bp-v25 .bp-setup #setupBody{display:block!important;margin:0!important}
+.bp-v25 .bp-setup .setup-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}
+.bp-v25 .bp-setup .setup-actions{grid-column:1/-1}
+.bp-v25 .bp-setup select,.bp-v25 .bp-setup input{min-height:43px!important}
+.bp-v25 .bp-guide{overflow:auto;display:flex;flex-direction:column;gap:10px}
+.bp-v25 .bp-guide h2{font-size:21px;margin:2px 0 0}
+.bp-v25 .bp-guide p{margin:5px 0;color:#4e6886;font-weight:500}
+.bp-v25 .bp-guide li{margin-bottom:9px;line-height:1.5;font-weight:500}
+.bp-v25 .bp-guide .bp-run{width:100%;margin-top:auto;font-size:17px;min-height:52px}
+.bp-v25 .bp-guide .bp-chip{display:inline-flex;background:#e9f2ff;color:#1356a6;border-radius:9px;padding:6px 11px;font-size:12px;font-weight:850}
+.bp-v25 #bpMaterial{display:flex;flex-direction:column;overflow:hidden;padding:12px!important}
+.bp-v25 #bpScoring{display:flex;flex-direction:column;gap:7px;overflow-y:auto;scrollbar-width:thin;padding:12px!important}
+.bp-v25 .bp-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;min-height:35px}
+.bp-v25 #bpInstruction{background:#eaf3ff;border:1px solid #97c2fb;border-radius:12px;color:#083d79;display:grid;place-items:center;padding:11px;text-align:center;font-size:clamp(21px,2.25vw,34px);font-weight:900;flex:0 0 auto;min-height:70px;line-height:1.2}
+.bp-v25 #bpContext{color:#607c9d;font-size:12px;text-align:center;margin:3px}
+.bp-v25 #bpMaterial .choices{display:grid;flex:1 1 auto;width:100%!important;max-width:none!important;min-height:0;gap:9px!important;margin:0!important;align-items:stretch!important;align-content:stretch!important;overflow:auto}
+.bp-v25 #bpMaterial .choice{min-width:0;min-height:0;border:2px solid #dce8f5!important;box-shadow:none!important;padding:5px!important}
+.bp-v25 #bpMaterial .stimulus-card{padding:4px!important;gap:0!important;height:100%;justify-content:center}
+.bp-v25 #bpMaterial .stimulus-frame{width:100%!important;max-width:none!important;height:min(47vh,440px)!important;max-height:100%!important;aspect-ratio:auto!important;border:0!important;overflow:hidden}
+.bp-v25 #bpMaterial .stimulus-frame img{width:100%!important;height:100%!important;max-height:100%!important;object-fit:contain!important}
+.bp-v25 #bpMaterial .stimulus-name{display:none!important}
+.bp-v25 #bpMaterial .instruction{display:none!important}
+.bp-v25 #bpScoring .trial-top{display:block;margin:0!important}
+.bp-v25 #bpScoring .progress-wrap{display:flex;gap:7px;min-width:0;flex-wrap:wrap}
+.bp-v25 #bpScoring .trial-label{font-size:13px!important;min-width:0!important}
+.bp-v25 #bpScoring .stats{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px!important;margin:4px 0}
+.bp-v25 #bpScoring .stats .stat{min-width:0;padding:5px 2px;font-size:11px}
+.bp-v25 #bpScoring .stats .stat b{font-size:17px}
+.bp-v25 #bpScoring .stats .distractor-stat{display:none!important}
+.bp-v25 #bpScoring .response-row{display:flex;flex-direction:column;gap:6px;width:100%;margin:0}
+.bp-v25 #bpScoring .response-row .action{width:100%;min-height:42px!important;padding:7px!important;font-size:13px}
+.bp-v25 #bpScoring .response-row .note{display:none!important}
+.bp-v25 #bpScoring .response-row .next{display:none!important}
+.bp-v25 #bpScoring #behaviorBar{margin:4px 0 0!important;padding:0!important;display:flex!important;flex-direction:column!important;gap:5px!important;border:0!important;box-shadow:none!important}
+.bp-v25 #bpScoring .behavior-title{font-size:12px;text-transform:uppercase;letter-spacing:.045em;color:#125aa7;font-weight:900}
+.bp-v25 #bpScoring #behaviorItems{display:flex!important;flex-direction:column!important;gap:4px!important;max-height:265px;overflow:auto;scrollbar-width:thin}
+.bp-v25 #bpScoring #behaviorItems>.behavior{display:grid;grid-template-columns:minmax(0,1fr) 38px 24px 38px;gap:5px;align-items:center;min-height:44px;max-height:44px;padding:3px 6px!important;font-size:12px}
+.bp-v25 #bpScoring #behaviorItems>.behavior>span{grid-column:1;grid-row:1;min-width:0;line-height:1.12;overflow-wrap:anywhere}
+.bp-v25 #bpScoring #behaviorItems>.behavior>.minus{grid-column:2;grid-row:1}
+.bp-v25 #bpScoring #behaviorItems>.behavior>.count{grid-column:3;grid-row:1;text-align:center;font-size:14px}
+.bp-v25 #bpScoring #behaviorItems>.behavior>.plus{grid-column:4;grid-row:1}
+.bp-v25 #bpScoring #behaviorItems>.behavior button{height:38px;min-width:38px;min-height:38px;font-size:18px;padding:2px!important}
+.bp-v25 #bpSaveStatus{font-size:11px;color:#657f9c;min-height:16px}
+.bp-v25 #bpNextProgram{width:100%;margin-top:auto;min-height:45px;position:sticky;bottom:0}
+.bp-v25 #bpRoot.bp-images-only #bpPageTwo{grid-template-columns:minmax(0,1fr)!important;gap:0}
+.bp-v25 #bpRoot.bp-images-only #bpScoring{display:none!important}
+.bp-v25 #bpRoot.bp-images-only #bpMaterial{height:100%;max-width:none!important}
+.bp-v25 #bpRoot.bp-images-only #bpInstruction,.bp-v25 #bpRoot.bp-images-only #bpContext,.bp-v25 #bpRoot.bp-images-only #bpMaterial .bp-h3{display:none!important}
+.bp-v25 #bpRoot.bp-images-only #bpMaterial .choices{overflow:hidden;align-content:stretch}
+.bp-v25 #bpRoot.bp-images-only #bpMaterial .stimulus-frame{height:100%!important;max-height:100%!important}
+.bp-v25 #bpRoot.bp-images-only #bpMaterial .stimulus-card{height:100%!important}
+.bp-v25 #bpRoot.bp-images-only #bpMaterial .choice{height:100%!important}
+.bp-v25 [hidden]{display:none!important}
+@media(max-width:1150px){.bp-v25 #bpPageTwo{grid-template-columns:minmax(0,63fr) minmax(290px,37fr)}.bp-v25 #bpScoring .response-row .action{min-height:40px!important}}
+@media(max-height:770px){.bp-v25 .bp-page{padding:8px}.bp-v25 .bp-panel{padding:9px!important}.bp-v25 #bpInstruction{font-size:22px;min-height:56px;padding:5px}.bp-v25 #bpScoring{gap:4px}.bp-v25 #bpScoring .stats .stat{padding:3px}.bp-v25 #bpScoring .response-row .action{min-height:39px!important}.bp-v25 #bpScoring #behaviorItems>.behavior{min-height:42px;max-height:42px}}
+@media(max-width:850px) and (orientation:portrait){.bp-v25 #bpPageTwo{display:block;overflow:auto}.bp-v25 #bpPageOne{display:block}.bp-v25 .bp-guide{margin-top:12px}.bp-v25 #bpMaterial{min-height:460px}.bp-v25 #bpScoring{margin-top:12px;min-height:500px}}
+
+/* Fill the available student-material height in full-width Images Only mode. */
+.bp-v25 #bpChoicesMount{display:flex;flex:1 1 auto;min-height:0;overflow:hidden}
+.bp-v25 #bpChoicesMount>.choices{flex:1 1 auto;height:100%;min-height:0;min-width:0}
+.bp-v25 #bpRoot.bp-images-only #bpChoicesMount{width:100%;height:100%;flex:1 1 auto}
+.bp-v25 #bpRoot.bp-images-only #bpChoicesMount>.choices{height:100%!important}
+
+/* Body Parts v25.4: match definitive Page 2 header and five-behavior standard. */
+.bp-v25 #bpRoot.bp-running #bpHeader>div:first-child{display:none!important}
+.bp-v25 #bpRoot.bp-running #bpHeader{justify-content:flex-end;min-height:55px}
+.bp-v25 #bpRoot.bp-running #bpPageTwo{overflow:hidden}
+.bp-v25 #bpRoot.bp-running #bpScoring #behaviorItems:has(>.behavior:nth-child(-n+5):last-child){overflow:visible!important;max-height:none!important}
+.bp-v25 #bpRoot.bp-running #bpScoring #behaviorItems>.behavior{box-sizing:border-box}
+.bp-v25 #bpRoot.bp-running #bpScoring #behaviorItems>.behavior button{touch-action:manipulation}
+
+
+/* Colors: responsive swatches, one-column tracking, and a bottom-anchored step action. */
+.colors-v25 #bpPageOne .colors-top-fields{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 12px}
+.colors-v25 #bpPageOne .colors-top-fields .setup-field{min-width:0}
+.colors-v25 #bpPageOne .colors-top-fields label{display:block;font-size:13px;margin-bottom:5px;font-weight:800}
+.colors-v25 #bpPageOne .colors-top-fields select,.colors-v25 #bpPageOne .colors-top-fields input{width:100%;height:43px;min-width:0;border:1px solid #cddfee;border-radius:9px;background:#fff;color:#143b68;padding:7px 9px;font:inherit}
+.colors-v25 #bpPageOne #bpInstructions .colors-instructions{margin:0;border-radius:11px;box-shadow:none;flex:0 1 auto;min-height:0;overflow:auto}
+.colors-v25 #bpPageOne #bpInstructions .colors-instructions-head{padding:11px;font-size:14px}
+.colors-v25 #bpPageOne #bpInstructions .colors-instructions-body{font-weight:500;font-size:13px}
+.colors-v25 #bpPageOne #bpInstructions .colors-instructions-body h4{font-size:13px}
+.colors-v25 #bpPageTwo #bpChoicesMount .choices{align-content:stretch;justify-content:center}
+.colors-v25 #bpMaterial .choice{display:flex;align-items:stretch;justify-content:center;min-height:0}
+.colors-v25 #bpMaterial .choice .stimulus-card{width:100%;min-width:0;min-height:0}
+.colors-v25 #bpMaterial .choice .stimulus-frame{height:100%!important;min-height:125px}
+.colors-v25 #bpMaterial .choice .stimulus-frame img{height:100%!important;object-fit:contain}
+.colors-v25 #bpMatchingSample{display:flex;flex:0 0 110px;align-items:center;justify-content:center;min-height:0;padding:7px;border:1px dashed #bcd4ee;border-radius:12px;background:#f4f8ff}
+.colors-v25 #bpMatchingSample img{height:100px;max-width:150px;object-fit:contain}
+.colors-v25 #bpMatchingSample[hidden]{display:none!important}
+.colors-v25 #bpSaveNext{width:100%;min-height:46px;margin-top:auto;position:sticky;bottom:0;z-index:2}
+.colors-v25 #bpNextProgram{min-height:46px}
+.colors-v25 #bpScoring .response-row .action{min-height:43px!important;font-size:14px!important}
+.colors-v25 #bpScoring #behaviorItems>.behavior{grid-template-columns:minmax(0,1fr) 40px 27px 40px}
+.colors-v25 #bpScoring #behaviorItems>.behavior>span{font-size:13px;line-height:1.17}
+.colors-v25 #bpScoring #behaviorItems>.behavior button{min-height:39px!important;min-width:39px!important}
+.colors-v25 #bpScoring #behaviorItems:has(>.behavior:nth-child(-n+5):last-child){max-height:none!important;overflow:visible!important}
+.colors-v25 #bpScoring #behaviorItems:has(>.behavior:nth-child(6)){max-height:235px!important;overflow-y:auto!important}
+.colors-v25 #bpScoring .behavior-title{font-size:14px}
+.colors-v25 #bpMaterial .multi-select-workspace{width:100%;height:100%;display:flex;flex-direction:column;gap:8px}
+.colors-v25 #bpMaterial .multi-select-array{flex:1 1 auto;min-height:0;max-height:100%;gap:7px;align-content:stretch}
+.colors-v25 #bpMaterial .multi-select-choice{min-height:0;min-width:0;height:100%;padding:5px;border-radius:12px}
+.colors-v25 #bpMaterial .multi-select-shape{height:min(70px,100%);width:min(70px,100%);max-width:85%;max-height:85%}
+.colors-v25 #bpMaterial .multi-select-controls{flex:0 0 auto;margin:0;gap:8px}
+.colors-v25 #bpMaterial .multi-select-action{min-height:42px}
+.colors-v25 #bpMaterial .multi-select-choice.selected{border:4px solid #226cdf}
+.colors-v25 #bpRoot.bp-images-only #bpMatchingSample{display:flex!important;flex:0 0 128px}
+.colors-v25 #bpRoot.bp-images-only #bpMatchingSample[hidden]{display:none!important}
+.colors-v25 #bpRoot.bp-images-only #bpMaterial #bpChoicesMount{min-height:0;overflow:hidden}
+.colors-v25 #bpRoot.bp-images-only #bpMaterial #bpChoicesMount .multi-select-workspace{height:100%;min-height:0}
+.colors-v25 #bpRoot.bp-images-only #bpMaterial #bpChoicesMount .multi-select-array{height:100%;min-height:0}
+.colors-v25 #bpRoot.bp-running #bpHeader>div:first-child{display:none!important}
+.colors-v25 #bpRoot.bp-running #bpHeader{justify-content:flex-end}
+.colors-v25 #bpScoring #bpSaveStatus{font-size:12px;font-weight:650}
+.colors-v25 [hidden]{display:none!important}
+@media (min-width:900px){.colors-v25 #bpPageTwo{grid-template-columns:minmax(0,7fr) minmax(300px,3fr)}}
+@media (max-width:1120px) and (min-width:900px){.colors-v25 #bpScoring{padding:9px!important}.colors-v25 #bpScoring #behaviorItems>.behavior{min-height:42px;max-height:42px}.colors-v25 #bpInstruction{min-height:54px;font-size:21px}}
+@media (orientation:portrait) and (max-width:900px){.colors-v25 #bpPageOne::before{content:"Rotate device to landscape to run COMPASS Colors";display:block;padding:10px;background:#fff1d6;border-radius:9px;color:#7b480d}.colors-v25 #bpPageTwo::before{content:"Rotate to landscape for instructional scoring";display:block;padding:10px;background:#fff1d6;border-radius:9px;color:#7b480d}}
+@media (max-width:550px){.colors-v25 #bpPageOne .colors-top-fields{grid-template-columns:1fr 1fr}}
