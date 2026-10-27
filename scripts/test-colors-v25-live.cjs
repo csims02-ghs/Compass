@@ -69,8 +69,9 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    await page.locator('#bpImages').click();
    for(const number of [1,3,5,8]){
     await page.evaluate(n=>setBehaviorDefinitions(Array.from({length:n},(_,i)=>({key:'qa'+i,label:('Very long behavior label '+i+' repeated repeated')}))),number);
-    const track=await page.evaluate(()=>({rows:document.querySelectorAll('#behaviorItems>.behavior').length,
-      scroll:document.querySelector('#behaviorItems').scrollHeight>document.querySelector('#behaviorItems').clientHeight+2}));
+    const track=await page.evaluate(()=>{const el=document.querySelector('#behaviorItems'),computed=getComputedStyle(el);return {rows:el.querySelectorAll('.behavior').length,
+      scroll:/(auto|scroll)/.test(computed.overflowY)&&el.scrollHeight>el.clientHeight+2,
+      overflow:computed.overflowY,height:el.clientHeight,contentHeight:el.scrollHeight};});
     assert.equal(track.rows,number);
     if(number<=5)assert(!track.scroll,'Up to five behaviors must fit without own scrollbar '+number+' '+JSON.stringify(track));
    }
