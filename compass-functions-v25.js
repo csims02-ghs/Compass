@@ -217,25 +217,61 @@ $('bpNextProgram').addEventListener('click',()=>{
   window.parent.postMessage({type:'compass-next-program'},origin);
  }
 });
-if(typeof setBehaviorDefinitions==='function'){
- const originalSet=setBehaviorDefinitions;
- setBehaviorDefinitions=function(list){
-  const a=Array.isArray(list)?list.filter(x=>x&&String(x.label||x.name||'').trim()).slice(0,8):[];
-  if(!a.length){behaviorDefinitions=[];if(typeof renderBehaviorTracking==='function')renderBehaviorTracking();return;}
-  return originalSet(a);
- };
- behaviorDefinitions=[];if(typeof renderBehaviorTracking==='function')renderBehaviorTracking();
- const assigned=window.__COMPASS_STUDENT_RUNTIME__?.context?.behaviors||[];
- if(assigned.length)setBehaviorDefinitions(assigned.map((x,i)=>({key:'function'+i,label:typeof x==='string'?x:x.label||x.name||''})));
+/* Prevent the older primary-five-only behavior renderer from replacing the
+   student-specific eight-behavior standard after frame loading. */
+const behaviorHost=$('behaviorItems');
+let activeBehaviorNames=[];
+function stopLegacyBehaviorKeepalive(){
+ const id=window.__COMPASS_BEHAVIOR_KEEPALIVE__;
+ if(id){clearInterval(id);window.__COMPASS_BEHAVIOR_KEEPALIVE__=null;}
 }
+function setStudentBehaviors(list){
+ const names=[...new Set((Array.isArray(list)?list:[]).map(x=>typeof x==='string'?x:(x?.label||x?.name||''))
+  .filter(x=>typeof x==='string'&&x.trim()).map(x=>x.trim()))].slice(0,8);
+ activeBehaviorNames=names;
+ behaviorDefinitions=names.map((label,i)=>({key:'function'+i,label}));
+ stopLegacyBehaviorKeepalive();
+ drawBehaviors();
+}
+function drawBehaviors(){
+ if(!behaviorHost)return;
+ const found=[...behaviorHost.querySelectorAll(':scope > .behavior')];
+ if(found.length===activeBehaviorNames.length&&found.every((el,i)=>el.querySelector('span')?.textContent===activeBehaviorNames[i]))return;
+ behaviorHost.replaceChildren();
+ for(let i=0;i<activeBehaviorNames.length;i++){
+  const name=activeBehaviorNames[i],key='function'+i;
+  const item=document.createElement('div');item.className='behavior';
+  const dec=document.createElement('button');dec.className='minus';dec.type='button';dec.textContent='−';dec.setAttribute('aria-label','Decrease '+name);
+  const label=document.createElement('span');label.textContent=name;
+  const value=document.createElement('b');value.className='count';value.id='b'+key;
+  const inc=document.createElement('button');inc.className='plus';inc.type='button';inc.textContent='+';inc.setAttribute('aria-label','Increase '+name);
+  function currentCount(){
+   return Math.max(0,Number((window.__COMPASS_BEHAVIOR_COUNTS__||{})[name])||0);
+  }
+  value.textContent=String(currentCount());
+  function delta(n){
+   const c=window.__COMPASS_BEHAVIOR_COUNTS__||(window.__COMPASS_BEHAVIOR_COUNTS__={});
+   c[name]=Math.max(0,currentCount()+n);
+   if(typeof counts==='object')counts[key]=c[name];
+   value.textContent=String(c[name]);
+  }
+  dec.addEventListener('click',()=>delta(-1));inc.addEventListener('click',()=>delta(1));
+  item.append(dec,label,value,inc);behaviorHost.appendChild(item);
+ }
+}
+if(typeof behaviorDefinitions!=='undefined')behaviorDefinitions=[];
+drawBehaviors();
+const initialAssigned=window.__COMPASS_STUDENT_RUNTIME__?.context?.behaviors||[];
+if(initialAssigned.length)setStudentBehaviors(initialAssigned);
+if(behaviorHost)new MutationObserver(()=>drawBehaviors()).observe(behaviorHost,{childList:true});
+window.addEventListener('load',()=>{stopLegacyBehaviorKeepalive();drawBehaviors();}, {once:true});
 window.addEventListener('message',event=>{
  if(window.parent===window||event.source!==window.parent)return;
  let parentOrigin='';try{parentOrigin=new URL(document.referrer).origin}catch(_){}
  if(!parentOrigin||event.origin!==parentOrigin)return;
  const msg=event.data||{};
  if(msg.type!=='COMPASS_DEMO_V18_CONTEXT'||!Array.isArray(msg.student?.behaviors))return;
- const unique=[...new Set(msg.student.behaviors.filter(x=>typeof x==='string'&&x.trim()).map(x=>x.trim()))].slice(0,8);
- if(typeof setBehaviorDefinitions==='function')setBehaviorDefinitions(unique.map((label,i)=>({key:'function'+i,label})));
+ setStudentBehaviors(msg.student.behaviors);
 });
 window.__COMPASS_FUNCTIONS_V25__={version:'25.1',ready:true,getState:()=>({
  mode:running?'run':'setup',complete,saved,probe:probeMode(),events:backupEvents(),
