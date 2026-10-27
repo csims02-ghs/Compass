@@ -15,7 +15,7 @@
     // Updated programs use their own program-specific V25 two-page interface.
     // Never substitute a review-only runner or silently fall back to old UI if an adapter fails.
     const adapters=[
-      {code:'CP-BODY-PARTS',slug:'body-parts',tag:'compass-body-parts-v25',version:'20261027-v6'},
+      {code:'CP-BODY-PARTS',slug:'body-parts',tag:'compass-body-parts-v25',version:'20261027-v7'},
       {code:'CP-COLORS',slug:'colors',tag:'compass-colors-v25',version:'20261027-v5'},
       {code:'CP-CLOTHING-IDENTIFICATION',slug:'clothing',tag:'compass-clothing-v25',version:'20261027-v5'},
       {code:'CP-107-COPYING-SHAPES-AND-VISUAL-MOTOR-INTEGRATION',slug:'copying-shapes',tag:'compass-copying-shapes-v25',version:'20261027-v2'},
@@ -68,5 +68,5 @@
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
     return runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>');
   }
-  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261027-v6',isPage2Program,standardize});
+  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261027-v7',isPage2Program,standardize});
 })(window);
