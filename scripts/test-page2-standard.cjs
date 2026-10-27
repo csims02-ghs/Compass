@@ -22,6 +22,11 @@ async function main(){
  const standard=context.window.COMPASS_PAGE2_STANDARD;
  const dummy='<html><head><title>Demo</title></head><body><main id="runPage"><div class="run-grid"></div><div id="behaviorList"></div></main></body></html>';
  const processed=await standard.standardize(dummy);
+ const warning='Student mastery could not be verified with COMPASS; please reconnect.';
+ const messageFixture='<html><head></head><body><div class="app"><header class="topbar"><div class="brand"><h1>COMPASS · Actions</h1></div><nav class="top-actions"><button>Setup</button><button>End Session</button></nav></header><main id="runPage" class="page active"><div class="run-grid"><div id="behaviorList"></div><p id="masteryRunProgress"></p></div></main><script>document.getElementById("masteryRunProgress").textContent="'+warning+'";</script></body></html>';
+ const cleanedFixture=await standard.standardize(messageFixture);
+ assert(!cleanedFixture.includes(warning),'Transient reconnect wording should be removed');
+ assert(cleanedFixture.includes('COMPASS · Actions'),'Runner identification remains in source for compatibility');
  assert(processed.includes('id="compass-definitive-page2-v1"'));
  assert.equal((processed.match(/id="compass-definitive-page2-v1"/g)||[]).length,1);
  assert.equal(await standard.standardize(processed),processed,'Standard must not double inject');
@@ -61,6 +66,26 @@ async function main(){
     for(const behaviors of [1,3,5,8]){
       await page.setContent(setup(behaviors));
       await page.addStyleTag({content:css});
+      if(behaviors===5){
+        const banner=await page.evaluate(()=>{
+          const el=document.querySelector('.app');
+          const top=document.createElement('header');top.className='topbar';
+          top.innerHTML='<div class="brand"><h1 id="appTitle">COMPASS · Actions</h1></div><nav class="top-actions"><button type="button">← Setup</button><button type="button">End Session</button></nav>';
+          el.insertBefore(top,el.firstChild);
+          document.getElementById('runPage').classList.add('active');
+          const notice=document.createElement('p');notice.id='masteryRunProgress';
+          document.querySelector('.score-card').insertBefore(notice,document.querySelector('.behavior-block'));
+          const brandHidden=getComputedStyle(top.querySelector('.brand')).display==='none';
+          const navVisible=getComputedStyle(top.querySelector('.top-actions')).display!=='none';
+          const emptyHidden=getComputedStyle(notice).display==='none';
+          notice.textContent='2/3 verified teaching dates';
+          const verifiedVisible=getComputedStyle(notice).display!=='none';
+          top.remove();notice.remove();
+          return {brandHidden,navVisible,emptyHidden,verifiedVisible};
+        });
+        assert(banner.brandHidden&&banner.navVisible&&banner.emptyHidden&&banner.verifiedVisible,'Page 2 should remove the title and empty warning without hiding controls or verified mastery: '+JSON.stringify(banner));
+      }
+
       const m=await page.evaluate(()=>{
        const rect=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};
        const grid=document.querySelector('.run-grid'),material=document.querySelector('.material-card'),score=document.querySelector('.score-card');
