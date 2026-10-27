@@ -22,8 +22,9 @@
     const updated=adapters.find(a=>html.includes('"program_code":"'+a.code+'"')||
       html.includes('"program_code": "'+a.code+'"'));
     if(updated){
-      const marker='compass-'+updated.slug+'-v25-ui';
-      if(html.includes('id="'+marker+'"'))return html;
+      const marker=updated.slug==='colors'?'compass-colors-v25-css':'compass-'+updated.slug+'-v25-ui';
+      const scriptId=updated.slug==='colors'?'compass-colors-v25-js':'compass-'+updated.slug+'-v25-logic';
+      if(html.includes('id="'+marker+'"')&&html.includes('id="'+scriptId+'"'))return html;
       if(!/<\/head>/i.test(html)||!/<\/body>/i.test(html))throw Error('V25 runner document incomplete for '+updated.code);
       // Adapters are only installed on their matching production runner markup.
       if(!/class=["'][^"']*program-setup/.test(html)||!/id=["']workspace["']/.test(html)||
@@ -36,25 +37,7 @@
       };
       const [css,js]=await Promise.all([read('css'),read('js')]);
       return html.replace(/<\/head>/i,'<style id="'+marker+'">'+css+'</style></head>')
-        .replace(/<\/body>/i,'<script id="compass-'+updated.slug+'-v25-logic">'+js+'<'+'/script></body>');
-    }
-    // Colors v25: isolated adapter loaded only for the Color Identification program.
-    // Retain all 12 stored color targets, multi-select sequences, student assignments and history.
-    if(/["']program_code["']\s*:\s*["']CP-COLORS["']/.test(html)){
-      if(html.includes('id="compass-colors-v25-css"')&&html.includes('id="compass-colors-v25-js"'))return html;
-      const fetchAsset=async path=>{
-        const response=await fetch(path,{cache:'no-store'});
-        if(!response.ok)throw new Error('Colors V25 asset missing: '+path);
-        return response.text();
-      };
-      const [colorsCss,colorsJs]=await Promise.all([
-        fetchAsset('./compass-colors-v25.css?v=20261027-v25-5'),
-        fetchAsset('./compass-colors-v25.js?v=20261027-v25-5')
-      ]);
-      if(!/<\/head>/i.test(html)||!/<\/body>/i.test(html))throw Error('Colors runner HTML is incomplete');
-      return html
-        .replace(/<\/head>/i,'<style id="compass-colors-v25-css">'+colorsCss+'</style></head>')
-        .replace(/<\/body>/i,'<script id="compass-colors-v25-js">'+colorsJs+'<'+'/script></body>');
+        .replace(/<\/body>/i,'<script id="'+scriptId+'">'+js+'<'+'/script></body>');
     }
     if(!isPage2Program(html))return html;
     if(html.includes('id="compass-definitive-page2-v3"'))return html;
