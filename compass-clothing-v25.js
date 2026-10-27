@@ -120,6 +120,7 @@ if(previousSet){
   return previousSet(a);
  };
  if(Array.isArray(C.behaviors)&&C.behaviors.length)setBehaviorDefinitions(C.behaviors);
+ else if(Array.isArray(behaviorDefinitions)&&behaviorDefinitions.length&&behaviorDefinitions.some(x=>x&&x.label&&!/^Behavior [0-9]+$/i.test(x.label)))setBehaviorDefinitions(behaviorDefinitions);
  else{behaviorDefinitions=[];if(typeof renderBehaviorTracking==="function")renderBehaviorTracking()}
 }
 window.addEventListener("message",e=>{
@@ -129,5 +130,21 @@ window.addEventListener("message",e=>{
  const list=[...new Set(data.student.behaviors.filter(x=>typeof x==="string"&&x.trim()))].slice(0,8);
  setBehaviorDefinitions(list.map((s,i)=>({key:"clo"+i,label:s})));
 });
+// Capture clicks before legacy navigation boot can bypass required session persistence.
+window.addEventListener("click",function(event){
+ const b=event.target?.closest?.("button");
+ if(b?.id!=="bpNextProgram")return;
+ if(!complete||syncState!=="saved"){
+   event.preventDefault();event.stopImmediatePropagation();
+   if(complete){
+     $text("bpSaveStatus","Save confirmation required before continuing. Retrying…");
+     const rt=window.__COMPASS_STUDENT_RUNTIME__;
+     if(rt?.autoSave)Promise.resolve(rt.autoSave("program_complete",true)).then(res=>{
+       syncState=res?.ok?"saved":"queued";
+       $text("bpSaveStatus",syncState==="saved"?"Session saved to COMPASS. You can continue.":"Save queued, but not yet confirmed.");
+     }).catch(()=>$text("bpSaveStatus","Cloud save failed; remain on this program."));
+   }
+ }
+},true);
 window.__COMPASS_CLO_V25__.ready=true;
 })();
