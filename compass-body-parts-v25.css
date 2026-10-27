@@ -132,3 +132,6 @@ html.bp-v25 .bp-actions-clone #bpStrictCards .bp-setup .setup-grid{display:none!
 html.bp-v25 .bp-actions-clone #bpPageTwo{min-height:0}
 @media(max-width:850px){html.bp-v25 .bp-actions-clone #bpPageOne{overflow:auto!important}html.bp-v25 .bp-actions-clone #bpStrictCards{grid-template-columns:1fr;overflow:visible;flex:none}html.bp-v25 .bp-actions-clone #bpStrictCards>.bp-panel{min-height:580px}html.bp-v25 .bp-actions-clone #bpStrictBanner{flex-wrap:wrap}}
 @media(max-height:750px) and (min-width:850px){html.bp-v25 .bp-actions-clone #bpStrictBanner{min-height:48px}html.bp-v25 .bp-actions-clone #bpStrictSaveDock{flex-basis:76px}html.bp-v25 .bp-actions-clone #bpStrictInstructionList{gap:11px}}
+
+/* Hide the old generic runner preview so only the Actions-style DTI preview appears on Page 1. */
+html.bp-v25 .bp-actions-clone #bpPageOne #setupPreview{display:none!important}
