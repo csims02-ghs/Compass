@@ -10,6 +10,9 @@ on:
       - 'scripts/test-aac-auth-handoff.cjs'
       - 'scripts/test-actions-v25-live.cjs'
       - 'scripts/test-animal-v25-live.cjs'
+      - 'scripts/test-body-parts-v25-live.cjs'
+      - 'compass-body-parts-v25.js'
+      - 'compass-body-parts-v25.css'
       - 'index.html'
       - 'program-hub.html'
       - 'compass-page2-standard.css'
@@ -43,6 +46,7 @@ jobs:
           node scripts/test-aac-auth-handoff.cjs
           node scripts/test-actions-v25-live.cjs
           node scripts/test-animal-v25-live.cjs
+          node scripts/test-body-parts-v25-live.cjs
           node scripts/test-page2-standard.cjs
           node scripts/test-page2-images-only.cjs
           node scripts/test-daily-program-sync.cjs
