@@ -3360,6 +3360,8 @@ function activeStudentProgramsOrdered(){
           }
           list.querySelectorAll('[data-goal-number="'+goalId+'"]').forEach(el=>{if(el!==input)el.value=data.annual_goal_number??''});
           list.querySelectorAll('[data-goal-percent="'+goalId+'"]').forEach(el=>{if(el!==input)el.value=data.target_percent??80});
+          list.querySelectorAll('option[value="'+goalId+'"]').forEach(option=>{option.textContent=goalLabel(data)});
+          renderGoals();renderGoalAchievement();
           toast('IEP Goal '+(pct?'percentage':'number')+' saved.','success');
         }
         async function handleGoalChange(input){
