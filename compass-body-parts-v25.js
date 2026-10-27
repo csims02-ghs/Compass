@@ -226,7 +226,7 @@ window.addEventListener('message',event=>{
  const distractorSlot=document.createElement('select');distractorSlot.id='bpStrictDistractor';
  [
   ['review','Review / Previously Taught'],
-  ['mastered','Use Mastered Target'],
+  ['generalization','Generalization / Changed Example'],
   ['motor','Motor Imitation (Do This)'],
   ['none','No additional distractor']
  ].forEach(([v,label])=>distractorSlot.add(new Option(label,v)));
@@ -256,6 +256,7 @@ window.addEventListener('message',event=>{
  const circuit=document.createElement('select');circuit.id='bpStrictCircuit';circuit.add(new Option('N/A — Teaching','na'));
  const circuitRow=document.createElement('label');circuitRow.className='bp-strict-field';circuitRow.innerHTML='<span class="bp-strict-label">Circuit</span>';circuitRow.appendChild(circuit);form.appendChild(circuitRow);
  const hidden=page.querySelector('.bp-setup .setup-grid');if(hidden){hidden.hidden=true;hidden.style.display='none';}
+ if(scoring)scoring.value='staff';
  const extras=setupCard.querySelector(':scope > .setup-grid');if(extras){extras.hidden=true;extras.style.display='none';}
  // Existing native response and avatar controls remain connected through Materials.
  const self=control('bpSelf'),avatarSel=control('bpAvatar');
@@ -271,11 +272,11 @@ window.addEventListener('message',event=>{
  function updateDistractor(){
   if(!enable||!distractor)return;
   const v=distractorSlot.value;
-  enable.checked=v!=='none';distractor.disabled=v==='none';distractor.hidden=true;
+  // Review retains existing benchmark distractor behavior. Never invent mastery records.
+  const useMotor=v==='motor';
+  enable.checked=useMotor;distractor.disabled=!useMotor;distractor.hidden=true;
   const opts=Array.from(distractor.options);
-  let selected=opts.find(o=>v==='motor'&&/do this|motor|clap/i.test(o.textContent||''));
-  if(!selected)selected=opts.find(o=>v==='mastered'&&/mastered/i.test(o.textContent||''));
-  if(!selected)selected=opts.find(o=>v==='review'&&/review|previously taught/i.test(o.textContent||''));
+  const selected=opts.find(o=>useMotor&&/clap|wiggle|high five|fist bump/i.test(o.textContent||''));
   if(selected)distractor.value=selected.value;
   if(typeof window.toggleCustomDistractor==='function')window.toggleCustomDistractor();
   distractor.hidden=true;distractor.style.display='none';
@@ -306,7 +307,7 @@ window.addEventListener('message',event=>{
   const number=group?group[1]:selected.replace(/^Practice\s*/,'');
   const selectedTarget=tgt?.selectedOptions?.[0]?.textContent||'Ready';
   byId('bpStrictPill').textContent='Benchmark '+number+' · '+selectedTarget;
-  const sd=byId('bpStrictSd');if(sd)sd.textContent=String('“Show me '+selectedTarget.toLowerCase()+'.“').replace('.“','.”');
+  const sd=byId('bpStrictSd');if(sd)sd.textContent='“Show me '+selectedTarget.toLowerCase()+'.”';
  }
  function markDirty(){status.textContent='Unsaved setup changes.';status.dataset.state='dirty';}
  for(const node of [bm,tgt,dti,skill,scoring,array,goal,mastery,teaching,days,minOpp]){
