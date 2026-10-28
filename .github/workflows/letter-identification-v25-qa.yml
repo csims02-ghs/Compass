@@ -1,0 +1,20 @@
+name: Letter Identification V25 strict browser QA
+on:
+  push:
+    branches: [qa/letter-identification-v25-strict]
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Browser dependencies
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Synthetic browser stress tests
+        run: node qa/test-letter-identification-v25.cjs
