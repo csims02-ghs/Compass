@@ -1,0 +1,19 @@
+name: Material gate disappear browser QA
+on:
+  push:
+    branches: [qa/material-confirmation-disappears-v25]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Confirm gate physically disappears and next step re-verifies
+        run: node qa/test-material-gate-disappear.cjs
