@@ -1,0 +1,19 @@
+name: Turn Taking Sharing V25 strict browser QA
+on:
+  push:
+    branches: [qa/turn-taking-sharing-v25-strict]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Test component scoring, elapsed intervals, choice and saving
+        run: node qa/test-turn-taking-sharing-v25.cjs
