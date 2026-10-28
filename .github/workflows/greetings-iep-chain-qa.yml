@@ -1,0 +1,20 @@
+name: Greetings IEP Chain functional QA
+on:
+  push:
+    branches: [qa/greetings-iep-chain-five-step-fix]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: IEP chain 5-step DTI and NET end-to-end
+        run: node qa/test-greetings-iep-chain.cjs
