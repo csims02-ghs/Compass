@@ -13,6 +13,6 @@ Applies to all future new or upgraded instructional programs that use DTI chains
 
 **Visual reference:** Body Parts V25.
 **Working example:** Clothing V25.7.
-**Machine-readable reference:** COMPASS_PAGE2_STANDARD.rules.iepChain.
+**Machine-readable reference:** COMPASS_V25_IEP_CHAIN_RULE in compass-v25-iep-chain-rule.js.
 
 Do not automatically alter live programs just because the standard exists; apply and verify when each program is upgraded.
