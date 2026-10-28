@@ -1,0 +1,20 @@
+name: Session Notes four-tab workspace QA
+on:
+  push:
+    branches: [feature/session-notes-four-tabs]
+  workflow_dispatch:
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Test Sessions, Notes, History, Manual Input tabs
+        run: node qa/test-session-notes-four-tabs.cjs
