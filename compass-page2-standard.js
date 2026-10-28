@@ -31,7 +31,9 @@
        html.includes('"code":"CP-DIR-VISUAL-087"')||
        html.includes('"code": "CP-DIR-VISUAL-087"')||
        html.includes('"code":"CP-126-GROSS-MOTOR-IMITATION"')||
-       html.includes('"code": "CP-126-GROSS-MOTOR-IMITATION"')))return html;
+       html.includes('"code": "CP-126-GROSS-MOTOR-IMITATION"')||
+       html.includes('"code":"CP-LETTER-TRACING"')||
+       html.includes('"code": "CP-LETTER-TRACING"')))return html;
     // Updated programs use their own program-specific V25 two-page interface.
     // Never substitute a review-only runner or silently fall back to old UI if an adapter fails.
     const adapters=[
@@ -94,5 +96,5 @@
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
     return runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>');
   }
-  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261028-v18',isPage2Program,standardize});
+  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261028-v19',isPage2Program,standardize});
 })(window);
