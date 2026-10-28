@@ -24,6 +24,17 @@ for(let i=0;i<5;i++){await page.locator('[data-score="correct"]').click();await 
 await page.waitForFunction(()=>window.__qaCalls.some(x=>x.action==='save_session'),{timeout:8000});
 const saved=await page.evaluate(()=>window.__qaCalls.find(x=>x.action==='save_session'));assert.equal(saved.trial_events.length,5);
 assert.equal(saved.counts.independent_correct,5);assert.equal(await page.locator('#nextProgramBtn').isEnabled(),true);
+await page.locator('#backBtn').click();
+await page.evaluate(()=>{window.__deny=true});
+await page.locator('#runBtn').click();
+for(let i=0;i<5;i++){await page.locator('[data-score="correct"]').click();await page.locator('#saveNextBtn').click();}
+await page.waitForFunction(()=>document.getElementById('validation').textContent.includes('save failed'),null,{timeout:6000});
+assert.equal(await page.locator('#nextProgramBtn').isHidden(),true,'must not navigate on failed save');
+await page.evaluate(()=>{window.__deny=false});
+await page.locator('#saveNextBtn').click();
+await page.waitForFunction(()=>!document.getElementById('nextProgramBtn').disabled,null,{timeout:6000});
+assert.equal(await page.locator('#nextProgramBtn').isEnabled(),true,'retry unlocks navigation');
+
 assert.equal(errors.length,0,errors.join('\n'));
 console.log('PASS',viewport.width,'benchmarks 10','targets 52','IEP 5 steps','auth mock saved',saved.trial_events.length);
 await page.close();
