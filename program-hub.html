@@ -214,6 +214,64 @@ async function saveV25Run(sp,entry){
   status('Run preserved on device; COMPASS cloud sync pending. Reopen the program when online to retry.','error');
  }finally{v25SavesInFlight.delete(key)}
 }
+// COMPASS SETUP SAVE PROXY V2. Only the currently opened student program can
+// request setup persistence. Staff tokens are NEVER posted to the iframe.
+// Supabase verifies both the signed-in staff identity and student authorization.
+const compassSetupWritesInFlight=new Set();
+addEventListener('message',async event=>{
+ const req=event.data||{};
+ if(req.type!=='compass-save-setup-request')return;
+ const frame=$('runnerFrame'),sp=S.programs[S.index];
+ const isParentOrigin=event.origin===location.origin;
+ const isOwnBlob=event.origin==='null'&&typeof S.blobUrl==='string'&&
+   S.blobUrl.startsWith('blob:'+location.origin+'/');
+ if(event.source!==frame?.contentWindow||(!isParentOrigin&&!isOwnBlob))return;
+ if(!sp||S.runnerAssignmentId!==sp.id||String(req.assignment_id||'')!==String(sp.id))return;
+ const nonce=typeof req.nonce==='string'?req.nonce:'';
+ if(!/^[0-9a-f-]{36}$/i.test(nonce))return;
+ const targetOrigin=isOwnBlob?'*':location.origin; // opaque Blob reply: no secret data
+ const reply=(payload)=>{
+  if(S.programs[S.index]?.id!==sp.id||S.runnerAssignmentId!==sp.id||
+     frame.contentWindow!==event.source)return;
+  event.source.postMessage({type:'compass-save-setup-response',nonce,
+    assignment_id:sp.id,...payload},targetOrigin);
+ };
+ if(!req.setup||typeof req.setup!=='object'||Array.isArray(req.setup)||
+    Object.keys(req.setup).length>50||JSON.stringify(req.setup).length>12000){
+  reply({ok:false,error:'Invalid setup data. Nothing was saved.'});return;
+ }
+ const key=sp.id+':'+nonce;
+ if(compassSetupWritesInFlight.has(key))return;
+ compassSetupWritesInFlight.add(key);
+ try{
+  const {data:{session},error:sessionError}=await sb.auth.getSession();
+  if(sessionError||!session?.access_token||!S.session?.user||
+     session.user?.id!==S.session.user.id){
+   throw Error('Your COMPASS staff session expired. Sign in again from Student Profile.');
+  }
+  if(S.programs[S.index]?.id!==sp.id||S.runnerAssignmentId!==sp.id)return;
+  S.session=session;
+  const response=await fetch(runtimeEndpoint(sp),{
+   method:'POST',cache:'no-store',
+   headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':KEY},
+   body:JSON.stringify({action:'save_setup',setup:req.setup})
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok||data.ok!==true||data.saved!==true){
+   throw Error(typeof data.error==='string'?data.error:'COMPASS did not confirm the student setup save.');
+  }
+  // Keep parent assignment state current for subsequent program launches.
+  sp.instance_config={...(sp.instance_config||{}),
+    programSetup:data.programSetup||req.setup};
+  reply({ok:true,saved:true,programSetup:data.programSetup||req.setup,
+    updated_at:data.updated_at||null});
+  status('Program setup saved to this student in COMPASS.','ok');
+ }catch(err){
+  const message=err?.message||'Student setup could not be saved.';
+  reply({ok:false,error:String(message)});
+  status('Save Setup failed: '+String(message),'error');
+ }finally{compassSetupWritesInFlight.delete(key);}
+});
 // COMPASS AUTH BRIDGE V1: provide a fresh access token only to the currently
 // loaded, same-origin student program iframe after matching its assignment.
 // The backend independently verifies staff identity and student permissions.
