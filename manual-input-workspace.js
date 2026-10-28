@@ -99,22 +99,30 @@ const behavior=countBehaviors(t.behavior_counts);
 return {id:'trial:'+t.id,origin:'live',student_id:a.student_id,student_compass_program_id:a.id,program_id:a.program_id,event_date:when.slice(0,10)||parent?.session_date||'',event_time:when.includes('T')?when.slice(11,16):'',provider_name:st.profiles.find(p=>p.id===parent?.staff_id)?.full_name||'Recorded staff',target_name:t.target_name||t.target_key||parent?.target_name||'Target',target_key:t.target_key,benchmark_key:t.benchmark_key,trial_number:t.trial_number,trial_type:t.trial_type||'T',response:mappingResponse(t.result),prompt_level:t.prompt_level||'None',behavior_counts:behavior,notes:parent?.notes||'',session_id:t.session_id,source:t.source||'Live session',goal_id:t.goal_id};
 }
 function manualRecord(m){return {...m,id:'manual:'+m.id,originalId:m.id,origin:'manual',program_id:assignment(m.student_compass_program_id)?.program_id,source:'Manual entry',response:m.response,behavior_counts:countBehaviors(m.behavior_counts)}}
+function behaviorObservation(b,sid){
+ const n=Math.max(0,Number(b.count||0));
+ return {id:'behavior:'+b.id,origin:'behavior_only',student_id:sid,student_compass_program_id:'',program_id:'',
+  program_label:'Unassigned behavior observation',event_date:b.data_date,event_time:'',provider_name:st.profiles.find(p=>p.id===b.collected_by)?.full_name||'Recorded staff',
+  target_name:'Behavior · '+String(b.data_type||'Observation'),target_key:'',benchmark_key:'',trial_number:null,trial_type:'',
+  response:'behavior_only',prompt_level:'',behavior_counts:n>0?{[b.behavior_name||'Observed behavior']:n}:{},notes:b.notes||'',source:'Behavior observation'};
+}
 async function loadHistory(){
  const sid=st.selectedStudent;if(!sid)return;
  st.loading=true;status('Loading full authorized student history…',false,'miHistoryStatus');
  try{
  const ids=st.assignments.filter(a=>a.student_id===sid).map(a=>a.id);
- const [manual,sessions,trials]=await Promise.all([
+ const [manual,sessions,trials,behaviorOnly]=await Promise.all([
   pages((a,b)=>table('compass_manual_trial_entries').select('*').eq('student_id',sid).is('deleted_at',null).order('event_date',{ascending:false}).range(a,b)),
   ids.length?getMany('compass_program_sessions','student_compass_program_id',ids,'id,student_compass_program_id,staff_id,session_date,target_name,target_key,trials_total,targets_correct,prompted_correct,incorrect,no_response,behavior_counts,notes,started_at,created_at','created_at'):Promise.resolve([]),
-  ids.length?getMany('compass_trial_events','student_compass_program_id',ids,'id,session_id,student_compass_program_id,trial_number,trial_type,target_key,target_name,benchmark_key,goal_id,result,prompt_level,behavior_counts,occurred_at,source,created_at','occurred_at'):Promise.resolve([])
+  ids.length?getMany('compass_trial_events','student_compass_program_id',ids,'id,session_id,student_compass_program_id,trial_number,trial_type,target_key,target_name,benchmark_key,goal_id,result,prompt_level,behavior_counts,occurred_at,source,created_at','occurred_at'):Promise.resolve([]),
+ pages((a,b)=>table('student_behavior_data').select('id,student_id,data_type,behavior_name,data_date,count,notes,collected_by').eq('student_id',sid).order('data_date',{ascending:false}).range(a,b))
  ]);
  if(st.selectedStudent!==sid)return;
  st.manual=manual;const map=new Map(sessions.map(s=>[s.id,s]));
  const trialsBySession=new Set(trials.map(t=>t.session_id));
  const base=trials.map(t=>trialRecord(t,assignment(t.student_compass_program_id)||{id:t.student_compass_program_id,student_id:sid},map));
  const residual=sessions.filter(s=>!trialsBySession.has(s.id)).map(s=>historicalSession(s,assignment(s.student_compass_program_id)||{id:s.student_compass_program_id,student_id:sid}));
- st.live=[...base,...residual];st.rows=[...manual.map(manualRecord),...st.live];
+ st.live=[...base,...residual,...behaviorOnly.map(b=>behaviorObservation(b,sid))];st.rows=[...manual.map(manualRecord),...st.live];
  renderFilters();renderRows();status('All available COMPASS trial and session records loaded.',false,'miHistoryStatus');
  }catch(e){status('Unable to load full history: '+e.message,true,'miHistoryStatus');st.rows=[];renderRows();}
  finally{st.loading=false}
@@ -158,7 +166,7 @@ function historyTr(row){
  const source=row.origin==='manual'?'<span class="mi-chip manual">Manual: '+esc(row.provider_name||'')+'</span>':'<span class="mi-chip">'+esc(row.source||'Recorded')+'</span>';
  return '<tr>'+
  '<td>'+checkbox+'</td><td>'+esc(row.event_date||'—')+'</td><td>'+esc(row.event_time||'—')+'</td>'+
- '<td>'+esc(studentName(student(row.student_id)))+'</td><td>'+esc(programName(row.student_compass_program_id))+'</td>'+
+ '<td>'+esc(studentName(student(row.student_id)))+'</td><td>'+esc(row.program_label||programName(row.student_compass_program_id))+'</td>'+
  '<td>'+esc(row.target_name||'—')+'</td><td>'+esc(row.response==='summary'?'—':row.trial_number||1)+'</td>'+
  '<td>'+responseLabel(row)+'</td><td>'+esc(row.prompt_level||'N/A')+'</td><td>'+behaviorLabels(row.behavior_counts)+'</td>'+
  '<td>'+esc(row.provider_name||'Recorded staff')+'</td><td class="mi-notes-col" title="'+esc(row.notes||'')+'">'+esc(row.notes||'—')+'</td>'+
@@ -168,7 +176,7 @@ function metricTotals(rows){
  const totals={trials:0,independent:0,prompted:0,incorrect:0,no_response:0,behaviors:{}};
  for(const r of rows){
   if(r.response==='summary'){const m=r.totals||{};totals.trials+=Number(m.count||0);totals.independent+=Number(m.independent||0);totals.prompted+=Number(m.prompted||0);totals.incorrect+=Number(m.incorrect||0);totals.no_response+=Number(m.no_response||0)}
-  else if(r.response!=='na'){totals.trials++;if(['independent','prompted','incorrect','no_response'].includes(r.response))totals[r.response]++;}
+  else if(['independent','prompted','incorrect','no_response'].includes(r.response)){totals.trials++;totals[r.response]++;}
   for(const [name,n] of Object.entries(countBehaviors(r.behavior_counts)))totals.behaviors[name]=(totals.behaviors[name]||0)+n;
  }return totals;
 }
@@ -186,7 +194,7 @@ function renderSummary(rows){
 function renderGraph(rows){
  const div=by('miGraph');if(!st.showGraph){div.hidden=true;return}div.hidden=false;
  const days=new Map();
- for(const r of rows){const key=r.event_date;if(!key||r.response==='na')continue;const prev=days.get(key)||{total:0,correct:0};if(r.response==='summary'){prev.total+=Number(r.totals?.count||0);prev.correct+=Number(r.totals?.independent||0)}else{prev.total++;if(r.response==='independent')prev.correct++;}days.set(key,prev)}
+ for(const r of rows){const key=r.event_date;if(!key||!['summary','independent','prompted','incorrect','no_response'].includes(r.response))continue;const prev=days.get(key)||{total:0,correct:0};if(r.response==='summary'){prev.total+=Number(r.totals?.count||0);prev.correct+=Number(r.totals?.independent||0)}else{prev.total++;if(r.response==='independent')prev.correct++;}days.set(key,prev)}
  const points=[...days].sort((a,b)=>a[0].localeCompare(b[0]));
  if(!points.length){div.textContent='No scored trials in this range to graph.';return}
  const w=680,h=195,pad=26,step=points.length>1?(w-2*pad)/(points.length-1):0;
