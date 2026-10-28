@@ -1,6 +1,6 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),http=require('node:http');
 (async()=>{
-const url=process.env.RUNNER_URL||'https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-inactive-runner-qa?name=actions-material-gate';
+const url=process.env.RUNNER_URL||'https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program-runner?program_code=CP-ACTION-IDENTIFICATION&format=html';
 const r=await fetch(url);assert.equal(r.status,200,'QA runner endpoint');const html=await r.text();
 const server=http.createServer((_req,res)=>{res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(html)});
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
