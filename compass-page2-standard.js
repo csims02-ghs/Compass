@@ -29,7 +29,7 @@
       // Its native setupPage/runPage/behaviorList/run-grid markup is *not*
       // compatible with the previous legacy .program-setup/#workspace adapter.
       // Pass the native V25 runner through unchanged; do not fetch/inject old JS.
-      if((updated.code==='CP-BODY-PARTS'||updated.code==='CP-CLOTHING-IDENTIFICATION') && isPage2Program(html))return html;
+      if((updated.code==='CP-BODY-PARTS'||updated.code==='CP-CLOTHING-IDENTIFICATION'||updated.code==='CP-COLORS') && isPage2Program(html))return html;
       const marker=updated.slug==='colors'?'compass-colors-v25-css':'compass-'+updated.slug+'-v25-ui';
       const scriptId=updated.slug==='colors'?'compass-colors-v25-js':'compass-'+updated.slug+'-v25-logic';
       if(html.includes('id="'+marker+'"')&&html.includes('id="'+scriptId+'"'))return html;
