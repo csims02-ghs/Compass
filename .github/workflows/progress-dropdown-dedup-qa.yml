@@ -1,0 +1,19 @@
+name: Progress dropdown dedup regression
+on:
+  push:
+    branches: [fix/progress-program-dropdown-duplicates]
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Regression test progress assignments and history
+        run: node qa/test-progress-dropdown-dedup.cjs
