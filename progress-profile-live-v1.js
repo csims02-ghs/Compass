@@ -32,11 +32,45 @@ const tag=d.createElement("style");tag.id="cpr-styles";tag.textContent=
 tag.textContent+="\n/* Progress tab: color-coded benchmark progress replaces compact Acquisition Summary. */\n.cpr-bench-sheet{margin:18px 0 10px;font:12px Arial,Helvetica,sans-serif;color:#133b65;min-width:0}\n.cpr-bench-head{background:linear-gradient(105deg,#07365b,#064e7c);color:white;border-radius:12px;padding:15px 18px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}\n.cpr-bench-head h2{font-size:clamp(20px,2.2vw,30px);margin:0;color:white}\n.cpr-bench-head p{font-size:12px;color:#deebf7;margin:6px 0 0}\n.cpr-bench-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}\n.cpr-bench-meta label{font-weight:700;font-size:11px;color:#eef6ff}\n.cpr-bench-meta span{background:white;color:#123d68;border-radius:5px;padding:6px 10px;font-size:11px;display:inline-block}\n.cpr-bench-scroll{overflow-x:hidden;max-width:100%;width:100%;min-width:0}\n.cpr-bench-cols{width:100%;table-layout:fixed;min-width:0;border-collapse:collapse}\n.cpr-bench-cols col.cpr-col-num{width:4%}\n.cpr-bench-cols col.cpr-col-skill{width:28%}\n.cpr-bench-cols col.cpr-col-date{width:6%}\n.cpr-bench-cols col.cpr-col-maint{width:7%}\n.cpr-bench-cols col.cpr-col-notes{width:16%}\n.cpr-bench-cols th,.cpr-bench-cols td{border:1px solid #b9d1e7;padding:6px 2px;overflow-wrap:anywhere;min-width:0;line-height:1.2;font-size:clamp(8px,.85vw,11px);text-align:center;white-space:normal}\n.cpr-bench-cols th:first-child{font-weight:850}\n.cpr-bench-cols .cpr-left{text-align:left;padding-left:7px;font-weight:750}\n.cpr-bench-cols .cpr-topmain{background:#08395d;color:#fff}\n.cpr-bench-cols .cpr-intro{background:#a8d9fa}\n.cpr-bench-cols .cpr-mastered{background:#a9ebc5}\n.cpr-bench-cols .cpr-maint1{background:#ffe5a7}\n.cpr-bench-cols .cpr-maint2{background:#ffd9b8}\n.cpr-bench-cols .cpr-subintro{background:#e6f5ff}\n.cpr-bench-cols .cpr-submastered{background:#e5f9ed}\n.cpr-bench-cols .cpr-submaint1{background:#fff3d9}\n.cpr-bench-cols .cpr-submaint2{background:#fff0e3}\n.cpr-bench-group{margin:9px 0 0;border:1px solid var(--bench-border);border-radius:10px;overflow:hidden;background:var(--bench-bg)}\n.cpr-bench-group.blue{--bench-head:#cceaff;--bench-border:#91cafa;--bench-bg:#eff8ff}\n.cpr-bench-group.green{--bench-head:#c7efda;--bench-border:#87d9af;--bench-bg:#effcf5}\n.cpr-bench-group.gold{--bench-head:#ffebbe;--bench-border:#f2c064;--bench-bg:#fff9ea}\n.cpr-bench-group.rose{--bench-head:#ffdade;--bench-border:#f7a1ab;--bench-bg:#fff2f4}\n.cpr-bench-group summary{list-style:none;display:flex;align-items:center;gap:10px;background:var(--bench-head);padding:12px;min-height:44px;cursor:pointer;touch-action:manipulation}\n.cpr-bench-group summary::-webkit-details-marker{display:none}\n.cpr-bench-group summary:focus-visible{outline:3px solid #2477de;outline-offset:-3px}\n.cpr-bench-arrow{display:inline-flex;align-items:center;justify-content:center;flex:0 0 20px;font-weight:900;font-size:18px;color:#1a5f9c}\n.cpr-bench-group[open] .cpr-bench-arrow{transform:rotate(90deg)}\n.cpr-bench-title{font-weight:900;font-size:13px;flex:1;min-width:0}\n.cpr-bench-number{font-size:11px;color:#376181;font-weight:800;white-space:nowrap}\n.cpr-bench-group .cpr-bench-cols{background:var(--bench-bg)}\n.cpr-bench-group .cpr-bench-cols tr:nth-child(even){background:rgba(255,255,255,.4)}\n.cpr-bench-key{border:1px solid #d3e0ee;border-radius:9px;background:#f0f6fc;padding:12px;margin-top:11px;font-size:11px;color:#395b7d;line-height:1.55}\n.cpr-bench-empty{color:#9bb3c8}\n@media(max-width:850px){.cpr-bench-cols th,.cpr-bench-cols td{font-size:8px;padding:5px 1px}.cpr-bench-head{padding:12px}.cpr-bench-meta{gap:4px}}\n";
 d.head.appendChild(tag);
 }
-function programs(){
+function assignmentPrograms(){
 return (snap&&Array.isArray(snap.programs)?snap.programs:[]).map(x=>{
 let a=x.assignment||x,def=x.definition||{},cfg=Object.assign({},def.program_config||{},a.instance_config||{});
 return {id:a.id, assignment:a, definition:def, config:cfg, name:def.program_name||a.program_name||"Program", goal:n(a.goal_percentage)??n(cfg.mastery_pct),targets:Array.isArray(cfg.targets)?cfg.targets:[],criteria:masteryCriteria(cfg),start:dt(a.start_date||a.assigned_date||a.created_at)};
 }).sort((a,b)=>(n(a.assignment.display_order)??999)-(n(b.assignment.display_order)??999)||a.name.localeCompare(b.name));
+}
+
+/* Progress dropdown: one option per logical program, not one per archived assignment.
+   Keep every assignment ID for historical session/target aggregation. This does not
+   delete, archive, or mutate any student program or clinical record. */
+function programs(){
+ const groups=new Map();
+ for(const p of assignmentPrograms()){
+  const key=String(p.assignment.program_id||p.definition.id||p.definition.program_code||'assignment:'+p.id);
+  if(!groups.has(key))groups.set(key,{primary:p,records:[]});
+  const group=groups.get(key);
+  group.records.push(p);
+  const oldArchived=String(group.primary.assignment.status||'').toLowerCase()==='archived';
+  const newActive=String(p.assignment.status||'').toLowerCase()!=='archived';
+  if(oldArchived&&newActive)group.primary=p;
+ }
+ return [...groups.values()].map(group=>{
+  const p=group.primary,assignmentIds=[...new Set(group.records.map(x=>String(x.id)))];
+  const targets=[],seen=new Set();
+  for(const entry of [p,...group.records.filter(x=>x.id!==p.id)]){
+   for(const target of entry.targets){
+    const key=String(target.key||target.id||target.target_key||target.name||'');
+    if(key&&!seen.has(key)){targets.push(target);seen.add(key)}
+   }
+  }
+  const dates=group.records.map(x=>x.start).filter(Boolean).sort();
+  return {...p,assignmentIds,targets,start:dates[0]||p.start};
+ }).sort((a,b)=>(n(a.assignment.display_order)??999)-(n(b.assignment.display_order)??999)||a.name.localeCompare(b.name));
+}
+function memberIds(p){return (p&&p.assignmentIds)||[String(p?.id||'')]}
+function matchesProgram(programId,assignmentId){
+ if(programId==='all')return true;
+ const program=programs().find(p=>p.id===programId||memberIds(p).includes(String(programId)));
+ return program?memberIds(program).includes(String(assignmentId)):String(assignmentId)===String(programId);
 }
 function masteryCriteria(cfg){
 const mastery=cfg.mastery||cfg.mastery_criteria||{};
@@ -46,10 +80,10 @@ let threshold=n(mastery.percent??mastery.percentage??cfg.mastery_pct);
 return {days:days&&days>0?Math.floor(days):null,probes:trials&&trials>0?Math.floor(trials):null,percent:threshold!=null?threshold:null};
 }
 function events(){
-const allowed=new Set(programs().map(p=>p.id));
+const allowed=new Set(assignmentPrograms().map(p=>String(p.id)));
 const detail=(Array.isArray(snap&&snap.trialEvents)?snap.trialEvents:[]),bySession=new Map();
 for(const row of detail){if(!bySession.has(row.session_id))bySession.set(row.session_id,[]);bySession.get(row.session_id).push(row)}
-return (Array.isArray(snap&&snap.sessions)?snap.sessions:[]).filter(s=>allowed.has(s.student_compass_program_id)).flatMap(s=>{
+return (Array.isArray(snap&&snap.sessions)?snap.sessions:[]).filter(s=>allowed.has(String(s.student_compass_program_id))).flatMap(s=>{
 const raw=bySession.get(s.id)||[],targets=raw.filter(ev=>ev.trial_type==='T'),total=Number(s.trials_total||0);
 const targetCorrect=targets.filter(ev=>ev.result==='independent_correct').length,
  promptedCorrect=targets.filter(ev=>ev.result==='prompted').length,
@@ -87,7 +121,7 @@ return {date:dt(s.session_date||s.started_at||s.created_at),program:s.student_co
 }
 function currentEvents(){
 let arr=events(),p=picks.program;
-if(p!=="all")arr=arr.filter(s=>s.program===p);
+if(p!=="all")arr=arr.filter(s=>matchesProgram(p,s.program));
 if(p!=="all"&&picks.target!=="all")arr=arr.filter(s=>s.key===picks.target);
 if(p!=="all"&&picks.benchmark!=="all")arr=arr.filter(s=>s.benchmark===picks.benchmark);
 let r=range();
@@ -97,17 +131,17 @@ function range(){
 if(picks.period.startsWith("window:")){const x=picks.period.split(":");return {from:x[1],to:x[2],byMonth:true}}
 if(picks.period.startsWith("month:")){const m=picks.period.slice(6);return {from:m+"-01",to:monthEnd(m+"-01"),byMonth:false}}
 if(picks.period==="custom"&&picks.customFrom&&picks.customTo)return {from:picks.customFrom,to:picks.customTo,byMonth:picks.program==="all"};
-const ds=events().filter(e=>picks.program==="all"||e.program===picks.program).map(e=>e.date),fallback=programs().find(p=>p.id===picks.program);
+const ds=events().filter(e=>matchesProgram(picks.program,e.program)).map(e=>e.date),fallback=programs().find(p=>p.id===picks.program);
 const from=(ds.length?ds[0]:(fallback&&fallback.start)||iso(new Date())).slice(0,7)+"-01";
 return {from,to:monthEnd(addMonths(from,11)),byMonth:true};
 }
 function option(value,label,selected){return '<option value="'+E(value)+'"'+(selected?' selected':'')+'>'+E(label)+'</option>'}
 function refreshOptions(resetPeriod){
 let ps=programs(),p=picks.program;
-if(p!=="all"&&!ps.some(x=>x.id===p))picks.program="all";
+if(p!=="all"){const match=ps.find(x=>x.id===p||memberIds(x).includes(String(p)));picks.program=match?match.id:"all";}
 sel("program").innerHTML=option("all","All Programs",picks.program==="all")+ps.map(x=>option(x.id,x.name,picks.program===x.id)).join("");
 p=picks.program;
-let arr=events().filter(e=>p==="all"||e.program===p);
+let arr=events().filter(e=>matchesProgram(p,e.program));
 let current=ps.find(x=>x.id===p);
 let targets=[],seen=new Set();
 if(current){
@@ -160,7 +194,7 @@ return {key:g.key,label:g.label,runs:g.items.length,ach:trial?100*correct/trial:
 }
 function phases(){
 if(picks.program==="all")return[];
-let es=events().filter(e=>e.program===picks.program&&e.valid&&!e.maintenance),found=[],prev=null;
+let es=events().filter(e=>matchesProgram(picks.program,e.program)&&e.valid&&!e.maintenance),found=[],prev=null;
 const observedTargets=new Set(),observedBenchmarks=new Set();
 for(const e of es){
  if(prev){
@@ -209,7 +243,8 @@ sel("stats").innerHTML=[["Achieved",trials?(correct*100/trials).toFixed(1)+"%":"
 sel("history").innerHTML=phase.length?phase.map(z=>'<tr><td>'+E(shortDate(z.date))+'</td><td>'+E(z.type)+'</td><td>'+E(z.text)+'</td><td>'+E(z.preview?"Preview only · not saved":"Detected from sessions")+'</td></tr>').join(""):'<tr><td colspan="4">No recorded phase changes in this date range.</td></tr>';
 }
 function calculateTargets(p){
-const es=events().filter(x=>x.program===p.id&&x.valid).sort((a,b)=>a.date.localeCompare(b.date));
+const members=new Set(memberIds(p));
+const es=events().filter(x=>members.has(String(x.program))&&x.valid).sort((a,b)=>a.date.localeCompare(b.date));
 let targetMap=new Map();
 for(const t of p.targets){const key=String(t.key||t.id||t.target_key||t.name||"");if(key)targetMap.set(key,{key,name:t.name||key,metadata:t.metadata||{}})}
 for(const ev of es)if(ev.key&&!targetMap.has(ev.key))targetMap.set(ev.key,{key:ev.key,name:ev.name,metadata:{}});
@@ -233,7 +268,7 @@ return {name:t.name,key:t.key,probe:probes.length?probes[0].date:null,introduced
 });
 }
 function acquisition(options={}){
- const ps=programs(),chosen=options.assignmentId?ps.filter(p=>p.id===options.assignmentId):(picks.program==="all"?ps:ps.filter(p=>p.id===picks.program));
+ const ps=programs(),chosen=options.assignmentId?assignmentPrograms().filter(p=>p.id===options.assignmentId):(picks.program==="all"?ps:ps.filter(p=>p.id===picks.program));
  const colgroup='<colgroup><col class="cpr-col-num"><col class="cpr-col-skill">'+
   Array(4).fill('<col class="cpr-col-date">').join('')+
   Array(4).fill('<col class="cpr-col-maint">').join('')+
