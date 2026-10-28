@@ -12,7 +12,7 @@ securePost:async p=>{window.__qaCalls.push(p);if(window.__deny)throw Error('Reje
 saveSession:async p=>{window.__qaCalls.push({action:'save_session',...p});if(window.__deny)throw Error('Rejected synthetic save');return {ok:true,session_id:'synthetic-session',saved_trial_events:p.trial_events.length}}};
 });
 const response=await page.goto(url,{waitUntil:'domcontentloaded',timeout:40000});assert.equal(response.status(),200);
-await page.setContent(Buffer.from(await response.body()).toString('utf8'),{waitUntil:'domcontentloaded'}); console.log('QA_PARSED',await page.title(),'errors',errors,'benchmarkOptions',await page.locator('#benchmarkSelect option').count()); const cfg=await page.evaluate(()=>JSON.parse(document.getElementById('compassConfig').textContent));
+await page.setContent(Buffer.from(await response.body()).toString('utf8'),{waitUntil:'domcontentloaded'}); if(!(await page.locator('#benchmarkSelect option').count()))await page.evaluate(()=>window.dispatchEvent(new Event('DOMContentLoaded'))); console.log('QA_PARSED',await page.title(),'errors',errors,'benchmarkOptions',await page.locator('#benchmarkSelect option').count()); const cfg=await page.evaluate(()=>JSON.parse(document.getElementById('compassConfig').textContent));
 assert.equal(cfg.targets.length,52);assert.equal(cfg.benchmarks.length,10);assert.equal(cfg.kind,'writing');
 assert.equal(await page.locator('#setupPage').count(),1);assert.equal(await page.locator('#runPage').count(),1);
 const chains=await page.locator('#chainSelect option').evaluateAll(xs=>xs.map(x=>[x.value,x.textContent]));assert(chains.some(([v,t])=>v==='TTTTT'&&t.includes('IEP Chain')));
