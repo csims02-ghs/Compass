@@ -24,6 +24,7 @@ const sample={
  {id:'manual1',student_id:'s1',student_compass_program_id:'a1',created_by:'staff1',provider_name:'Manual: Original',provider_entry_type:'manual',event_date:'2026-10-27',event_time:'09:45',target_name:'Red',target_key:'red',benchmark_key:'1',trial_number:1,trial_type:'T',response:'independent',prompt_level:'None',notes:'Existing manual entry',behavior_counts:{'Aggression (Adult)':1},deleted_at:null}
  ]
 };
+sample.student_behavior_data=[{id:'behavior1',student_id:'s1',data_type:'baseline_frequency',behavior_name:'Elopement',data_date:'2026-10-26',count:3,notes:'Behavior observation outside program',collected_by:'staff1'}];
 (async()=>{
  const server=http.createServer((_req,res)=>{res.writeHead(200,{'content-type':'text/html; charset=utf-8'});res.end(html)});await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
@@ -66,6 +67,8 @@ const sample={
  assert((await page.locator('#miHistoryRows').innerText()).includes('Live session note'),'Archived assignment live history included');
  assert((await page.locator('#miHistoryRows').innerText()).includes('Historical session summary'),'Sessions without trial events included');
  assert((await page.locator('#miHistoryRows').innerText()).includes('Existing manual entry'),'Manual history included');
+ assert((await page.locator('#miHistoryRows').innerText()).includes('Unassigned behavior observation'),'Student-level behavior observations included in All Programs');
+ assert((await page.locator('#miStats').innerText()).includes('5'),'Behavior-only observations must not increase trial denominator');
  assert.equal(await page.locator('#miHistoryRows button[data-mi-edit]').count(),1,'Recorded live data is read-only');
  assert.equal(await page.locator('#miStats .mi-stat').count(),4);
  await page.locator('#miGraphToggle').click();assert.equal(await page.locator('#miGraph svg').count(),1);
