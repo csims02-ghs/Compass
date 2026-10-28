@@ -69,7 +69,7 @@ const sample={
  assert.equal(await page.locator('#miHistoryRows button[data-mi-edit]').count(),1,'Recorded live data is read-only');
  assert.equal(await page.locator('#miStats .mi-stat').count(),4);
  await page.locator('#miGraphToggle').click();assert.equal(await page.locator('#miGraph svg').count(),1);
- await page.locator('#miProvider').selectOption('manual');
+ await page.locator('#miProgram').selectOption('a1');\n await page.locator('#miProvider').selectOption('manual');
  assert.equal(await page.locator('#miProviderManual').isVisible(),true);
  await page.locator('#miProviderManual').fill('J. Perez');
  await page.locator('#miBenchmark').selectOption('1');await page.locator('#miTarget').selectOption('red');
