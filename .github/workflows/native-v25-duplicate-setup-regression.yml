@@ -1,0 +1,19 @@
+name: Native V25 duplicate setup regression
+on:
+  push:
+    branches: [qa/native-v25-duplicate-setup-fix]
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Verify all live V25 native pages and legacy compatibility
+        run: node qa/test-native-v25-duplicate-setup.cjs
