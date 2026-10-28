@@ -1,0 +1,19 @@
+name: Puzzles V25 strict browser QA
+on:
+  push:
+    branches: [qa/puzzles-v25-strict]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Test real embedded SVG puzzle placement and save recovery
+        run: node qa/test-puzzles-v25.cjs
