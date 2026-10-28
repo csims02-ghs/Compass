@@ -214,6 +214,37 @@ async function saveV25Run(sp,entry){
   status('Run preserved on device; COMPASS cloud sync pending. Reopen the program when online to retry.','error');
  }finally{v25SavesInFlight.delete(key)}
 }
+// COMPASS AUTH BRIDGE V1: provide a fresh access token only to the currently
+// loaded, same-origin student program iframe after matching its assignment.
+// The backend independently verifies staff identity and student permissions.
+addEventListener('message',async event=>{
+ if(event.data?.type!=='compass-auth-request')return;
+ const frame=$('runnerFrame'),sp=S.programs[S.index],req=event.data||{};
+ if(event.source!==frame?.contentWindow||event.origin!==location.origin)return;
+ if(!sp||S.runnerAssignmentId!==sp.id||String(req.assignment_id||'')!==String(sp.id))return;
+ const nonce=typeof req.nonce==='string'?req.nonce:'';
+ if(!/^[0-9a-f-]{36}$/i.test(nonce)||!S.session?.user?.id)return;
+ try{
+  // getSession uses the linked Supabase auth client and refreshes expiring
+  // credentials without storing tokens in the runner HTML or its URL.
+  const {data:{session},error}=await sb.auth.getSession();
+  if(error||!session?.access_token||session.user?.id!==S.session.user.id){
+   status('Staff session expired. Sign in again to save individualized program setup.','error');
+   return;
+  }
+  // The user can change programs while an async refresh is taking place.
+  if(S.programs[S.index]?.id!==sp.id||S.runnerAssignmentId!==sp.id||
+     event.source!==frame.contentWindow)return;
+  S.session=session;
+  event.source.postMessage({
+   type:'compass-auth-response',nonce,assignment_id:sp.id,
+   access_token:session.access_token
+  },event.origin);
+ }catch(err){
+  console.warn('COMPASS authenticated save handoff unavailable',err);
+  status('Could not verify staff sign-in for this program. Retry Save Setup.','error');
+ }
+});
 addEventListener('message',async e=>{
  if(e.source!==$('runnerFrame').contentWindow||e.origin!==location.origin)return;
  const msg=e.data||{},sp=S.programs[S.index];
