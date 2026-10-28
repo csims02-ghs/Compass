@@ -23,7 +23,8 @@
       {code:'CP-DIR-VISUAL-087',slug:'functions',tag:'compass-functions-v25',version:'20261027-v1'}
     ];
     const updated=adapters.find(a=>html.includes('"program_code":"'+a.code+'"')||
-      html.includes('"program_code": "'+a.code+'"'));
+      html.includes('"program_code": "'+a.code+'"')||
+      (a.code==='CP-COLORS'&&(html.includes('"code":"CP-COLORS"')||html.includes('"code": "CP-COLORS"'))));
     if(updated){
       // Body Parts now has a first-class V25 (two-page) runner in Supabase.
       // Its native setupPage/runPage/behaviorList/run-grid markup is *not*
