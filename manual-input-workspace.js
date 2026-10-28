@@ -77,14 +77,13 @@ by('miDate').value=dateNow();by('miTime').value=timeNow();
 if(ctx.currentStudentId&&st.students.some(s=>s.id===ctx.currentStudentId)){by('miStudent').value=ctx.currentStudentId;await selectStudent(ctx.currentStudentId)}
 }
 async function selectStudent(sid){
- if(st.loading)return;
  st.selectedStudent=sid||'';
  by('miStudent').value=sid||'';by('miFilterStudent').value=sid||'';
- st.selectedProgram='';st.manual=[];st.live=[];st.rows=[];st.selected.clear();
+ st.selectedProgram='';st.manual=[];st.live=[];st.rows=[];st.selected.clear();st.filters={};st.page=0;by('miFilterProgram').value='';by('miFilterFrom').value='';by('miFilterTo').value='';by('miFilterProvider').value='';
  renderPrograms();renderBehaviors();renderFilters();renderRows();
  if(!sid)return;
- try{st.goals=await query(table('student_iep_goals').select('id,title,goal_area').eq('student_id',sid).order('created_at',{ascending:false}));}
- catch(e){st.goals=[]}
+ try{const goals=await query(table('student_iep_goals').select('id,title,goal_area').eq('student_id',sid).order('created_at',{ascending:false}));if(st.selectedStudent!==sid)return;st.goals=goals;}
+ catch(e){if(st.selectedStudent!==sid)return;st.goals=[]}
  fillSelect('miGoal',st.goals.map(g=>[g.id,g.title||g.goal_area||'IEP Goal']),'Not linked');
  const active=assignedPrograms(sid).find(a=>a.status==='active');if(active){by('miProgram').value=active.id;await selectProgram();}
  await loadHistory();
