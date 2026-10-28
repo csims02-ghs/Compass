@@ -1,0 +1,42 @@
+/* COMPASS Session & Notes: four-page workspace, visually aligned with Student Profile navigation. */
+#page-sessions .session-workspace-tabs{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;
+  gap:8px;padding:7px 10px;margin:0 0 22px;background:#fff;
+  border:1px solid #e0eaf6;border-radius:18px;box-shadow:0 5px 20px rgba(26,59,98,.045)
+}
+#page-sessions .session-workspace-tab{
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:7px;
+  border:0;border-bottom:3px solid transparent;border-radius:13px 13px 11px 11px;
+  padding:15px 9px 12px;min-height:86px;min-width:0;background:transparent;color:#304767;
+  font:700 clamp(12px,1.1vw,16px)/1.2 inherit;cursor:pointer;text-align:center;
+  transition:background-color .15s,border-color .15s,color .15s
+}
+#page-sessions .session-workspace-tab svg{width:25px;height:25px;flex-shrink:0;stroke:currentColor}
+#page-sessions .session-workspace-tab:hover:not(.active){background:#f3f7fc}
+#page-sessions .session-workspace-tab.active,
+#page-sessions .session-workspace-tab[aria-selected="true"]{
+  background:#eaf3ff;color:#156bf1;border-bottom-color:#176cf1
+}
+#page-sessions .session-workspace-tab:focus-visible{outline:3px solid #72acff;outline-offset:2px}
+#page-sessions .session-workspace-panel[hidden]{display:none!important}
+#page-sessions .session-workspace-panel{min-height:250px}
+#page-sessions .session-workspace-panel .panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+#page-sessions .session-history-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+#page-sessions .session-history-grid .stack-list{max-height:65vh;overflow-y:auto;overscroll-behavior:contain}
+#page-sessions .session-history-count{font-size:12px;color:#647b96;font-weight:650}
+#page-sessions .session-history-explainer{color:#5a708b;margin:0 0 16px;line-height:1.45}
+#page-sessions .session-manual-placeholder{display:flex;min-height:390px;align-items:center;justify-content:center;flex-direction:column;gap:15px;text-align:center;padding:34px 24px}
+#page-sessions .session-manual-symbol{width:66px;height:66px;display:grid;place-items:center;border-radius:18px;background:#e9f3ff;color:#176cf1}
+#page-sessions .session-manual-symbol svg{width:34px;height:34px;stroke:currentColor}
+#page-sessions .session-manual-placeholder h2{margin:0;font-size:25px;color:#1d3e69}
+#page-sessions .session-manual-placeholder p{max-width:610px;margin:0;color:#59718b;line-height:1.5}
+#page-sessions .session-manual-status{display:inline-flex;align-items:center;justify-content:center;padding:9px 14px;border:1px solid #d5e5f8;border-radius:999px;background:#f4f8fe;color:#456586;font-size:13px;font-weight:650}
+@media(max-width:700px){
+  #page-sessions .session-workspace-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:6px}
+  #page-sessions .session-workspace-tab{min-height:72px;padding:11px 7px 9px}
+  #page-sessions .session-history-grid{grid-template-columns:1fr}
+  #page-sessions .session-history-grid .stack-list{max-height:45vh}
+}
+@media(prefers-reduced-motion:reduce){
+  #page-sessions .session-workspace-tab{transition:none}
+}
