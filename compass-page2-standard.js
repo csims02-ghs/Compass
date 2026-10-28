@@ -25,7 +25,9 @@
        html.includes('"code":"CP-EMOTION-IDENTIFICATION"')||
        html.includes('"code": "CP-EMOTION-IDENTIFICATION"')||
        html.includes('"code":"CP-127-FINE-MOTOR-IMITATION"')||
-       html.includes('"code": "CP-127-FINE-MOTOR-IMITATION"')))return html;
+       html.includes('"code": "CP-127-FINE-MOTOR-IMITATION"')||
+       html.includes('"code":"CP-FOOD-IDENTIFICATION"')||
+       html.includes('"code": "CP-FOOD-IDENTIFICATION"')))return html;
     // Updated programs use their own program-specific V25 two-page interface.
     // Never substitute a review-only runner or silently fall back to old UI if an adapter fails.
     const adapters=[
@@ -88,5 +90,5 @@
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
     return runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>');
   }
-  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261028-v15',isPage2Program,standardize});
+  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261028-v16',isPage2Program,standardize});
 })(window);
