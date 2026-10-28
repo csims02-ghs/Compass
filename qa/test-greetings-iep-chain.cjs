@@ -57,6 +57,18 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-inactiv
  assert.equal(net.v25_run.net_generalization,true);assert.equal(net.v25_run.iep_chain,true);assert.equal(net.v25_run.expected_steps,5);
  assert.equal(await page.locator('#nextProgramBtn').isEnabled(),true);
  console.log('PASS IEP 5 NET steps',width);
+ await page.locator('#backBtn').click();await page.evaluate(()=>{window.__deny=true;window.__calls=[]});
+ await page.locator('#runBtn').click();await page.locator('#greetNoOpportunity').click();
+ assert((await page.locator('#trialLabel').innerText()).includes('Step 1/5'),'No Opportunity must not count as a trial');
+ for(let i=0;i<5;i++){await page.locator('#greetCueSelect').selectOption('Yes');await page.locator('[data-score="correct"]').click();await page.locator('#saveNextBtn').click();}
+ await page.waitForFunction(()=>document.querySelector('#validation')?.textContent.includes('save failed'),null,{timeout:7000});
+ assert.equal(await page.locator('#nextProgramBtn').isHidden(),true,'Next Program must stay locked when save fails');
+ await page.evaluate(()=>{window.__deny=false});await page.locator('#saveNextBtn').click();
+ await page.waitForFunction(()=>!document.getElementById('nextProgramBtn').disabled,null,{timeout:7000});
+ const recovered=await page.evaluate(()=>window.__calls.find(x=>x.action==='save_session'));
+ assert.equal(recovered.trial_events.length,5);assert.equal(recovered.v25_run.no_natural_opportunities.length,1);
+ assert.equal(errors.length,0,errors.join('; '));
+ console.log('PASS IEP 5-step failed-save and retry',width);
  await page.close();
  }
  }finally{await browser.close();await new Promise(ok=>server.close(ok))}
