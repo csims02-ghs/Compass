@@ -12,6 +12,12 @@
   }
   async function standardize(html){
     if(typeof html!=='string')return html;
+    // Community Identification uses its own native V25 two-page runner.
+    // Its rendered config is stored under the "code" key, not "program_code".
+    // Do not overlay generic Page 2 CSS or an old community-specific runner.
+    if(isPage2Program(html)&&
+      (html.includes('"code":"CP-COMMUNITY-IDENTIFICATION"')||
+       html.includes('"code": "CP-COMMUNITY-IDENTIFICATION"')))return html;
     // Updated programs use their own program-specific V25 two-page interface.
     // Never substitute a review-only runner or silently fall back to old UI if an adapter fails.
     const adapters=[
