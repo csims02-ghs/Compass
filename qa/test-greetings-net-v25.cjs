@@ -27,7 +27,7 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-inactiv
     assert.equal(await page.locator('#chainPreviewSteps .chain-step.is-target').count(),4);
     const dims=await page.locator('#chainPreviewSteps .chain-step').first().evaluate(el=>{let r=el.getBoundingClientRect(),s=getComputedStyle(el);return{width:r.width,height:r.height,borderRadius:s.borderRadius,background:s.backgroundColor}});
     assert.equal(dims.width,40);assert.equal(dims.height,40);assert(dims.background.includes('224')||dims.background.includes('237'),JSON.stringify(dims));
-    await page.locator('#chainSelect').selectOption('TTTTT');assert.equal(await page.locator('#chainPreviewSteps .chain-step').count(),5);
+    await page.locator('#chainSelect').selectOption('TTDTDDTT');assert.equal(await page.locator('#chainPreviewSteps .chain-step').count(),8);assert.equal(await page.locator('#chainPreviewSteps .is-distractor').count(),3);assert((await page.locator('.chain-preview-heading small').innerText()).includes('8 teaching steps = 1 complete run'));await page.locator('#chainSelect').selectOption('TTTTT');assert.equal(await page.locator('#chainPreviewSteps .chain-step').count(),5);
     assert((await page.locator('.chain-preview-heading strong').innerText()).includes('IEP Chain'));
     await page.locator('#chainSelect').selectOption('TTTT');
     assert.equal(await page.locator('#modeSelect').inputValue(),'generalization','NET is initial teaching context');
@@ -72,6 +72,24 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-inactiv
     await page.waitForFunction(()=>window.qaCalls.filter(x=>x.action==='save_session').length>=2,null,{timeout:7000});
     const dti=await page.evaluate(()=>window.qaCalls.filter(x=>x.action==='save_session')[1]);assert.equal(dti.v25_run.net_generalization,false);
     await page.locator('#backBtn').click();
+    await page.locator('#modeSelect').selectOption('generalization');await page.locator('#chainSelect').selectOption('T');
+    await page.locator('#runBtn').click();await page.locator('#greetCueSelect').selectOption('Yes');await page.locator('#greetPromptSelect').selectOption('Model');
+    await page.locator('[data-score="correct"]').click();await page.locator('#saveNextBtn').click();
+    assert((await page.locator('#validation').innerText()).includes('A staff prompt was used'), 'Independent correct must reject staff prompting');
+    assert((await page.locator('#trialLabel').innerText()).includes('Step 1/1'));
+    await page.locator('[data-score="prompted"]').click();await page.locator('#saveNextBtn').click();
+    await page.waitForFunction(()=>window.qaCalls.filter(x=>x.action==='save_session').length>=3,null,{timeout:7000});
+    const prompted=await page.evaluate(()=>window.qaCalls.filter(x=>x.action==='save_session')[2]);assert.equal(prompted.counts.prompted_correct,1);assert.equal(prompted.counts.independent_correct,0);
+    await page.locator('#backBtn').click();
+    await page.locator('#circuitSelect').selectOption('probe');
+    await page.locator('#benchmarkSelect').selectOption('2');
+    assert.equal(await page.locator('#targetSelect').isDisabled(),true,'Full benchmark probe must lock target selection');
+    await page.locator('#runBtn').click();
+    for(let i=0;i<2;i++){await page.locator('#greetCueSelect').selectOption('Yes');await page.locator('[data-score="correct"]').click();await page.locator('#saveNextBtn').click();}
+    await page.waitForFunction(()=>window.qaCalls.some(x=>x.action==='save_probe'),null,{timeout:7000});
+    const probe=await page.evaluate(()=>window.qaCalls.find(x=>x.action==='save_probe'));assert.equal(probe.events.length,2);assert.equal(probe.benchmark_key,'2');
+    await page.locator('#backBtn').click();
+    await page.locator('#circuitSelect').selectOption('na');await page.locator('#benchmarkSelect').selectOption('1');
     await page.locator('#modeSelect').selectOption('generalization');await page.locator('#chainSelect').selectOption('T');
     await page.evaluate(()=>window.rejectSave=true);
     await page.locator('#runBtn').click();await page.locator('#greetCueSelect').selectOption('Yes');
