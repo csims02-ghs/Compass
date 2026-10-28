@@ -1175,6 +1175,7 @@ body{display:block!important;width:100%;min-width:0}
 </style>
 <script src="./compass-page2-standard.js?v=20261028-v23" defer></script>
 <link rel="stylesheet" href="./session-notes-tabs.css?v=1">
+<link rel="stylesheet" href="./manual-input-workspace.css?v=1">
 </head>
 <body>
 
@@ -1520,10 +1521,66 @@ body{display:block!important;width:100%;min-width:0}
  <article class="card panel"><div class="panel-head"><h2>Notes History</h2><span class="session-history-count" id="globalNoteHistoryCount">0 loaded</span></div><div id="globalNoteHistory" class="stack-list"></div></article>
  </div>
  </section>
- <section id="sessionPanelManual" class="session-workspace-panel" role="tabpanel" aria-labelledby="sessionTabManual" hidden>
- <article class="card panel session-manual-placeholder"><span class="session-manual-symbol"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20h14M5 4h10M5 8h7M5 12h5M15 19l5-5-3-3-5 5-.5 3.5z"/></svg></span><h2>Manual Input</h2>
- <p>This page is reserved for entering instructional and behavioral data by hand. The fields, validation, scoring and saving workflow will be designed in our next workshop.</p>
- <span class="session-manual-status">Placeholder only · Data entry is not enabled</span></article>
+ <section id="sessionPanelManual" class="session-workspace-panel manual-entry-workspace" role="tabpanel" aria-labelledby="sessionTabManual" hidden>
+  <div class="mi-grid">
+   <article class="mi-card" aria-label="Manual Data Entry">
+    <h2>Manual Data Entry</h2>
+    <p class="mi-description">Enter session data manually for a specific student, program and date.<br>All entries are tied to the student's assigned program and stored in their records.</p>
+    <form id="miForm" class="mi-form" autocomplete="off">
+     <div class="mi-field"><label for="miStudent">Student <span class="required">*</span></label><select id="miStudent" required><option value="">Select student</option></select></div>
+     <div class="mi-field"><label for="miProgram">Program <span class="required">*</span></label><select id="miProgram" required disabled><option value="">Select assigned program</option></select></div>
+     <div class="mi-field"><label for="miDate">Date <span class="required">*</span></label><input id="miDate" type="date" required></div>
+     <div class="mi-field"><label for="miProvider">Provider <span class="required">*</span></label><select id="miProvider" required><option value="">Select provider</option></select>
+      <input id="miProviderManual" class="mi-provider-manual" placeholder="Enter provider name..." maxlength="160" aria-label="Manually enter provider name"></div>
+     <div class="mi-field"><label for="miLocation">Location / Setting</label><input id="miLocation" maxlength="180" placeholder="Classroom, home, community..."></div>
+     <div class="mi-field"><label for="miService">Service Type</label><select id="miService"><option>ABA / Direct Instruction</option><option>NET</option><option>Special Education</option><option>Speech / Language</option><option>Occupational Therapy</option><option>Behavior Observation</option><option>Other</option></select></div>
+     <div class="mi-field"><label for="miTime">Start Time</label><input id="miTime" type="time"></div>
+     <div class="mi-field"><label for="miChain">DTI Chain / Run Type</label><select id="miChain"><option value="TTTT">Momentum · T,T,T,T</option><option value="TTTTT">IEP Chain · T,T,T,T,T</option><option value="default">Default</option><option value="short">Short</option><option value="alternative">Alternative</option><option value="single">Single</option><option value="NET">NET / Natural Opportunity</option><option value="probe">Probe Benchmark</option><option value="manual">Historical Manual Record</option></select></div>
+     <div class="mi-field"><label for="miBenchmark">Benchmark</label><select id="miBenchmark"><option value="">Select benchmark</option></select></div>
+     <div class="mi-field"><label for="miTarget">Target <span class="required">*</span></label><select id="miTarget" required><option value="">Select target</option></select></div>
+     <div class="mi-field"><label for="miGoal">IEP Goal</label><select id="miGoal"><option value="">Not linked</option></select></div>
+     <div class="mi-field"><label for="miTrial">Trial #</label><input id="miTrial" type="number" min="1" max="10000" value="1" required></div>
+     <div class="mi-field"><label for="miTrialType">Trial Type</label><select id="miTrialType"><option value="T">T — Target</option><option value="D">D — Distractor</option></select></div>
+     <div>
+      <div class="mi-section-label">Student Response <span style="color:#b8293a">*</span></div>
+      <div class="mi-response-buttons" role="group" aria-label="Student response">
+       <button type="button" class="mi-response" data-response="independent" aria-pressed="false">✓ Independent</button>
+       <button type="button" class="mi-response" data-response="prompted" aria-pressed="false">◉ Prompted</button>
+       <button type="button" class="mi-response" data-response="incorrect" aria-pressed="false">✕ Incorrect</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:6px;font-size:12px"><label><input id="miNoResponse" type="checkbox"> No Response</label><label><input id="miNa" type="checkbox"> No Valid Opportunity</label></div>
+     </div>
+     <div class="mi-field"><label for="miPrompt">Prompt Level (if prompted)</label><select id="miPrompt"><option>None</option><option>Gestural</option><option>Verbal</option><option>Model</option><option>Visual</option><option>Partial Physical</option><option>Full Physical</option><option>Other</option></select></div>
+     <div><div class="mi-section-label">Behavior Tracking <span style="font-size:11px;font-weight:500">(select all that occurred during this trial)</span> <button id="miClearBehaviors" type="button" class="mi-link-action" style="float:right;padding:2px 7px">× Clear</button></div><div id="miBehaviors" class="mi-behavior-grid"><span class="mi-description">Choose a student to see assigned behaviors.</span></div></div>
+     <div><label for="miNotes" class="mi-section-label" style="display:block">Notes (optional)</label><textarea id="miNotes" maxlength="5000" placeholder="Staff observations and session details..."></textarea></div>
+     <p id="miFeedback" class="mi-feedback" role="status" aria-live="polite"></p>
+     <div class="mi-actions"><button id="miClear" class="mi-btn" type="button">Clear</button><button id="miSave" class="mi-btn primary" type="submit">Add Entry</button></div>
+    </form>
+   </article>
+   <div>
+    <article class="mi-card">
+     <div class="mi-head-row"><div><h2>Existing Entries</h2><p class="mi-description">View all accessible manually entered and recorded program data for this student. Edit or delete manual entries only.</p></div><button id="miGraphToggle" class="mi-btn" type="button" aria-expanded="false" aria-controls="miGraph" style="min-width:120px">⌁ Show Graph</button></div>
+     <div class="mi-toolbar">
+      <div><label for="miFilterStudent">Student</label><select id="miFilterStudent"><option value="">Select student</option></select></div>
+      <div><label for="miFilterProgram">Program</label><select id="miFilterProgram"><option value="">All Programs</option></select></div>
+      <div><label for="miFilterFrom">From</label><input id="miFilterFrom" type="date"></div>
+      <div><label for="miFilterTo">To</label><input id="miFilterTo" type="date"></div>
+      <div><label for="miFilterProvider">Provider</label><select id="miFilterProvider"><option value="">All Providers</option></select></div>
+      <button id="miApplyFilter" class="mi-btn dark" type="button">Filter</button><button id="miClearFilters" class="mi-btn" type="button">Clear</button>
+     </div>
+     <div class="mi-table-scroller"><table class="mi-data-table" aria-label="Student program data history">
+      <thead><tr><th><input type="checkbox" id="miSelectAll" aria-label="Select visible manual entries"></th><th>Date</th><th>Time</th><th>Student</th><th>Program</th><th>Target</th><th>Trial</th><th>Response</th><th>Prompt</th><th>Behaviors (during trial)</th><th>Provider</th><th>Notes</th><th>Source</th><th>Actions</th></tr></thead>
+      <tbody id="miHistoryRows"><tr><td colspan="14" class="mi-empty">Select a student to load their history.</td></tr></tbody>
+     </table></div>
+     <div class="mi-table-footer"><span id="miRowCount">0 entries</span><div class="mi-pagination"><button id="miPrev" type="button" aria-label="Previous page">‹</button><strong id="miPageNumber">1</strong><button id="miNext" type="button" aria-label="Next page">›</button></div></div>
+     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px"><button id="miDeleteSelected" class="mi-btn" type="button" disabled>Delete selected manual entries</button><span id="miHistoryStatus" class="mi-feedback" role="status" aria-live="polite"></span></div>
+     <div id="miGraph" class="mi-graph" hidden aria-label="Student program progress graph"></div>
+    </article>
+    <section class="mi-card mi-summary"><h3 id="miSummaryTitle">Selected Range Summary</h3><div id="miStats" class="mi-stat-grid"></div></section>
+    <section class="mi-card mi-summary"><h3>Behavior Summary (Selected Range)</h3><div id="miBehaviorStats" class="mi-behavior-stat-grid"></div></section>
+    <p id="miScopeNote" class="mi-source-note">Live and manual entries are distinguished by source. Existing live-session records are read-only in this workspace; history is loaded for the selected student.</p>
+   </div>
+  </div>
  </section>
  </div></section>
       <section id="page-assessments" class="page">
@@ -1821,6 +1878,11 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   const cfg = window.COMPASS_CONFIG || {};
   const sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_PUBLISHABLE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const state={user:null,profile:null,students:[],classrooms:[],schools:[],programCatalog:[],behaviorDefinitions:[],behaviorSelectionData:[],caseloadRows:[],caseloadStudents:[],currentStudent:null,studentPrograms:[],goals:[],goalLinks:[],sessions:[],notes:[],documents:[],assessments:[],services:[],serviceLogs:[],team:[],globalSessions:[],globalNotes:[],globalGoals:[],globalDocs:[],globalAssessments:[],tasks:[],events:[],noteAlertReads:[],programSelected:null,calendarDate:new Date(),_globalSP:[],assessmentType:'fba',assessmentRecord:null,assessmentStudent:null,dataCollectionStudent:null,behaviorData:[],dataCollectionPhase:'baseline_frequency',dataCollectionBehavior:'',dataCollectionRange:'all',programLists:[],programListItems:[],activeProgramListRun:null,offlineMode:false};
+  window.COMPASS_MANUAL_BRIDGE={
+    query(table){const allowed=new Set(['students','student_compass_programs','compass_programming_programs','compass_programming_targets','student_iep_goals','compass_program_sessions','compass_trial_events','compass_manual_trial_entries','student_behavior_data','profiles']);if(!allowed.has(table))throw Error('Unsupported table');return sb.from(table)},
+    context(){return {students:[...state.students],currentStudentId:state.currentStudent?.id||'',userId:state.user?.id||'',providerName:state.profile?.full_name||'',role:state.profile?.role||''}},
+    notify(){window.dispatchEvent(new CustomEvent('compass-manual-record-changed'))}
+  };
   const $=id=>document.getElementById(id),qsa=(s,r=document)=>[...r.querySelectorAll(s)];
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   const localISO=v=>{const d=v instanceof Date?v:new Date(v);return isNaN(d)?'':d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -3919,5 +3981,6 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <script defer src="./student-profile-print.js?v=20261025-portrait"></script>
 <script src="./session-notes-tabs.js?v=1" defer></script>
+<script src="./manual-input-workspace.js?v=1" defer></script>
 </body>
 </html>
