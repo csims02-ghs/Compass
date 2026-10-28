@@ -1,0 +1,19 @@
+name: Shapes V25 strict browser QA
+on:
+  push:
+    branches: [qa/shapes-v25-strict]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Test geometric diagrams, clues and saving
+        run: node qa/test-shapes-v25.cjs
