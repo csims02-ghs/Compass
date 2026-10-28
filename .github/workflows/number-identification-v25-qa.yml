@@ -1,0 +1,20 @@
+name: Number Identification V25 strict browser QA
+on:
+  push:
+    branches: [qa/number-identification-v25-strict]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Test numeral modes and save retries
+        run: node qa/test-number-identification-v25.cjs
