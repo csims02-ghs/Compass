@@ -1,0 +1,19 @@
+name: Object Identification V25 strict browser QA
+on:
+  push:
+    branches: [qa/object-identification-v25-strict]
+  workflow_dispatch:
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Simulated student sessions, images and cloud recovery
+        run: node qa/test-object-identification-v25.cjs
