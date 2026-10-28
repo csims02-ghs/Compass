@@ -1,0 +1,795 @@
+
+    min-height: 34px;
+    padding: 2px 5px;
+  }
+  #runPage .behavior-row label {
+    font-size: 13px;
+  }
+  #runPage .freq button {
+    height: 30px;
+    width: 30px;
+    font-size: 17px;
+  }
+  #runPage .score-buttons button {
+    min-height: 31px;
+  }
+  #runPage .score-stats strong {
+    font-size: 17px;
+  }
+  #runPage .mastery-run-progress {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  #runPage .save-next {
+    min-height: 34px;
+  }
+}
+@media (max-width:650px) {
+  #runPage .behavior-row label {
+    font-size: 12px;
+  }
+  #runPage .behavior-row input {
+    width: 16px;
+    height: 16px;
+    flex-basis: 16px;
+  }
+  #runPage .freq button {
+    width: 34px;
+    height: 34px;
+  }
+}
+#setupPage .setup-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, .95fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+}
+#setupPage .setup-columns>.section-card,
+#setupPage .setup-columns>.section-card:last-child,
+#setupPage .setup-columns>.section-card:last-child:has(.fold:not([open])) {
+  grid-column: auto;
+  grid-row: 1;
+  max-height: none;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  flex: none;
+}
+#setupPage #instructionsFold .instruction-list {
+  grid-template-columns: minmax(0,1fr);
+  gap: 14px;
+}
+#setupPage #instructionsFold .instruction-list li {
+  line-height: 1.6;
+}
+@media (max-width:700px) {
+  #setupPage .setup-columns {
+    grid-template-columns: minmax(0,1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, .48fr);
+    gap: 8px;
+  }
+  #setupPage .setup-columns>.section-card {
+    grid-row: 1;
+  }
+  #setupPage .setup-columns>.section-card:last-child {
+    grid-row: 2;
+  }
+  #setupPage .form-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+}
+#nextProgramBtn {
+  white-space: nowrap;
+}
+#runPage .score-card .mastery-run-progress {
+  overflow-wrap: anywhere;
+}
+.do-this-setup {
+  grid-column: 1/-1;
+  padding: 11px;
+  border-radius: 12px;
+  background: #f1f8ff;
+  border: 1px solid #c4ddf7;
+  display: grid;
+  gap: 6px;
+}
+.do-this-setup p {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #42678c;
+  margin: 0;
+}
+#runPage .material-grid.imitation-material {
+  display: flex;
+  flex: 1;
+  max-height: none;
+  align-items: center;
+  justify-content: center;
+}
+.imitation-cue {
+  width: min(100%,520px);
+  min-height: 155px;
+  border-radius: 20px;
+  background: linear-gradient(135deg,#e7f1ff,#f8fbff);
+  border: 2px solid #c6dffd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 9px;
+  padding: 18px;
+}
+.imitation-cue strong {
+  font-size: clamp(27px,3.4vw,46px);
+  line-height: 1.1;
+  color: #154f94;
+}
+.imitation-cue span {
+  font-size: clamp(12px,1.1vw,15px);
+  color: #46698d;
+  font-weight: 700;
+}
+.imitation-cue .imitation-kicker {
+  letter-spacing: .08em;
+  font-size: 11px;
+  color: #51799e;
+}
+#validation.saved-complete {
+  color: #0a8150;
+  font-weight: 800;
+}
+#runPage .completion-stack {
+  width: min(100%,560px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+#runPage .completion-stack .imitation-cue {
+  width: 100%;
+}
+#runPage .completion-note {
+  max-width: 100%;
+  margin: 0;
+  text-align: center;
+  color: #0a8150;
+  font-weight: 800;
+  font-size: clamp(12px,1.12vw,15px);
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+.attention-btn {
+  border-color: #e6ba65;
+  color: #855315;
+  background: #fff6e6;
+  white-space: nowrap;
+}
+#attentionCount {
+  background: #a75c13;
+  color: white;
+  border-radius: 15px;
+  padding: 2px 6px;
+}
+.wide-modal {
+  width: min(600px,calc(100vw - 20px));
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+.attention-list {
+  max-height: 52dvh;
+  overflow-y: auto;
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+.attention-item {
+  background: #f5f9ff;
+  border: 1px solid #d8e7f7;
+  border-radius: 11px;
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+  color: #193b61;
+}
+.attention-item p {
+  margin: 0;
+  font-size: 13px;
+}
+.attention-item .mini-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.attention-item button {
+  font-size: 12px;
+}
+.wide-modal .field {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+}
+.wide-modal select,.wide-modal textarea {
+  width: 100%;
+  padding: 9px;
+  border: 1px solid #bed3e9;
+  border-radius: 8px;
+  background: #fff;
+  color: #162e4c;
+}
+.correction-btn {
+  width: 100%;
+  padding: 6px;
+  font-size: 12px;
+  margin-top: 3px;
+  color: #1a6ab6;
+}
+@media (max-width:900px) {
+  .top-actions {
+    flex-wrap: wrap;
+  }
+  .top-actions .btn {
+    min-height: 30px;
+  }
+}
+@media (max-width:650px) {
+  .topbar {
+    height: auto !important;
+    min-height: 112px;
+    flex: 0 0 auto !important;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 6px 8px !important;
+    gap: 5px;
+  }
+  .brand {
+    width: 100%;
+    min-width: 0;
+  }
+  .brand h1 {
+    font-size: 14px !important;
+  }
+  .brand p {
+    display: none;
+  }
+  .top-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 5px;
+    overflow: visible;
+  }
+  .top-actions button {
+    white-space: nowrap;
+  }
+  .top-actions .btn {
+    font-size: 10px !important;
+    min-height: 32px;
+    padding: 6px 8px !important;
+  }
+  .attention-btn {
+    font-size: 10px;
+  }
+}
+:root {
+  --bg: #fff;
+}
+html,body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+body {
+  margin: 0;
+}
+.app {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  background: #fff;
+}
+.topbar {
+  background: #fff;
+  box-shadow: none;
+  border-bottom: 1px solid var(--line);
+  flex: 0 0 60px;
+  min-height: 60px;
+}
+.brand h1 {
+  font-size: clamp(20px,2.2vw,27px);
+}
+.brand p {
+  display: none;
+}
+.page-setup {
+  background: #fff;
+  gap: 8px;
+  padding: clamp(7px,1.2vw,13px);
+}
+.setup-banner {
+  min-height: 45px;
+}
+.setup-banner h2 {
+  font-size: clamp(17px,2.1vw,23px);
+}
+.setup-banner p {
+  font-size: clamp(11px,.95vw,13px);
+}
+#setupPage .setup-columns {
+  flex: 1;
+  overflow: hidden;
+}
+#setupPage .section-card {
+  box-shadow: none;
+}
+#setupPage .fold[open]>.setup-body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+#setupPage .fold[open]>.setup-body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+#setupPage .section-card>.fold {
+  scrollbar-width: none;
+}
+#setupPage .section-card>.fold::-webkit-scrollbar {
+  display: none;
+}
+#setupPage .instruction-list li {
+  font-size: clamp(12px,1vw,14px);
+}
+.page-run {
+  background: #fff;
+}
+#runPage #runGrid.run-grid {
+  background: #fff;
+  padding: clamp(6px,1vw,10px);
+  gap: clamp(6px,1vw,10px);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+#runPage .run-card {
+  border-radius: 12px;
+  box-shadow: none;
+}
+#runPage .score-card {
+  overflow: hidden;
+}
+@media (orientation:portrait) and (min-width:701px) and (max-width:1024px) {
+  #setupPage .setup-columns {
+    grid-template-columns: minmax(0,1.12fr) minmax(0,.95fr);
+    gap: 8px;
+  }
+  #setupPage .form-grid {
+    gap: 7px;
+  }
+  #setupPage .setup-body {
+    padding: 10px;
+  }
+  #setupPage .fold summary {
+    padding: 12px;
+  }
+  #runPage #runGrid.run-grid {
+    grid-template-columns: minmax(0,1.03fr) minmax(0,.97fr);
+    gap: 6px;
+  }
+  #runPage .material-card {
+    padding: 7px;
+  }
+  #runPage .score-card {
+    padding: 7px;
+  }
+}
+@media (orientation:landscape) and (max-height:650px) {
+  .topbar {
+    flex-basis: 48px;
+    min-height: 48px;
+    padding-block: 4px;
+  }
+  .page-setup {
+    padding: 5px 9px;
+    gap: 5px;
+  }
+  .setup-banner {
+    min-height: 34px;
+  }
+  .setup-banner h2 {
+    font-size: 17px;
+  }
+  .setup-banner p {
+    font-size: 11px;
+  }
+  #setupPage .fold summary {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  #setupPage .setup-body {
+    padding: 8px 12px;
+  }
+  #runPage .run-card {
+    padding: 6px;
+  }
+  #runPage .score-buttons button {
+    min-height: 32px;
+  }
+}
+.storage-banner {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 10px 14px;
+  background: #fdecec;
+  border-bottom: 1px solid #f0b8bb;
+  color: #8f1f28;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.storage-banner.is-warning {
+  background: #fff6e4;
+  border-bottom-color: #eccf92;
+  color: #7d5410;
+}
+@media (max-width:700px) {
+  .page-setup {
+    padding: 6px;
+    gap: 5px;
+  }
+  .setup-banner {
+    min-height: 33px;
+  }
+  .setup-banner h2 {
+    font-size: 15px;
+  }
+  .setup-banner p {
+    font-size: 10px;
+  }
+  .storage-banner {
+    font-size: 11px;
+    padding: 7px 9px;
+  }
+  #setupPage .setup-columns {
+    grid-template-rows: minmax(0,1fr) minmax(0,.6fr);
+  }
+  #setupPage .fold summary {
+    padding: 9px;
+  }
+  #setupPage .setup-body {
+    padding: 8px;
+  }
+}
+#runPage .trial-id {
+  font-size: clamp(13px,1.08vw,15px);
+  line-height: 1.35;
+  font-weight: 650;
+}
+#runPage .mastery-run-progress {
+  font-size: clamp(12px,1.03vw,14px);
+  line-height: 1.35;
+  padding: 7px 9px;
+}
+#runPage .score-stats small {
+  font-size: clamp(11px,.9vw,13px);
+}
+#runPage .freq button {
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  font-size: 24px;
+}
+#runPage .behavior-row {
+  min-height: 51px;
+}
+#runPage .behavior-row input {
+  width: 23px;
+  height: 23px;
+  flex-basis: 23px;
+}
+#runPage .material-grid.physical-only {
+  width: 100%;
+  max-height: none;
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+#runPage .physical-cue {
+  text-align: center;
+  width: min(100%,680px);
+  padding: clamp(14px,2vw,26px);
+  border: 1px solid #cfe0f4;
+  background: #f5f9ff;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+#runPage .physical-cue strong {
+  font-size: clamp(19px,2.1vw,28px);
+  line-height: 1.2;
+}
+#runPage .physical-cue p {
+  margin: 0;
+  font-size: clamp(15px,1.35vw,20px);
+  line-height: 1.45;
+  color: #3d638b;
+}
+#runPage .physical-cue .cue-kicker {
+  color: #1b65b3;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: .08em;
+  font-weight: 800;
+}
+#runPage #saveNextBtn[hidden] {
+  display: none;
+}
+#runPage .score-buttons button {
+  min-height: 46px;
+}
+@media (orientation:landscape) and (max-height:700px) {
+  #runPage .freq button {
+    min-width: 42px;
+    min-height: 42px;
+    width: 42px;
+    height: 42px;
+  }
+  #runPage .behavior-row {
+    min-height: 46px;
+  }
+  #runPage .mastery-run-progress {
+    font-size: 11.5px;
+    padding: 5px 7px;
+  }
+  #runPage .trial-id {
+    font-size: 12px;
+  }
+  #runPage .score-buttons button {
+    min-height: 37px;
+  }
+}
+.rotate-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: #f2f7ff;
+  color: #10396c;
+  padding: 25px;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+}
+.rotate-overlay h2 {
+  font-size: clamp(24px,4vw,40px);
+  margin: 0;
+}
+.rotate-overlay p {
+  max-width: 500px;
+  line-height: 1.5;
+  margin: 0;
+  color: #496b91;
+  font-size: 17px;
+}
+.rotate-symbol {
+  font-size: 60px;
+  line-height: 1;
+}
+@media (orientation:portrait) and (min-width:650px) and (max-width:1200px) and (pointer:coarse) {
+  .rotate-overlay {
+    display: flex;
+  }
+}
+#runPage .score-card {
+  min-height: 0;
+  overflow: hidden;
+}
+#runPage .behavior-block {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+#runPage .behavior-head {
+  flex: 0 0 auto;
+}
+#runPage .behavior-list {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  justify-content: flex-start;
+  align-content: start;
+  gap: 6px;
+  padding: 2px 3px 3px 0;
+}
+#runPage .behavior-row {
+  flex: 0 0 auto;
+  min-height: 51px;
+}
+#runPage .validation,
+#runPage #saveNextBtn,
+#runPage #correctLastBtn {
+  flex: 0 0 auto;
+}
+@media (orientation: landscape) and (max-height: 700px) {
+  #runPage .behavior-row {
+    min-height: 46px;
+  }
+  #runPage .behavior-list {
+    gap: 4px;
+  }
+  #runPage .freq button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+  #runPage .score-buttons button,
+  #runPage .save-next {
+    min-height: 44px;
+  }
+}
+#runPage .behavior-list::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+
+/* V25 shell: domain-specific runner updates; fixed landscape 70/30 */
+#runPage .run-grid{grid-template-columns:minmax(0,7fr) minmax(320px,3fr)!important; gap:12px!important}
+#setupPage .setup-columns{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important}
+#setupPage .setup-columns>.section-card:last-child{grid-column:auto!important;max-height:none!important;min-height:0!important}
+#setupPage .setup-columns .fold{height:100%;max-height:none;overflow:hidden!important}
+#setupPage .setup-columns .fold[open]>.setup-body{overflow:auto!important;}
+#setupPage .setup-columns .section-card{height:100%;max-height:100%;overflow:hidden}
+#setupPage .setup-columns .section-card:has(details:not([open])){min-height:60px;height:auto}
+#setupPage .setup-columns .collapsed-summary{display:none}
+#runPage .material-main{align-items:stretch!important;justify-content:flex-start!important;overflow-y:auto; padding:12px 10px; gap:14px!important}
+#runPage .score-card{display:flex;flex-direction:column;gap:8px;overflow-y:auto;}
+#runPage .material-card{min-height:0;overflow:hidden}
+.stage-context{font-size:13px;color:#607086;font-weight:700;text-align:center}
+.task-hero{width:100%;background:linear-gradient(130deg,#f8fbff,#eef5fc);border:1px solid #dbe8f3;border-radius:16px;min-height:130px;display:grid;place-items:center;padding:18px;text-align:center}
+.task-hero .headline{font-size:clamp(25px,2.9vw,39px);line-height:1.2;color:#132a45;font-weight:850}
+.task-hero .subline{font-size:clamp(13px,1.2vw,17px);color:#53708b;margin-top:10px}
+.task-hero .emoji-big{font-size:clamp(80px,10vw,170px);line-height:1.05}
+.choice-grid{display:grid;grid-template-columns:repeat(var(--ncols,3),minmax(0,1fr));gap:12px;width:100%;align-content:start}
+.stim-card{min-height:112px;border:2px solid #dce7f1;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;padding:12px;font-weight:850;font-size:clamp(20px,2vw,29px);color:#10283e;box-shadow:0 2px 4px #17324b0c;user-select:none;cursor:pointer}
+.stim-card .stim-emoji{font-size:clamp(53px,5.8vw,100px);line-height:1.1}
+.stim-card:focus-visible{outline:3px solid #1769a6;outline-offset:3px}
+.stim-card.selected{border-color:#1866a3;box-shadow:0 0 0 3px #1866a328;background:#f1f8ff}
+.stim-card[disabled]{cursor:default}
+.preview-alert{border:1px solid #e6c88e;background:#fffaf0;color:#865b23;font-size:12px;font-weight:700;padding:8px 12px;border-radius:9px}
+.clinical-callout{background:#edf5fc;color:#425e78;border:1px solid #d8e8f6;padding:10px 13px;border-radius:12px;font-size:14px;font-weight:650;line-height:1.42}
+.readiness-inline{font-size:13px;color:#536b7c;text-align:left}
+#runPage .score-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+#runPage .behavior-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 8px;background:#f8fafc;border:1px solid #dbe5ec;border-radius:9px;min-height:45px}
+#runPage .behavior-row strong{font-size:13px;color:#284155}
+#runPage .freq{display:flex;align-items:center;gap:8px}
+#runPage .freq button{min-height:44px;min-width:44px;width:44px;height:44px;font-size:23px;background:#fff;border:1px solid #bdcddc;border-radius:9px}
+#runPage .freq output{width:25px;font-weight:850;text-align:center}
+.saving-note{font-size:11px;line-height:1.3;color:#7b8795;text-align:center}
+#runPage .score-buttons button{min-height:46px}
+#runPage .score-buttons button:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #1f81d1;outline-offset:2px}
+#runPage .material-foot{font-size:12px;line-height:1.36}
+#runPage .mastery-run-progress{margin:0}
+#runPage .validation{min-height:18px}
+#runPage .save-next{min-height:48px}
+#runPage .behavior-list{min-height:60px;max-height:190px}
+#statusSummary{font-size:12px;color:#526980;margin:0}
+#goalsHint{font-size:11px;color:#8a5b20}
+.modal-scrim{position:fixed;inset:0;background:#0b1c3299;z-index:999;display:grid;place-items:center;padding:15px}
+.modal-content{width:min(620px,100%);background:white;border-radius:19px;padding:22px;max-height:90vh;overflow:auto;box-shadow:0 18px 60px #07152940}
+.modal-content h2{margin:0 0 12px;font-size:20px}
+.behavior-pick{display:flex;align-items:center;justify-content:space-between;padding:8px 5px;border-bottom:1px solid #e8edf3}
+.behavior-pick input{width:22px;height:22px}
+.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:14px}
+@media(max-width:830px) and (orientation:portrait){#runPage .run-grid{grid-template-columns:1fr!important;grid-template-rows:minmax(0,1fr) minmax(260px,.9fr);overflow-y:auto}#setupPage .setup-columns{grid-template-columns:1fr!important;grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important;overflow-y:auto}#setupPage .setup-columns>.section-card:last-child{grid-column:1!important}}
+@media(orientation:landscape) and (max-height:620px){#runPage .material-main{padding:6px!important;gap:6px!important}.task-hero{padding:10px;min-height:92px}.stim-card{min-height:80px}.task-hero .emoji-big{font-size:70px}}
+
+/* V25.1 accessibility/layout correction: fit the entire SD inside the blue card. */
+#sdPrompt.sd-card {
+  box-sizing:border-box;
+  width:100%;
+  max-width:100%;
+  max-height:min(24dvh,180px);
+  min-height:72px;
+  overflow:hidden;
+  white-space:normal;
+  overflow-wrap:break-word;
+  word-break:normal;
+  hyphens:auto;
+  font-size:clamp(14px,1.85vw,20px);
+  line-height:1.17;
+  padding:12px 16px;
+  text-wrap:balance;
+  flex-shrink:1;
+}
+#taskStage{width:100%;min-width:0;max-height:100%;overflow:auto;}
+#taskStage .task-hero{box-sizing:border-box;max-height:min(34dvh,265px);overflow:hidden;padding:12px 16px;}
+#taskStage .task-hero .headline{font-size:clamp(17px,1.85vw,27px);line-height:1.17;overflow-wrap:break-word;hyphens:auto;text-wrap:balance;}
+#taskStage .task-hero .headline[style*="font-size"]{line-height:1.12;}
+#taskStage .task-hero>div{min-width:0;max-width:100%;}
+/* The probe disables and intentionally darkens Target; it is not an editable teaching target. */
+.field.probe-target-locked{color:#33465c;}
+.field.probe-target-locked select:disabled{
+  opacity:1;background:#243348!important;color:#f1f6ff!important;
+  border-color:#243348!important;cursor:not-allowed;
+  -webkit-text-fill-color:#f1f6ff;
+}
+.probe-target-help{display:block;font-weight:700;font-size:11px;color:#4a617b;margin-top:4px;line-height:1.35;}
+.setup-save-dock{
+  position:sticky;bottom:-15px;z-index:3;background:#ffffffed;
+  backdrop-filter:blur(8px);margin:13px -16px -15px;padding:13px 16px;
+  border-top:1px solid #d8e5f4;display:flex;align-items:center;
+  justify-content:space-between;gap:14px;
+}
+.setup-save-copy{min-width:0;display:flex;flex-direction:column;gap:3px;}
+.setup-save-copy strong{font-size:12px;color:#23456b;}
+.setup-save-copy span{font-size:11px;color:#5c728a;line-height:1.35;}
+#saveSetupBtn{min-width:136px;min-height:44px;font-size:14px;flex-shrink:0;}
+#saveSetupBtn:focus-visible{outline:3px solid #528ad1;outline-offset:2px;}
+#saveSetupStatus[data-state="saved"]{color:#147749;}
+#saveSetupStatus[data-state="dirty"]{color:#976100;}
+#saveSetupStatus[data-state="error"]{color:#b12631;}
+@media(max-width:680px){.setup-save-dock{align-items:stretch;flex-direction:column;}#saveSetupBtn{width:100%;}}
+
+.lf-writing-layout{width:100%;min-height:0;height:100%;display:flex;flex-direction:column}.lf-writing-stage{position:relative;min-height:240px;flex:1;display:grid;place-items:center;border:2px solid #c6d9ed;border-radius:15px;overflow:hidden}.lf-letter-guide{position:absolute;inset:0;display:grid;place-items:center;font:700 clamp(120px,29vh,300px) Arial;color:#7e9fc7;pointer-events:none}#lfWritingCanvas{position:relative;width:100%;height:100%;min-height:210px;background:transparent;touch-action:none}#lfClearBtn{position:absolute;right:10px;bottom:10px;z-index:2}.lf-paper{position:relative;z-index:2;padding:24px;text-align:center;background:#f4faff}.lf-writing-caption{text-align:center;font-size:12px}</style></head>
+<body><div class="app"><header class="topbar"><div class="brand"><h1 id="appTitle">COMPASS · Actions</h1></div><nav class="top-actions" aria-label="Program actions"><button class="btn subtle" id="backBtn" hidden>← Setup</button><button class="btn" id="resetViewBtn" hidden>Exit Images Only</button><button class="btn primary" id="runBtn">Run Program →</button><button class="btn" id="endBtn" hidden>End Session</button><button class="btn primary" id="nextProgramBtn" disabled hidden>Next Program →</button></nav></header>
+<p id="storageBanner" class="storage-banner" role="alert" hidden></p>
+<main class="page page-setup active" id="setupPage"><div class="setup-banner"><div><h2>Actions — Program Setup</h2><p>Choose the benchmark and instructional target, then begin the selected DTI chain.</p></div><span class="setup-pill" id="selectedPill">Benchmark 1 · Ready</span></div><div class="setup-columns">
+<article class="section-card"><details class="fold" id="setupFold" open><summary><span>⚙ &nbsp; Program Setup</span></summary><div class="setup-body"><div class="form-grid">
+<label class="field">Benchmark<select id="benchmarkSelect" aria-label="Choose benchmark"></select></label>
+<label class="field">Target<select id="targetSelect" aria-label="Choose target"></select><span class="probe-target-help" id="probeTargetHelp" hidden></span></label>
+<label class="field">DTI Chain<select id="chainSelect"><option value="TTDTDDTT">Default · T T D T D D T T</option><option value="TTTT">Momentum · T T T T</option><option value="TTDTT">Short · T T D T T</option><option value="TTTTT">IEP Chain · T,T,T,T,T</option><option value="TDTDTDT">Alternating · T D T D T D T</option><option value="TTT">3 Target Steps</option><option value="TTTTTTTTTT">10 Target Steps</option><option value="TTTTTTTTTTTTTTT">15 Target Steps</option><option value="T">Single · T</option></select></label>
+<div class="chain-preview"><div class="chain-preview-heading"><strong>DTI Chain Preview</strong><small>T = target; D = reviewed distractor</small></div><div class="chain-preview-steps" id="chainPreviewSteps"></div></div>
+<label class="field">Letter Formation Skill<select id="skillSelect"></select></label>
+<label class="field">Scoring Mode<select id="scoringSelect"><option value="staff">Staff Scored</option><option value="tap">Student Tap + Staff Verify</option></select></label>
+<label class="field">Array Size<select id="arraySize"><option value="2">2 choices</option><option selected value="3">3 choices</option><option value="4">4 choices</option><option value="5">5 choices</option></select></label>
+<label class="field">Custom Distractor<select id="distractorSelect"><option value="review">Review / Previously Taught</option><option value="generalize">Generalization / Changed Example</option><option value="motor">Motor Imitation (Do This)</option><option value="none">No additional distractor</option></select></label>
+<label class="field">IEP Goal<select id="goalSelect"><option value="">Open from Student Profile to link goals</option></select></label>
+<label class="field">Mastery %<input id="masterySelect" aria-label="Mastery percentage" type="number" min="1" max="100" value="80"></label>
+<label class="field">Materials<select id="materialSelect"><option value="picture">Picture / On-Screen</option><option value="real">Real Objects / Manipulatives</option><option value="written">Written / Paper</option></select></label>
+<label class="field">Teaching Mode<select id="modeSelect"><option value="teaching">Teaching</option><option value="generalization">Generalization</option></select></label>
+<label class="field">Trials per Run<select id="trialsSelect"><option value="1">1 complete DTI chain per run</option></select></label>
+<label class="field">Mastery Days<input id="masteryTrialsSelect" aria-label="Distinct instructional days" type="number" min="1" max="30" value="3"></label>
+<label class="field">Min Opportunities / Day<input id="minOpportunitiesSelect" aria-label="Minimum target opportunities per qualifying day" type="number" min="1" max="50" value="4"></label>
+<label class="field">Circuit<select id="circuitSelect"><option value="na">N/A — Teaching</option><option value="probe">Probe Benchmark</option></select></label>
+</div><div class="setup-hint mastery-hint" id="masteryHint">Three separate qualifying teaching dates required; all runs from the same date are pooled. Probes remain separate.</div><div class="setup-hint" id="setupHint"></div><p id="goalsHint">IEP goals and behavior assignments are inherited when launched by COMPASS Student Profile; no student selector in this program.</p>
+<div class="setup-save-dock" role="group" aria-label="Save individualized program setup">
+  <div class="setup-save-copy"><span id="saveSetupStatus" role="status" aria-live="polite"></span></div>
+  <button class="btn primary" type="button" id="saveSetupBtn">Save Setup</button>
+</div></div></details></article>
+<article class="section-card"><details class="fold" id="instructionsFold" open><summary><span>☷ &nbsp; Instructions</span></summary><div class="setup-body"><ol class="instruction-list">
+<li><b class="n">1</b><div>Prepare the individualized materials and gain attention; allow an accessible ready-to-learn response.</div></li>
+<li><b class="n">2</b><div><strong>SD:</strong> <span id="setupSd"></span></div></li>
+<li><b class="n">3</b><div id="setupExample"></div></li>
+<li><b class="n">4</b><div id="instructionScoring">Allow independent response time. Score Correct, Incorrect, or Prompted after observing the actual response.</div></li>
+<li><b class="n">5</b><div>Track student-assigned behavior occurrences independently of academic trial outcomes.</div></li>
+<li><b class="n">6</b><div id="instructionChain">One complete DTI chain equals a run. Target and review steps retain individual scores; reviewed distractor steps do not inflate target mastery.</div></li>
+<li><b class="n">7</b><div>Each Save &amp; Next Step stores the individual event; the last scored step automatically saves the completed run and enables Next Program.</div></li>
+<li><b class="n">8</b><div id="instructionMastery">Mastery is calculated using independent target responses pooled by instructional date; multiple sessions on the same date count as one date.</div></li>
+<li><b class="n">9</b><div>Circuit → Probe Benchmark presents each benchmark target once and stores results separately. Probes do not change teaching mastery.</div></li>
+<li><b class="n">10</b><div id="programSpecificInstructions"></div></li>
+</ol></div></details></article>
+</div></main>
+<main class="page page-run" id="runPage"><div class="run-grid" id="runGrid"><section aria-label="Student material" class="run-card material-card"><div class="material-top"><h2 class="run-title">Student Material</h2><span class="material-tag" id="modeBadge">Staff Scored</span></div><div class="material-main"><div class="sd-card" id="sdPrompt" aria-live="polite"></div><div class="stage-context" id="stageContext"></div><div id="taskStage"></div><p class="readiness-inline" id="studentSelection" aria-live="polite"></p></div><div class="material-foot" id="materialHint"></div></section>
+<section aria-label="Staff scoring and behavior tracking" class="run-card score-card"><div class="score-head"><h2 class="run-title">Trial &amp; Scoring</h2><button class="btn" id="imagesOnlyBtn">▣ Images Only</button></div><div class="score-stats" id="scoreStats"><div class="stat"><small>Target Correct</small><strong id="correctNum">0</strong></div><div class="stat"><small>Target Incorrect</small><strong id="incorrectNum">0</strong></div><div class="stat"><small>Prompted</small><strong id=
