@@ -1174,6 +1174,7 @@ body{display:block!important;width:100%;min-width:0}
 @media(max-width:750px){#page-programs .compass-programs-content{padding:15px 12px 30px}#page-programs .compass-programs-header{padding:20px 13px}#page-programs .compass-programs-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#page-programs .compass-program-metric{min-height:90px}#page-programs .compass-program-metric .metric-value{font-size:27px}#page-programs .compass-program-metric .metric-label{font-size:10px}#page-programs .compass-program-filters{grid-template-columns:1fr}#page-programs .compass-program-library{padding:15px 12px}#page-programs .compass-programs-account{flex-wrap:wrap}#page-programs #programTopSearch{width:100%}}
 </style>
 <script src="./compass-page2-standard.js?v=20261028-v23" defer></script>
+<link rel="stylesheet" href="./session-notes-tabs.css?v=1">
 </head>
 <body>
 
@@ -1498,7 +1499,33 @@ body{display:block!important;width:100%;min-width:0}
       </section>
 
       <section id="page-offline-programs" class="page"><div class="content"><div class="page-head offline-page-head"><div><h1>Offline Program Lists</h1><p class="subtitle">Run downloaded student program lists without Wi‑Fi. Completed sessions stay on this device until they are synced.</p></div><div class="offline-page-actions"><span id="connectionStatus" class="connection-pill">Checking connection…</span><button id="syncOfflineBtn" class="btn primary" type="button">↻ Sync Now <span id="offlinePendingBadge">0</span></button></div></div><div class="offline-metric-grid"><article class="card offline-metric"><span>Downloaded Lists</span><strong id="offlineDownloadedCount">0</strong></article><article class="card offline-metric"><span>Programs Available Offline</span><strong id="offlineProgramCount">0</strong></article><article class="card offline-metric"><span>Sessions Waiting to Sync</span><strong id="offlineQueueCount">0</strong></article><article class="card offline-metric"><span>Last Sync</span><strong id="offlineLastSync">—</strong></article></div><div id="offlineListsGrid" class="offline-lists-grid"></div><article class="card panel offline-help-card"><h2>How Offline Lists Work</h2><div class="offline-help-grid"><div><strong>1. Build the list</strong><span>Create a Program List from a student's active assigned programs.</span></div><div><strong>2. Download before leaving Wi‑Fi</strong><span>COMPASS stores the program HTML, targets, and behavior tracking buttons on the device.</span></div><div><strong>3. Run offline</strong><span>Programs run in order and each saved session is placed in the local sync queue.</span></div><div><strong>4. Sync later</strong><span>When internet returns, Sync sends the queued sessions to the normal COMPASS session record.</span></div></div></article></div></section>
-      <section id="page-sessions" class="page"><div class="content"><div class="page-head"><div><h1>Session &amp; Notes</h1><p class="subtitle">Recent program sessions and student notes.</p></div><button id="globalQuickRunBtn" class="btn primary" type="button">Run Program</button></div><div class="two-col"><article class="card panel"><h2>Recent Sessions</h2><div id="globalSessions" class="stack-list"></div></article><article class="card panel"><h2>Recent Notes</h2><div id="globalNotes" class="stack-list"></div></article></div></div></section>
+      <section id="page-sessions" class="page"><div class="content">
+ <div class="page-head"><div><h1>Session &amp; Notes</h1><p class="subtitle">Session activity, notes, history and manual input workspace.</p></div></div>
+ <nav id="sessionWorkspaceTabs" class="session-workspace-tabs" role="tablist" aria-label="Session and Notes pages">
+ <button id="sessionTabSessions" class="session-workspace-tab active" type="button" role="tab" data-session-tab="sessions" aria-selected="true" aria-controls="sessionPanelSessions" tabindex="0"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M8 17h3"/></svg><span>Sessions</span></button>
+ <button id="sessionTabNotes" class="session-workspace-tab" type="button" role="tab" data-session-tab="notes" aria-selected="false" aria-controls="sessionPanelNotes" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h8l4 4v14H5V3z"/><path d="M15 3v5h4M9 12h6M9 16h6"/></svg><span>Notes</span></button>
+ <button id="sessionTabHistory" class="session-workspace-tab" type="button" role="tab" data-session-tab="history" aria-selected="false" aria-controls="sessionPanelHistory" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
+ <button id="sessionTabManual" class="session-workspace-tab" type="button" role="tab" data-session-tab="manual" aria-selected="false" aria-controls="sessionPanelManual" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20h14M5 4h10M5 8h7M5 12h5M15 19l5-5-3-3-5 5-.5 3.5z"/></svg><span>Manual Input</span></button>
+ </nav>
+ <section id="sessionPanelSessions" class="session-workspace-panel" role="tabpanel" aria-labelledby="sessionTabSessions">
+ <article class="card panel"><div class="panel-head"><h2>Recent Sessions</h2><button id="globalQuickRunBtn" class="btn primary" type="button">Run Program</button></div><div id="globalSessions" class="stack-list"></div></article>
+ </section>
+ <section id="sessionPanelNotes" class="session-workspace-panel" role="tabpanel" aria-labelledby="sessionTabNotes" hidden>
+ <article class="card panel"><div class="panel-head"><h2>Recent Notes</h2></div><div id="globalNotes" class="stack-list"></div></article>
+ </section>
+ <section id="sessionPanelHistory" class="session-workspace-panel" role="tabpanel" aria-labelledby="sessionTabHistory" hidden>
+ <p class="session-history-explainer">Previously recorded sessions and notes available in the current workspace. Older records are read-only here.</p>
+ <div class="session-history-grid">
+ <article class="card panel"><div class="panel-head"><h2>Session History</h2><span class="session-history-count" id="globalSessionHistoryCount">0 loaded</span></div><div id="globalSessionHistory" class="stack-list"></div></article>
+ <article class="card panel"><div class="panel-head"><h2>Notes History</h2><span class="session-history-count" id="globalNoteHistoryCount">0 loaded</span></div><div id="globalNoteHistory" class="stack-list"></div></article>
+ </div>
+ </section>
+ <section id="sessionPanelManual" class="session-workspace-panel" role="tabpanel" aria-labelledby="sessionTabManual" hidden>
+ <article class="card panel session-manual-placeholder"><span class="session-manual-symbol"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20h14M5 4h10M5 8h7M5 12h5M15 19l5-5-3-3-5 5-.5 3.5z"/></svg></span><h2>Manual Input</h2>
+ <p>This page is reserved for entering instructional and behavioral data by hand. The fields, validation, scoring and saving workflow will be designed in our next workshop.</p>
+ <span class="session-manual-status">Placeholder only · Data entry is not enabled</span></article>
+ </section>
+ </div></section>
       <section id="page-assessments" class="page">
         <div class="assessment-workspace">
           <aside class="card assessment-library-panel">
@@ -3879,5 +3906,6 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 <script defer src="./student-profile-print.js?v=20261025-portrait"></script>
+<script src="./session-notes-tabs.js?v=1" defer></script>
 </body>
 </html>
