@@ -29,6 +29,7 @@ const html='<!doctype html><html><head><meta name="viewport" content="width=devi
   assert.equal(await toggle.getAttribute('aria-pressed'),'true');
   assert.equal(await menu.isHidden(),true,'Whole vertical sidebar hidden');
   assert.equal(await page.locator('#app').evaluate(e=>e.classList.contains('compass-focus-mode')),true);
+  const debug=await page.evaluate(()=>{let app=document.querySelector('#app'),main=document.querySelector('#app>.main');return{appClass:app.className,mainParent:main?.parentElement?.id,mainMargin:getComputedStyle(main).marginLeft,mainRect:main?.getBoundingClientRect().toJSON(),sidebar:getComputedStyle(document.querySelector('#sidebar')).display,appRect:app.getBoundingClientRect().toJSON(),bodyWidth:document.body.scrollWidth,viewport:window.innerWidth}});console.log('DEBUG EXPANDED',viewport.width,JSON.stringify(debug));
   const expanded=await main.boundingBox();
   assert(Math.abs(expanded.x)<1,'Main workspace starts at screen left: '+expanded.x);
   assert(expanded.width>=viewport.width-2,'Main workspace expands full width');
