@@ -60,3 +60,58 @@
   #app #workspaceFullscreenToggle .workspace-fullscreen-label{display:none}
 }
 @media print{#app .workspace-top-toolbar{display:none!important}}
+
+/* COMPASS 2026-10-29: reserve an actual, non-overlapping top control band. The workspace content begins BELOW this band,
+   including on the Home screen and in focus mode. */
+#app > .main{
+  position:relative!important;
+  box-sizing:border-box;
+  padding-top:76px!important;
+}
+#app > .main > #workspaceTopToolbar{
+  position:absolute!important;
+  inset:0 0 auto 0!important;
+  display:flex!important;
+  align-items:center;
+  justify-content:flex-end;
+  gap:12px;
+  width:100%!important;
+  height:76px;
+  min-height:76px;
+  margin:0!important;
+  padding:12px 24px;
+  z-index:3;
+  background:#f2f7fb;
+  border-bottom:1px solid #dfe9f5;
+  box-sizing:border-box;
+}
+#app > .main > #workspaceTopToolbar #workspaceFullscreenToggle{
+  position:static!important;
+  inset:auto!important;
+  margin:0 0 0 auto!important;
+  transform:none!important;
+  flex:none;
+}
+#app > .main > .page{
+  margin-top:0!important;
+}
+@media(max-width:850px){
+  #app > .main{padding-top:68px!important}
+  #app > .main > #workspaceTopToolbar{
+    height:68px;
+    min-height:68px;
+    padding:9px 16px;
+  }
+}
+@media(max-width:540px){
+  #app > .main{padding-top:62px!important}
+  #app > .main > #workspaceTopToolbar{
+    height:62px;
+    min-height:62px;
+    padding:7px 12px;
+  }
+}
+@media print{
+  #app > .main{padding-top:0!important}
+  #app > .main > #workspaceTopToolbar{display:none!important}
+}
