@@ -2696,13 +2696,25 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     if(promptButton){promptButton.setAttribute('aria-expanded','false');promptButton.onclick=function(){if(!promptList)return;promptList.hidden=!promptList.hidden;this.setAttribute('aria-expanded',String(!promptList.hidden))}}
   }
   const linkedIds=gid=>state.goalLinks.filter(l=>l.goal_id===gid).map(l=>l.student_compass_program_id);
+  /* Only show annual goals explicitly chosen on this student's Goals page. */
+  function goalsForAssignedProgram(spid){
+    const sp=(state.studentPrograms||[]).find(x=>x.id===spid&&x.student_id===state.currentStudent?.id);
+    if(!sp)return[];
+    const linked=new Set((state.goalLinks||[]).filter(l=>l.student_compass_program_id===spid).map(l=>l.goal_id));
+    const cfg=sp.instance_config||{};
+    const preferred=cfg.primary_iep_goal_id||cfg.programSetup?.goalSelect||cfg.programSetup?.setupIepGoal||'';
+    return (state.goals||[]).filter(g=>g.student_id===sp.student_id&&linked.has(g.id))
+      .sort((a,b)=>(a.id===preferred?-1:b.id===preferred?1:0)||
+        (Number(a.annual_goal_number||999)-Number(b.annual_goal_number||999))||
+        String(a.title||'').localeCompare(String(b.title||'')));
+  }
   function goalForSP(spid){
-    const sp=(state.studentPrograms||[]).find(x=>x.id===spid),
-      preferred=sp?.instance_config?.primary_iep_goal_id||sp?.instance_config?.programSetup?.goalSelect;
-    const link=(state.goalLinks||[]).find(x=>x.student_compass_program_id===spid&&x.goal_id===preferred)
-      ||(state.goalLinks||[]).find(x=>x.student_compass_program_id===spid);
-    const goal=(state.goals||[]).find(g=>g.id===link?.goal_id);
-    return goal?(goal.annual_goal_number?'Goal '+goal.annual_goal_number+' · ':'')+(goal.title||'IEP Goal'):'—';
+    const goals=goalsForAssignedProgram(spid);
+    return goals.length?goals.map(g=>g.title||g.goal_area||'IEP Goal').join(' · '):'—';
+  }
+  function goalDetailsForSP(spid){
+    const goals=goalsForAssignedProgram(spid);
+    return goals.length?goals.map(g=>(g.annual_goal_number?'IEP Goal '+g.annual_goal_number+': ':'')+(g.title||g.goal_area||'IEP Goal')).join(' | '):'No IEP goals linked on Goals page';
   }
   function renderGoals(){const a=$('goalsList'),b=$('serviceGoalsList');a.innerHTML='';b.innerHTML='';for(const g of state.goals){const cur=g.current_percent==null?0:Number(g.current_percent),target=Number(g.target_percent||80),pct=target?Math.min(100,Math.round(cur/target*100)):0,linked=linkedIds(g.id).map(id=>programById(state.studentPrograms.find(sp=>sp.id===id)?.program_id)?.program_name).filter(Boolean);const div=document.createElement('div');div.className='goal-card';div.innerHTML=`<div class="panel-head"><div><h3>${esc(g.title)}</h3><small class="muted">${g.annual_goal_number?'IEP Goal '+Number(g.annual_goal_number)+' · ':''}${esc(g.goal_area||'Goal Area not assigned')} · ${esc(roleName(g.status))}</small></div><div class="button-row"><button class="btn small" data-edit-goal="${g.id}">Edit</button><button class="btn small danger" data-delete-goal="${g.id}">Delete</button></div></div>${renderAnnualGoalDescriptionSections(g)}<small class="muted">Baseline ${g.baseline_percent??'—'}% · Current ${g.current_percent??'—'}% · Target ${g.target_percent??80}%</small><div class="goal-progress"><span style="width:${pct}%"></span></div><small class="muted">${linked.length?'Linked: '+esc(linked.join(', ')):'No programs linked'}</small>`;a.appendChild(div);const si=document.createElement('div');si.className='stack-item';si.innerHTML=`<strong>${esc(g.title)}</strong><small>${esc(g.goal_area||'Goal')} · target ${g.target_percent??80}% · ${linked.length} linked program${linked.length===1?'':'s'}</small>`;b.appendChild(si)}if(!state.goals.length){a.innerHTML='<div class="empty-state compact">No IEP goals entered yet.</div>';b.innerHTML='<div class="empty-state compact">No IEP goals entered yet.</div>'}$('overviewGoals').innerHTML=state.goals.filter(g=>g.status==='active').slice(0,5).map(g=>`<div class="stack-item"><strong>${esc(g.title)}</strong><small>${esc(g.goal_area||'IEP Goal')} · ${g.current_percent??'—'} / ${g.target_percent??80}%</small></div>`).join('')||'<div class="empty-state compact">No active IEP goals yet.</div>'}
   function renderPrograms(){
@@ -2710,7 +2722,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const rows=activeStudentProgramsOrdered();
     for(const sp of rows){
       const p=programById(sp.program_id),tr=document.createElement('tr');
-      tr.innerHTML=`<td><strong>${esc(p?.program_name||'Program')}</strong></td><td>${esc(programDomain(p))}</td><td>${esc(goalForSP(sp.id))}</td><td><select class="control compact" data-program-status="${sp.id}"><option value="active"${sp.status==='active'?' selected':''}>Active</option><option value="hold"${sp.status==='hold'?' selected':''}>On Hold</option><option value="mastered"${sp.status==='mastered'?' selected':''}>Mastered</option></select></td><td><input class="control compact num" type="number" min="0" max="100" value="${Number(sp.goal_percentage||80)}" data-program-goal="${sp.id}"></td><td>${sp.display_order??0}</td><td><button class="btn small program-acquisition-btn" type="button" data-acquisition-program="${sp.id}" aria-label="Acquisition Data for ${esc(p?.program_name||'Program')}">Acquisition Data</button></td>`;
+      tr.innerHTML=`<td><strong>${esc(p?.program_name||'Program')}</strong></td><td>${esc(programDomain(p))}</td><td class="assigned-iep-goals" data-assigned-goals="${sp.id}" title="${esc(goalDetailsForSP(sp.id))}">${esc(goalForSP(sp.id))}</td><td><select class="control compact" data-program-status="${sp.id}"><option value="active"${sp.status==='active'?' selected':''}>Active</option><option value="hold"${sp.status==='hold'?' selected':''}>On Hold</option><option value="mastered"${sp.status==='mastered'?' selected':''}>Mastered</option></select></td><td><input class="control compact num" type="number" min="0" max="100" value="${Number(sp.goal_percentage||80)}" data-program-goal="${sp.id}"></td><td>${sp.display_order??0}</td><td><button class="btn small program-acquisition-btn" type="button" data-acquisition-program="${sp.id}" aria-label="Acquisition Data for ${esc(p?.program_name||'Program')}">Acquisition Data</button></td>`;
       b.appendChild(tr)
     }
     if(!rows.length)b.innerHTML='<tr><td colspan="7" class="muted">No assigned programs. Use + Assign Program to choose from the '+state.programCatalog.length+'-program COMPASS library.</td></tr>';
@@ -3496,7 +3508,7 @@ function activeStudentProgramsOrdered(){
           list.querySelectorAll('[data-goal-number="'+goalId+'"]').forEach(el=>{if(el!==input)el.value=data.annual_goal_number??''});
           list.querySelectorAll('[data-goal-percent="'+goalId+'"]').forEach(el=>{if(el!==input)el.value=data.target_percent??80});
           list.querySelectorAll('option[value="'+goalId+'"]').forEach(option=>{option.textContent=goalLabel(data)});
-          renderGoals();renderGoalAchievement();
+          renderGoals();renderPrograms();renderGoalAchievement();
           toast('IEP Goal '+(pct?'percentage':'number')+' saved.','success');
         }
         async function handleGoalChange(input){
@@ -3522,7 +3534,7 @@ function activeStudentProgramsOrdered(){
           try{
             await saveLinkedGoals(sp,primary,desired);
             if(box)box.outerHTML=goalsBlock(sp);
-            renderGoals();renderGoalAchievement();
+            renderGoals();renderPrograms();renderGoalAchievement();
           }catch(error){
             toast(error?.message||'IEP goals could not be saved. Reload and try again.','error');
             await loadStudentProfile();
@@ -3546,7 +3558,7 @@ function activeStudentProgramsOrdered(){
             await saveLinkedGoals(sp,primaryId(sp),linkedIds(sp).filter(id=>id!==extra.dataset.goalId));
             const box=list.querySelector('[data-program-goals="'+sp.id+'"]');
             if(box)box.outerHTML=goalsBlock(sp);
-            renderGoals();renderGoalAchievement();
+            renderGoals();renderPrograms();renderGoalAchievement();
           }catch(error){toast(error?.message||'Could not unlink IEP goal','error')}
           finally{processing=false;refreshSelection()}
         });
@@ -3727,7 +3739,10 @@ for(const g of programChoices.groups){
  if(!selectedProgramIds.has(g.programId))continue;
  const preexisting=g.assignments.filter(sp=>programChoices.priorLinked.has(sp.id)).map(sp=>sp.id);
  for(const previousId of preexisting)chosenAssignmentIds.add(previousId);
- if(!preexisting.length)chosenAssignmentIds.add(g.representative.id);
+ // Goals Page selections must follow the current active assignment
+ // even when a historical/archived copy was linked previously.
+ if(g.representative&&g.representative.status!=='archived')chosenAssignmentIds.add(g.representative.id);
+ else if(!preexisting.length&&g.representative)chosenAssignmentIds.add(g.representative.id);
 }
 // Unknown or temporarily inaccessible historical links are never silently deleted.
 for(const previousId of programChoices.priorLinked){
