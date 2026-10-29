@@ -1,0 +1,22 @@
+name: Manual Input image parity and data links
+on:
+  push:
+    branches: [feature/manual-input-image-parity-connected]
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Manual Input form/history/CRUD/graph regression
+        run: node qa/test-manual-input-image-parity.cjs
+      - name: Student-specific Progress sync and clinical mastery separation
+        run: node qa/test-manual-progress-sync.cjs

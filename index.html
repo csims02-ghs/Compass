@@ -1175,7 +1175,7 @@ body{display:block!important;width:100%;min-width:0}
 </style>
 <script src="./compass-page2-standard.js?v=20261028-v23" defer></script>
 <link rel="stylesheet" href="./session-notes-tabs.css?v=1">
-<link rel="stylesheet" href="./manual-input-workspace.css?v=1">
+<link rel="stylesheet" href="./manual-input-workspace.css?v=2">
 </head>
 <body>
 
@@ -1559,7 +1559,7 @@ body{display:block!important;width:100%;min-width:0}
    </article>
    <div>
     <article class="mi-card">
-     <div class="mi-head-row"><div><h2>Existing Entries</h2><p class="mi-description">View all accessible manually entered and recorded program data for this student. Edit or delete manual entries only.</p></div><button id="miGraphToggle" class="mi-btn" type="button" aria-expanded="false" aria-controls="miGraph" style="min-width:120px">⌁ Show Graph</button></div>
+     <div class="mi-head-row"><div><h2>Student Data History</h2><p class="mi-description">View every accessible recorded trial, session and behavior observation for the selected student, including manually entered records and regular COMPASS sessions.</p></div><button id="miGraphToggle" class="mi-btn" type="button" aria-expanded="false" aria-controls="miGraph" style="min-width:120px">⌁ Show Graph</button></div>
      <div class="mi-toolbar">
       <div><label for="miFilterStudent">Student</label><select id="miFilterStudent"><option value="">Select student</option></select></div>
       <div><label for="miFilterProgram">Program</label><select id="miFilterProgram"><option value="">All Programs</option></select></div>
@@ -1569,7 +1569,7 @@ body{display:block!important;width:100%;min-width:0}
       <button id="miApplyFilter" class="mi-btn dark" type="button">Filter</button><button id="miClearFilters" class="mi-btn" type="button">Clear</button>
      </div>
      <div class="mi-table-scroller"><table class="mi-data-table" aria-label="Student program data history">
-      <thead><tr><th><input type="checkbox" id="miSelectAll" aria-label="Select visible manual entries"></th><th>Date</th><th>Time</th><th>Student</th><th>Program</th><th>Target</th><th>Trial</th><th>Response</th><th>Prompt</th><th>Behaviors (during trial)</th><th>Provider</th><th>Notes</th><th>Source</th><th>Actions</th></tr></thead>
+      <thead><tr><th><input type="checkbox" id="miSelectAll" aria-label="Select visible manual entries"></th><th>Date</th><th>Time</th><th>Student</th><th>Program</th><th>Target</th><th>Trial</th><th>Response</th><th>Prompt</th><th>Behaviors (during trial)</th><th>Provider</th><th>Source</th><th>Notes</th><th>Actions</th></tr></thead>
       <tbody id="miHistoryRows"><tr><td colspan="14" class="mi-empty">Select a student to load their history.</td></tr></tbody>
      </table></div>
      <div class="mi-table-footer"><span id="miRowCount">0 entries</span><div class="mi-pagination"><button id="miPrev" type="button" aria-label="Previous page">‹</button><strong id="miPageNumber">1</strong><button id="miNext" type="button" aria-label="Next page">›</button></div></div>
@@ -3951,7 +3951,7 @@ if(removed.length){
 })();
 </script>
 <script src="./assigned-program-iep-links.js?v=1"></script>
-<script src="./progress-profile-live-v1.js?v=7"></script>
+<script src="./progress-profile-live-v1.js?v=8"></script>
 <script src="./compass-admin-ui.js?v=20261019"></script>
 <script>
 /* Native COMPASS sidebar: one scrolling menu with permanently visible Additional Tools button. */
@@ -3981,6 +3981,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <script defer src="./student-profile-print.js?v=20261025-portrait"></script>
 <script src="./session-notes-tabs.js?v=1" defer></script>
-<script src="./manual-input-workspace.js?v=1" defer></script>
+<script src="./manual-input-workspace.js?v=2" defer></script>
+<script src="./manual-progress-sync.js?v=1" defer></script>
 </body>
 </html>

@@ -83,7 +83,7 @@ function events(){
 const allowed=new Set(assignmentPrograms().map(p=>String(p.id)));
 const detail=(Array.isArray(snap&&snap.trialEvents)?snap.trialEvents:[]),bySession=new Map();
 for(const row of detail){if(!bySession.has(row.session_id))bySession.set(row.session_id,[]);bySession.get(row.session_id).push(row)}
-return (Array.isArray(snap&&snap.sessions)?snap.sessions:[]).filter(s=>allowed.has(String(s.student_compass_program_id))).flatMap(s=>{
+const live=(Array.isArray(snap&&snap.sessions)?snap.sessions:[]).filter(s=>allowed.has(String(s.student_compass_program_id))).flatMap(s=>{
 const raw=bySession.get(s.id)||[],targets=raw.filter(ev=>ev.trial_type==='T'),total=Number(s.trials_total||0);
 const targetCorrect=targets.filter(ev=>ev.result==='independent_correct').length,
  promptedCorrect=targets.filter(ev=>ev.result==='prompted').length,
@@ -117,7 +117,21 @@ const phase=String(src.phase||src.session_type||src.scoring_phase||"").toLowerCa
 return {date:dt(s.session_date||s.started_at||s.created_at),program:s.student_compass_program_id,key:key,name:named||key||"Unspecified target",benchmark:mark!=null?String(mark):null,
  valid,trial:valid?t:0,correct:valid?correct:0,prompt:valid?(prompt||0):0,beh:beh!=null&&beh>=0?beh:null,raw:s,
  probe:/probe|baseline/.test(phase)||src.v25_run?.probe===true,maintenance:/maintenance/.test(phase),hasBehavior:beh!=null&&beh>=0,explicitMaintenance:/maintenance/.test(phase)};
-}).filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
+});
+const manual=(Array.isArray(snap?.manualTrials)?snap.manualTrials:[])
+ .filter(m=>allowed.has(String(m.student_compass_program_id))&&!m.deleted_at&&m.trial_type==='T')
+ .filter(m=>['independent','prompted','incorrect','no_response'].includes(m.response))
+ .map(m=>{
+  const counts=m.behavior_counts&&typeof m.behavior_counts==='object'?m.behavior_counts:{};
+  const behaviorTotal=Object.values(counts).reduce((sum,n)=>sum+Math.max(0,Number(n)||0),0);
+  return {date:dt(m.event_date),program:m.student_compass_program_id,
+   key:String(m.target_key||m.target_name||''),name:String(m.target_name||m.target_key||'Manual target'),
+   benchmark:m.benchmark_key||null,valid:true,trial:1,
+   correct:m.response==='independent'?1:0,prompt:m.response==='prompted'?1:0,
+   beh:behaviorTotal,hasBehavior:true,raw:m,manual:true,
+   probe:m.chain_type==='probe',maintenance:false,explicitMaintenance:false};
+ });
+return [...live,...manual].filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
 }
 function currentEvents(){
 let arr=events(),p=picks.program;
@@ -251,7 +265,7 @@ for(const ev of es)if(ev.key&&!targetMap.has(ev.key))targetMap.set(ev.key,{key:e
 const crit=p.criteria;
 return [...targetMap.values()].map(t=>{
 const all=es.filter(e=>e.key===t.key);
-const base=all.filter(e=>!e.maintenance&&!e.probe);
+const base=all.filter(e=>!e.maintenance&&!e.probe&&!e.manual); // Historical manual entry requires clinical validation before mastery.
 const probes=all.filter(e=>e.probe);
 const byday=new Map();base.forEach(e=>{let o=byday.get(e.date)||{date:e.date,trials:0,correct:0};o.trials+=e.trial;o.correct+=e.correct;byday.set(e.date,o)});
 let qualifying=[],mastered=null;
