@@ -124,14 +124,14 @@ async function loadHistory(){
  const [manual,sessions,trials,behaviorOnly]=await Promise.all([
   pages((a,b)=>table('compass_manual_trial_entries').select('*').eq('student_id',sid).is('deleted_at',null).order('event_date',{ascending:false}).range(a,b)),
   ids.length?getMany('compass_program_sessions','student_compass_program_id',ids,'id,student_compass_program_id,staff_id,session_date,target_name,target_key,trials_total,targets_correct,prompted_correct,incorrect,no_response,behavior_counts,notes,started_at,created_at','created_at'):Promise.resolve([]),
-  ids.length?getMany('compass_trial_events','student_compass_program_id',ids,'id,session_id,student_compass_program_id,trial_number,trial_type,target_key,target_name,benchmark_key,goal_id,result,prompt_level,behavior_counts,occurred_at,source,created_at','occurred_at'):Promise.resolve([]),
+  ids.length?getMany('compass_trial_events','student_compass_program_id',ids,'id,session_id,student_compass_program_id,trial_number,trial_type,target_key,target_name,benchmark_key,goal_id,result,prompt_level,behavior_counts,occurred_at,source,created_at,deleted_at','occurred_at'):Promise.resolve([]),
  pages((a,b)=>table('student_behavior_data').select('id,student_id,data_type,behavior_name,data_date,count,notes,collected_by').eq('student_id',sid).order('data_date',{ascending:false}).range(a,b))
  ]);
  if(st.selectedStudent!==sid)return;
- st.manual=manual;const map=new Map(sessions.map(s=>[s.id,s]));
- const trialsBySession=new Set(trials.map(t=>t.session_id));
- const base=trials.map(t=>trialRecord(t,assignment(t.student_compass_program_id)||{id:t.student_compass_program_id,student_id:sid},map));
- const residual=sessions.filter(s=>!trialsBySession.has(s.id)).map(s=>historicalSession(s,assignment(s.student_compass_program_id)||{id:s.student_compass_program_id,student_id:sid}));
+ st.manual=manual;const activeTrials=trials.filter(t=>!t.deleted_at);const map=new Map(sessions.map(s=>[s.id,s]));
+ const trialsBySession=new Set(activeTrials.map(t=>t.session_id));
+ const base=activeTrials.map(t=>trialRecord(t,assignment(t.student_compass_program_id)||{id:t.student_compass_program_id,student_id:sid},map));
+ const residual=sessions.filter(s=>!trialsBySession.has(s.id)&&Number(s.trials_total||0)>0).map(s=>historicalSession(s,assignment(s.student_compass_program_id)||{id:s.student_compass_program_id,student_id:sid}));
  st.live=[...base,...residual,...behaviorOnly.map(b=>behaviorObservation(b,sid))];st.rows=[...manual.map(manualRecord),...st.live];
  renderFilters();renderRows();status('All available COMPASS trial and session records loaded.',false,'miHistoryStatus');
  }catch(e){status('Unable to load full history: '+e.message,true,'miHistoryStatus');st.rows=[];renderRows();}
