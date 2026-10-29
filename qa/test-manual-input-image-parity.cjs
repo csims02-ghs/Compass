@@ -9,7 +9,8 @@ const fragment=html.slice(start,end);
 const ids=['miStudent','miProgram','miDate','miProvider','miProviderManual','miLocation','miService','miTime','miChain','miBenchmark','miTarget','miTrial','miTrialType','miGoal','miBehaviors','miPrompt','miNotes','miSave','miFilterStudent','miFilterProgram','miFilterFrom','miFilterTo','miFilterProvider','miApplyFilter','miClearFilters','miHistoryRows','miStats','miBehaviorStats','miGraphToggle','miGraph','miPrev','miNext','miDeleteSelected'];
 ids.forEach(id=>assert(fragment.includes('id="'+id+'"'),id+' missing from visual reference'));
 assert(fragment.includes('Student Data History'),'Exact history header missing');
-assert(fragment.indexOf('<th>Source</th>')<fragment.indexOf('<th>Notes</th>'),'Source column must precede Notes');
+assert(fragment.includes('<th>Targets</th><th>Accuracy</th><th>Behaviors</th>'),'Session table must contain separate Targets, Accuracy and Behaviors columns');
+assert(!fragment.includes('<th>Trial</th><th>Response</th>'),'Raw trial and response columns should be removed');
 assert(html.includes('manual-progress-sync.js?v=1'));
 const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</style></head><body>'+fragment+'</body></html>';
 (async()=>{
@@ -22,8 +23,12 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
   const assignments=[{id:'assign-a',student_id:'a',program_id:'prog-a',status:'active',assigned_date:'2026-10-01'},{id:'assign-b',student_id:'b',program_id:'prog-b',status:'active',assigned_date:'2026-10-01'}];
   const programs=[{id:'prog-a',program_name:'Colors',program_config:{targets:[{id:1,name:'Red',metadata:{benchmark:1}},{id:2,name:'Blue',metadata:{benchmark:1}}],benchmark_sets:[{label:'Colors 1–2',start:1,end:2}]}},{id:'prog-b',program_name:'Shapes',program_config:{targets:[{id:1,name:'Circle'}]}}];
   const profiles=[{id:'staff1',full_name:'Staff One',role:'bcba',active:true},{id:'staff2',full_name:'Staff Two',role:'teacher',active:true}];
-  const sessions=[{id:'sess-a',student_compass_program_id:'assign-a',staff_id:'staff1',session_date:'2026-10-23',trials_total:1,targets_correct:1,prompted_correct:0,incorrect:0,no_response:0,behavior_counts:{'Non-Compliance':1},notes:'Live session'},{id:'sess-summary',student_compass_program_id:'assign-a',staff_id:'staff1',session_date:'2026-10-20',trials_total:2,targets_correct:1,prompted_correct:0,incorrect:1,no_response:0,behavior_counts:{},notes:'Session summary only'}];
-  const trialEvents=[{id:'trial-live',session_id:'sess-a',student_compass_program_id:'assign-a',trial_number:1,trial_type:'T',target_key:'1',target_name:'Red',benchmark_key:'1',result:'independent_correct',prompt_level:'None',behavior_counts:{'Non-Compliance':1},occurred_at:'2026-10-23T09:15:00Z',source:'Live session'}];
+  const sessions=[{id:'sess-a',student_compass_program_id:'assign-a',staff_id:'staff1',session_date:'2026-10-23',trials_total:5,targets_correct:2,prompted_correct:0,incorrect:3,no_response:0,behavior_counts:{Tantrums:5,'Leaving the area':2,Noncompliance:1},notes:'Live session'},{id:'sess-summary',student_compass_program_id:'assign-a',staff_id:'staff1',session_date:'2026-10-20',trials_total:2,targets_correct:1,prompted_correct:0,incorrect:1,no_response:0,behavior_counts:{},notes:'Session summary only'}];
+  const trialEvents=['independent_correct','incorrect','independent_correct','incorrect','incorrect'].map((result,i)=>({
+   id:'trial-live-'+(i+1),session_id:'sess-a',student_compass_program_id:'assign-a',trial_number:i+1,
+   trial_type:'T',target_key:'1',target_name:'Red',benchmark_key:'1',result,prompt_level:'None',
+   behavior_counts:{},occurred_at:'2026-10-23T09:15:00Z',source:'Live session'
+  }));
   const behavior=[{id:'beh1',student_id:'a',data_type:'frequency',behavior_name:'Elopement',data_date:'2026-10-22',count:2,notes:'Behavior observation',collected_by:'staff1'}];
   const manual=[{id:'manual-old',student_id:'a',student_compass_program_id:'assign-a',created_by:'staff1',event_date:'2026-10-21',event_time:'09:30',provider_name:'Staff One',provider_user_id:'staff1',provider_entry_type:'directory',target_key:'1',target_name:'Red',trial_number:1,trial_type:'T',response:'prompted',prompt_level:'Gestural',behavior_counts:{Elopement:1},notes:'Existing manual',source:'manual'}];
   const goals=[{id:'goal-a',student_id:'a',title:'Match colors',created_at:'2026-10-01'}];
@@ -82,7 +87,14 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  assert.equal(await page.locator('#miProgram').inputValue(),'assign-a');
  assert.equal(await page.locator('#miFilterStudent').inputValue(),'a');
  assert.equal(await page.locator('#miHistoryRows tr').count(),4,'manual/live/session summary/behavior observation');
- assert((await page.locator('#miHistoryRows').innerText()).includes('Live session'));
+ assert.equal(await page.locator('#miHistoryRows tr[title="Live session"]').count(),1,'Five scored trials must collapse to exactly one session row');
+ assert.equal(await page.locator('#miHistoryRows [data-mi-select="session:sess-a"]').count(),1);
+ const sess=page.locator('#miHistoryRows tr:has([data-mi-select="session:sess-a"])');
+ assert((await sess.innerText()).includes('2/5 Correct'),'Display 2/5 Correct from five real trials');
+ assert((await sess.innerText()).includes('40%'),'Display 40% separately from target count');
+ for(const behaviorText of ['Tantrums (5)','Noncompliance (1)','Leaving the area (2)'])
+  assert((await sess.innerText()).includes(behaviorText),'Session behavior pill missing: '+behaviorText);
+ assert.equal(await sess.locator('.mi-chip.behavior').count(),3,'Show all saved behaviors without duplicating per-trial counts');
  assert((await page.locator('#miHistoryRows').innerText()).includes('Behavior observation'));
  await page.locator('#miProvider').selectOption('manual');
  await page.locator('#miProviderManual').fill('Test Provider');
@@ -104,23 +116,23 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  assert.equal(await page.locator('#miProgram').inputValue(),'assign-a');
  await page.locator('#miNotes').fill('Edited documented note');
  await page.locator('#miSave').click();
- await page.waitForFunction(()=>document.querySelector('#miHistoryRows')?.textContent.includes('Edited documented note'),null,{timeout:8000});
+ await page.waitForFunction(()=>!!document.querySelector('#miHistoryRows tr[title="Edited documented note"]'),null,{timeout:8000});
  await page.locator('[data-mi-delete="manual:'+saved.id+'"]').click();
- await page.waitForFunction(()=>window.db.compass_manual_trial_entries.at(-1)?.deleted_at&&document.querySelector('#miHistoryRows')?.textContent.includes('Existing manual')&&!document.querySelector('#miHistoryRows')?.textContent.includes('Edited documented note'),null,{timeout:8000});
+ await page.waitForFunction(()=>window.db.compass_manual_trial_entries.at(-1)?.deleted_at&&!!document.querySelector('#miHistoryRows tr[title="Existing manual"]')&&!document.querySelector('#miHistoryRows tr[title="Edited documented note"]'),null,{timeout:8000});
  assert.equal(await page.locator('#miHistoryRows tr').count(),4,'soft deletion removed from current history');
  assert.equal(await page.evaluate(()=>window.db.compass_manual_trial_entries.length),2,'audited deleted record not hard deleted');
  assert.equal(await page.locator('#miHistoryRows tr').count(),4,'manual, live trial, summary and behavior rows remain');
  assert.equal(await page.locator('#miHistoryRows td.mi-record-date').first().innerText(),'10/23/2026','Displayed date is MM/DD/YYYY');
  const firstDate=await page.locator('#miHistoryRows td.mi-record-date').first().evaluate(e=>({height:e.getBoundingClientRect().height,whiteSpace:getComputedStyle(e).whiteSpace}));
  assert.equal(firstDate.whiteSpace,'nowrap','Date column must not wrap');
- assert.equal(await page.locator('#miHistoryRows [data-mi-select="trial:trial-live"]').isEnabled(),true,'Recorded trial must be selectable by its provider');
- await page.locator('#miHistoryRows [data-mi-select="trial:trial-live"]').check();
- assert.equal(await page.locator('#miDeleteSelected').isEnabled(),true,'Bulk archive button enables on live selection');
+ assert.equal(await page.locator('#miHistoryRows [data-mi-select="session:sess-a"]').isEnabled(),true,'One program session must be selectable');
+ await page.locator('#miHistoryRows [data-mi-select="session:sess-a"]').check();
+ assert.equal(await page.locator('#miDeleteSelected').isEnabled(),true,'Bulk archive enables when one program session selected');
  await page.locator('#miDeleteSelected').click();
- await page.waitForFunction(()=>window.db.compass_trial_events[0]?.deleted_at&&document.querySelectorAll('#miHistoryRows tr').length===3,null,{timeout:8000});
- assert.equal(await page.locator('#miHistoryRows').innerText().then(t=>t.includes('Live session')),false,'Archived live trial is hidden');
- assert.equal(await page.evaluate(()=>window.db.compass_trial_events.length),1,'Recorded trial retained with archive timestamp');
- assert.equal(await page.evaluate(()=>window.db.compass_trial_events[0].deleted_by),'staff1');
+ await page.waitForFunction(()=>window.db.compass_trial_events.every(x=>x.deleted_at)&&window.db.compass_program_sessions[0].deleted_at&&document.querySelectorAll('#miHistoryRows tr').length===3,null,{timeout:8000});
+ assert.equal(await page.locator('#miHistoryRows tr[title="Live session"]').count(),0,'Archived session is hidden');
+ assert.equal(await page.evaluate(()=>window.db.compass_trial_events.length),5,'All five recorded trials retained with archive timestamps');
+ assert.equal(await page.evaluate(()=>window.db.compass_trial_events.every(t=>t.deleted_by==='staff1')),true,'All five trial audits attributed to same staff');
  // Both formerly read-only kinds must have enabled checkboxes and archive actions.
  assert.equal(await page.locator('[data-mi-select="session:sess-summary"]').isEnabled(),true,'Session summary selectable');
  assert.equal(await page.locator('[data-mi-select="behavior:beh1"]').isEnabled(),true,'Behavior observation selectable');
@@ -144,7 +156,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  assert.equal(await page.locator('#miHistoryRows tr').count(),1,'other student history empty');
  assert.equal(await page.locator('#miHistoryRows').innerText().then(t=>t.includes('Existing manual')),false,'student isolation');
  assert.equal(errors.length,0,errors.join('; '));
- console.log('PASS Manual Input',width,'image markers','student-linked CRUD','provider manual','behavior tracking','live+manual+behavior history','graph','soft-delete','other-student isolation');
+ console.log('PASS Manual Input',width,'session grouping','2/5 Correct','40%','behavior pills','student-linked CRUD','provider manual','graph','grouped session archive','student isolation');
  await page.close();
  }}finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
