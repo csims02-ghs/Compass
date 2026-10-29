@@ -1,11 +1,41 @@
-/* COMPASS workspace-only fullscreen toggle: hides the left menu; never uses browser Fullscreen API. */
+/* COMPASS top workspace controls: a dedicated, normal-flow toolbar, never a page overlay. */
+#app .workspace-top-toolbar{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:12px;
+  box-sizing:border-box;
+  width:100%;
+  min-height:68px;
+  padding:10px 24px;
+  border-bottom:1px solid #dfe9f5;
+  background:#fff;
+}
+/* The toggle occupies real space ABOVE content, rather than covering charts or forms. */
 #app #workspaceFullscreenToggle{
-  position:fixed;top:14px;right:16px;z-index:70;
-  display:inline-flex;align-items:center;justify-content:center;gap:9px;
-  min-height:44px;padding:10px 13px;border:1px solid #c6d9ee;border-radius:12px;
-  background:#fff;color:#164b86;box-shadow:0 4px 16px rgba(13,49,91,.14);
-  font-family:inherit;font-size:13px;font-weight:750;line-height:1.2;
-  cursor:pointer;white-space:nowrap;
+  position:static;
+  inset:auto;
+  z-index:auto;
+  margin-left:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  min-height:44px;
+  padding:10px 14px;
+  border:1px solid #c6d9ee;
+  border-radius:12px;
+  background:#fff;
+  color:#164b86;
+  box-shadow:none;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:750;
+  line-height:1.2;
+  cursor:pointer;
+  white-space:nowrap;
 }
 #app #workspaceFullscreenToggle svg{width:19px;height:19px;flex:none;stroke:currentColor}
 #app #workspaceFullscreenToggle:hover{background:#eff6ff;border-color:#8bb8f3}
@@ -14,17 +44,19 @@
 #app #workspaceFullscreenToggle .workspace-fullscreen-restore{display:none}
 #app.compass-focus-mode #workspaceFullscreenToggle .workspace-fullscreen-expand{display:none}
 #app.compass-focus-mode #workspaceFullscreenToggle .workspace-fullscreen-restore{display:block}
+/* Full Screen here means Hide Menu, not browser Fullscreen API. */
 #app.compass-focus-mode #sidebar{display:none!important}
-#app.compass-focus-mode>.main{
-  margin-left:0!important;width:100%!important;max-width:none!important;min-width:0;
-}
+#app.compass-focus-mode>.main{margin-left:0!important;width:100%!important;max-width:none!important;min-width:0}
 #app.compass-focus-mode #mobileMenu{display:none!important}
+/* Preserve the mobile sidebar button, but keep it in the SAME toolbar row. */
+#app #workspaceTopToolbar #mobileMenu{position:static!important;inset:auto!important;z-index:auto;margin:0 auto 0 0;display:none}
 @media(max-width:850px){
-  #app:not(.compass-focus-mode) #mobileMenu{right:74px}
+  #app .workspace-top-toolbar{min-height:62px;padding:8px 16px}
+  #app:not(.compass-focus-mode) #workspaceTopToolbar #mobileMenu{display:inline-flex!important;align-items:center;justify-content:center;min-height:44px}
 }
 @media(max-width:540px){
-  #app #workspaceFullscreenToggle{right:10px;top:10px;width:46px;height:46px;padding:9px}
+  #app .workspace-top-toolbar{min-height:58px;padding:7px 12px}
+  #app #workspaceFullscreenToggle{min-height:44px;padding:9px 11px;gap:6px}
   #app #workspaceFullscreenToggle .workspace-fullscreen-label{display:none}
-  #app:not(.compass-focus-mode) #mobileMenu{right:66px}
 }
-@media print{#app #workspaceFullscreenToggle{display:none!important}}
+@media print{#app .workspace-top-toolbar{display:none!important}}
