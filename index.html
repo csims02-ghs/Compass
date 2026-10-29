@@ -1175,7 +1175,7 @@ body{display:block!important;width:100%;min-width:0}
 </style>
 <script src="./compass-page2-standard.js?v=20261028-v23" defer></script>
 <link rel="stylesheet" href="./session-notes-tabs.css?v=1">
-<link rel="stylesheet" href="./manual-input-workspace.css?v=20261029-history-v3">
+<link rel="stylesheet" href="./manual-input-workspace.css?v=20261029-session-summary-v1">
 <link rel="stylesheet" href="./workspace-fullscreen.css?v=20261029-nav-v2">
 </head>
 <body>
@@ -1582,8 +1582,8 @@ body{display:block!important;width:100%;min-width:0}
       <button id="miApplyFilter" class="mi-btn dark" type="button">Filter</button><button id="miClearFilters" class="mi-btn" type="button">Clear</button>
      </div>
      <div class="mi-table-scroller"><table class="mi-data-table" aria-label="Student program data history">
-      <thead><tr><th><input type="checkbox" id="miSelectAll" aria-label="Select visible editable entries"></th><th>Date</th><th>Time</th><th>Student</th><th>Program</th><th>Target</th><th>Trial</th><th>Response</th><th>Prompt</th><th>Behaviors (during trial)</th><th>Provider</th><th>Source</th><th>Notes</th><th>Actions</th></tr></thead>
-      <tbody id="miHistoryRows"><tr><td colspan="14" class="mi-empty">Select a student to load their history.</td></tr></tbody>
+      <thead><tr><th><input type="checkbox" id="miSelectAll" aria-label="Select visible editable entries"></th><th>Date</th><th>Time</th><th>Student</th><th>Program</th><th>Target</th><th>Targets</th><th>Accuracy</th><th>Behaviors</th><th>Provider</th><th>Actions</th></tr></thead>
+      <tbody id="miHistoryRows"><tr><td colspan="11" class="mi-empty">Select a student to load their history.</td></tr></tbody>
      </table></div>
      <div class="mi-table-footer"><span id="miRowCount">0 entries</span><div class="mi-pagination"><button id="miPrev" type="button" aria-label="Previous page">‹</button><strong id="miPageNumber">1</strong><button id="miNext" type="button" aria-label="Next page">›</button></div></div>
      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px"><button id="miDeleteSelected" class="mi-btn" type="button" disabled>Delete selected entries</button><span id="miHistoryStatus" class="mi-feedback" role="status" aria-live="polite"></span></div>
@@ -1591,7 +1591,7 @@ body{display:block!important;width:100%;min-width:0}
     </article>
     <section class="mi-card mi-summary"><h3 id="miSummaryTitle">Selected Range Summary</h3><div id="miStats" class="mi-stat-grid"></div></section>
     <section class="mi-card mi-summary"><h3>Behavior Summary (Selected Range)</h3><div id="miBehaviorStats" class="mi-behavior-stat-grid"></div></section>
-    <p id="miScopeNote" class="mi-source-note">Authorized staff can select and archive manual entries, recorded trials, session summaries, and behavior observations. Session summaries with active trials must be corrected at the trial level first. Archived entries retain their audit records and are excluded from active reporting.</p>
+    <p id="miScopeNote" class="mi-source-note">One row represents one saved program session. Targets and Accuracy summarize its scored target opportunities; behaviors are the recorded session totals. Authorized staff can archive a session with its linked trials (audit retained), or manage individual manual entries and behavior observations.</p>
    </div>
   </div>
  </section>
@@ -3995,7 +3995,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <script defer src="./student-profile-print.js?v=20261025-portrait"></script>
 <script src="./session-notes-tabs.js?v=1" defer></script>
-<script src="./manual-input-workspace.js?v=20261029-history-v4" defer></script>
+<script src="./manual-input-workspace.js?v=20261029-session-summary-v1" defer></script>
 <script src="./compass-date-display.js?v=20261029-1" defer></script>
 <script src="./manual-progress-sync.js?v=1" defer></script>
 <script src="./workspace-fullscreen.js?v=20261029-sidebar-v1" defer></script>
