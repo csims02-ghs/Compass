@@ -2386,7 +2386,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       const items=[];for(let offset=0;offset<20000;offset+=1000){
         const result=await grab(()=>sb.from('compass_trial_events')
           .select('session_id,student_compass_program_id,trial_number,trial_type,target_key,target_name,benchmark_key,goal_id,result,prompt_level,behavior_counts,occurred_at')
-          .in('student_compass_program_id',ids).order('occurred_at').range(offset,offset+999));
+          .in('student_compass_program_id',ids).is('deleted_at',null).order('occurred_at').range(offset,offset+999));
         if(result.error)return result;
         items.push(...(result.data||[]));if(!result.data||result.data.length<1000)break;
       }
