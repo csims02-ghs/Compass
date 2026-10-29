@@ -61,6 +61,18 @@ const {chromium}=require('playwright');
         assert.equal(await page.locator('#sidebar').evaluate(e=>e.classList.contains('open')),true,
           `Restoring on mobile must reopen its menu at ${width}`);
       }
+      // The user's Caseload screen must also return to its original top alignment.
+      await page.evaluate(()=>{
+        document.querySelector('#page-home').classList.remove('active');
+        document.querySelector('#page-caseload').classList.add('active');
+      });
+      const caseloadTop=()=>page.locator('#page-caseload .page-head').evaluate(e=>e.getBoundingClientRect().top);
+      assert((await caseloadTop())<110,`Caseload still has a blank top band at ${width}`);
+      if(width<=850)await page.locator('#sidebar').evaluate(e=>e.classList.add('open'));
+      await page.locator('#workspaceFullscreenToggle').click();
+      assert((await caseloadTop())<110,`Focused Caseload shifted down at ${width}`);
+      await page.locator('#workspaceShowMenuToggle').click();
+      assert((await caseloadTop())<110,`Restored Caseload shifted down at ${width}`);
       await page.close();
       console.log('COMPASS_SIDEBAR_FULLSCREEN_PASS',width);
     }
