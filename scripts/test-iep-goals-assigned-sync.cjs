@@ -23,11 +23,13 @@ try {
    goals:[
     {id:'g1',student_id:'student-1',title:'Pre Academic',annual_goal_number:1,status:'active'},
     {id:'g8',student_id:'student-1',title:'Communication',annual_goal_number:8,status:'active'},
-    {id:'g2',student_id:'student-2',title:'Other Student',annual_goal_number:2,status:'active'}],
+    {id:'g2',student_id:'student-1',title:'Social-Emotional Skills',annual_goal_number:2,status:'active'},
+    {id:'gOther',student_id:'student-2',title:'Other Student',annual_goal_number:3,status:'active'}],
    goalLinks:[
     {goal_id:'g8',student_compass_program_id:'sp1'},
     {goal_id:'g1',student_compass_program_id:'sp1'},
-    {goal_id:'g8',student_compass_program_id:'sp2'}],
+    {goal_id:'g8',student_compass_program_id:'sp2'},
+    {goal_id:'g2',student_compass_program_id:'sp2'}],
    programCatalog:[{id:'animal',program_name:'Animal Identification'},{id:'body',program_name:'Body Parts'}]
   };
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -39,22 +41,24 @@ try {
   const app=fn(state,document,$,esc,programById,programDomain,activeStudentProgramsOrdered);
   const cell=spid=>document.querySelector('[data-assigned-goals="'+spid+'"]');
   app.renderPrograms();
-  if(cell('sp1')?.textContent!=='Pre Academic · Communication')throw Error('Expected both Goals-page selected titles in order');
-  if(!cell('sp1').title.includes('IEP Goal 1: Pre Academic')||!cell('sp1').title.includes('IEP Goal 8: Communication'))throw Error('Missing annual goal numbers');
-  if(cell('sp2')?.textContent!=='Communication')throw Error('Stale primary must not override actual goal link');
+  const names=spid=>[...cell(spid).querySelectorAll('.assigned-iep-goal-entry')].map(x=>x.textContent);
+  const eq=(actual,expected,label)=>{if(JSON.stringify(actual)!==JSON.stringify(expected))throw Error(label+': '+JSON.stringify(actual))};
+  eq(names('sp1'),['IEP Goal 1 · Pre Academic','IEP Goal 8 · Communication'],'Assigned Programs must display each selected goal number and title');
+  if(cell('sp1').querySelectorAll('.assigned-iep-goal-entry').length!==2)throw Error('Goals must be separate non-truncated lines');
+  eq(names('sp2'),['IEP Goal 2 · Social-Emotional Skills','IEP Goal 8 · Communication'],'Social-Emotional Goals must display on linked programs even with stale primary');
   state.goals.find(g=>g.id==='g8').title='Functional Communication';
   app.renderPrograms();
-  if(cell('sp1')?.textContent!=='Pre Academic · Functional Communication')throw Error('Goal title changes do not refresh Assigned Programs');
+  eq(names('sp1'),['IEP Goal 1 · Pre Academic','IEP Goal 8 · Functional Communication'],'Renamed goals must immediately appear');
   state.goalLinks=state.goalLinks.filter(l=>!(l.student_compass_program_id==='sp1'&&l.goal_id==='g1'));
   app.renderPrograms();
-  if(cell('sp1')?.textContent!=='Functional Communication')throw Error('Uncheck goal did not remove goal from Assigned Programs');
+  eq(names('sp1'),['IEP Goal 8 · Functional Communication'],'Unchecking a link removes only that goal');
   state.goalLinks=state.goalLinks.filter(l=>l.student_compass_program_id!=='sp1');
   app.renderPrograms();
   if(cell('sp1')?.textContent!=='—')throw Error('Unlinked program should show em dash');
-  state.goalLinks.push({goal_id:'g2',student_compass_program_id:'sp1'});
+  state.goalLinks.push({goal_id:'gOther',student_compass_program_id:'sp1'});
   app.renderPrograms();
   if(cell('sp1')?.textContent!=='—')throw Error('Another student\'s goal must never appear');
-  return {checkedRows:2,multiGoal:true,titleRename:true,unlink:true,studentIsolation:true,stalePrimaryIgnored:true};
+  return {checkedRows:2,goalNumberTitle:true,multiGoalSeparateLines:true,socialEmotionalGoal:true,titleRename:true,unlink:true,studentIsolation:true,stalePrimaryIgnored:true};
  },{helpers,render});
  console.log('COMPASS_IEP_GOALS_ASSIGNED_SYNC_PASS',JSON.stringify(result));
  await page.close();
