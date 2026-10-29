@@ -18,3 +18,5 @@ jobs:
           npx playwright install chromium
       - name: Manual Input form/history/CRUD/graph regression
         run: node qa/test-manual-input-image-parity.cjs
+      - name: Student-specific Progress sync and clinical mastery separation
+        run: node qa/test-manual-progress-sync.cjs
