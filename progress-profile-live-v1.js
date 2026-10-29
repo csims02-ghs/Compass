@@ -131,7 +131,7 @@ const manual=(Array.isArray(snap?.manualTrials)?snap.manualTrials:[])
    beh:behaviorTotal,hasBehavior:true,raw:m,manual:true,
    probe:m.chain_type==='probe',maintenance:false,explicitMaintenance:false};
  });
-return [...live,...manual].filter(x=>/^\\d{4}-\\d\\d-\\d\\d$/.test(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
+return [...live,...manual].filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
 }
 function currentEvents(){
 let arr=events(),p=picks.program;
