@@ -5,7 +5,7 @@ const {chromium}=require('playwright');
   const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
   try{
     for(const width of [390,540,800,1024,1440,1504,1920]){
-      const page=await browser.newPage({viewport:{width,height:900},deviceScaleFactor:1});
+      const page=await browser.newPage({viewport:{width,height:832},deviceScaleFactor:1});
       await page.goto('http://127.0.0.1:8099/',{waitUntil:'domcontentloaded',timeout:45000});
       await page.evaluate(()=>{
         document.getElementById('landingScreen')?.classList.add('hidden');
@@ -35,6 +35,31 @@ const {chromium}=require('playwright');
       if(width<=850){
         await page.locator('#sidebar').evaluate(e=>e.classList.add('open'));
       }
+      // Sidebar should not need the vertical slider at the 832px reference height.
+      const menuLayout=await page.locator('#sidebar').evaluate(sidebar=>{
+        const scroll=sidebar.querySelector('#compassSidebarScroll');
+        const nav=sidebar.querySelector('[aria-label="Compliance"] button[data-page="tasks"]');
+        const toggle=sidebar.querySelector('#workspaceFullscreenToggle');
+        const a=getComputedStyle(nav),b=getComputedStyle(toggle),r=toggle.getBoundingClientRect();
+        return {
+          scrollHeight:scroll.scrollHeight,clientHeight:scroll.clientHeight,
+          scrollbar:getComputedStyle(scroll).scrollbarWidth,
+          toggleBottom:r.bottom,viewportHeight:innerHeight,
+          nav:{fontSize:a.fontSize,fontWeight:a.fontWeight,padding:a.padding,minHeight:a.minHeight},
+          full:{fontSize:b.fontSize,fontWeight:b.fontWeight,padding:b.padding,minHeight:b.minHeight}
+        };
+      });
+      assert.equal(menuLayout.scrollbar,'none',`Sidebar scrollbar should be removed at ${width}`);
+      assert(menuLayout.scrollHeight<=menuLayout.clientHeight+1,
+        `Primary sidebar should fit without scrolling at ${width}: ${JSON.stringify(menuLayout)}`);
+      assert(menuLayout.toggleBottom<=menuLayout.viewportHeight,
+        `Full Screen should be within viewport without scrolling at ${width}: ${JSON.stringify(menuLayout)}`);
+      assert.equal(menuLayout.full.fontSize,menuLayout.nav.fontSize,
+        `Full Screen must match other menu font sizes at ${width}`);
+      assert.equal(menuLayout.full.fontWeight,menuLayout.nav.fontWeight,
+        `Full Screen must match other menu font weights at ${width}`);
+      assert.equal(menuLayout.full.padding,menuLayout.nav.padding,
+        `Full Screen must match other menu padding at ${width}`);
       let p=await snapshot();
       assert.equal(p.mainPaddingTop,0,`Top spacing not restored at width ${width}`);
       assert(p.homeHeader.top<95,`Home page is still pushed down at width ${width}: ${JSON.stringify(p)}`);
