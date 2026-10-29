@@ -40,7 +40,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
      in(k,v){filters.push(r=>v.includes(r[k]));return chain},
      order(k,opt){orders.push({k,asc:!!opt?.ascending});return chain},
      range(a,b){self.range=[a,b];return chain},
-     update(payload){self.op='update';self.payload=payload;return chain},
+     update(payload,opts){self.op='update';self.payload=payload;self.countRequested=opts?.count;return chain},
      insert(payload){self.op='insert';self.payload=payload;return chain},
      then(resolve,reject){
       const run=()=>{
@@ -55,7 +55,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
         orders.forEach(o=>rows.sort((a,b)=>String(a[o.k]||'').localeCompare(String(b[o.k]||''))*(o.asc?1:-1)));
         if(self.range)rows=rows.slice(self.range[0],self.range[1]+1);
        }
-       return {data:rows,error:null};
+       return {data:rows,error:null,count:self.countRequested==='exact'?rows.length:null};
       };
       return Promise.resolve().then(run).then(resolve,reject);
      }
@@ -100,6 +100,19 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  await page.waitForFunction(()=>window.db.compass_manual_trial_entries.at(-1)?.deleted_at&&document.querySelector('#miHistoryRows')?.textContent.includes('Existing manual')&&!document.querySelector('#miHistoryRows')?.textContent.includes('Edited documented note'),null,{timeout:8000});
  assert.equal(await page.locator('#miHistoryRows tr').count(),3,'soft deletion removed from current history');
  assert.equal(await page.evaluate(()=>window.db.compass_manual_trial_entries.length),2,'audited deleted record not hard deleted');
+ assert.equal(await page.locator('#miHistoryRows tr').count(),3,'manual / recorded trial / behavior rows remain');
+ assert.equal(await page.locator('#miHistoryRows td.mi-record-date').first().innerText(),'10/23/2026','Displayed date is MM/DD/YYYY');
+ const firstDate=await page.locator('#miHistoryRows td.mi-record-date').first().evaluate(e=>({height:e.getBoundingClientRect().height,whiteSpace:getComputedStyle(e).whiteSpace}));
+ assert.equal(firstDate.whiteSpace,'nowrap','Date column must not wrap');
+ assert.equal(await page.locator('#miHistoryRows [data-mi-select="trial:trial-live"]').isEnabled(),true,'Recorded trial must be selectable by its provider');
+ await page.locator('#miHistoryRows [data-mi-select="trial:trial-live"]').check();
+ assert.equal(await page.locator('#miDeleteSelected').isEnabled(),true,'Bulk archive button enables on live selection');
+ await page.locator('#miDeleteSelected').click();
+ await page.waitForFunction(()=>window.db.compass_trial_events[0]?.deleted_at&&document.querySelectorAll('#miHistoryRows tr').length===2,null,{timeout:8000});
+ assert.equal(await page.locator('#miHistoryRows').innerText().then(t=>t.includes('Live session')),false,'Archived live trial is hidden');
+ assert.equal(await page.evaluate(()=>window.db.compass_trial_events.length),1,'Recorded trial retained with archive timestamp');
+ assert.equal(await page.evaluate(()=>window.db.compass_trial_events[0].deleted_by),'staff1');
+
  assert((await page.evaluate(()=>window.changes))>=3,'create edit delete notifications');
  await page.locator('#miFilterStudent').selectOption('b');
  await page.waitForFunction(()=>document.querySelector('#miProgram')?.value==='assign-b');
