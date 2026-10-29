@@ -19,6 +19,9 @@ const assignment=id=>st.assignments.find(a=>a.id===id);
 const program=id=>st.catalog.find(p=>p.id===id);
 const programName=id=>program(assignment(id)?.program_id)?.program_name||'Program';
 const canManage=r=>!!r&&r.origin==='manual'&&(r.created_by===context().userId||['platform_admin','district_admin','school_admin','bcba'].includes(context().role));
+const canArchiveTrial=r=>!!r&&r.origin==='live'&&(r.staff_id===context().userId||['platform_admin','district_admin','school_admin','bcba'].includes(context().role));
+const canRemove=r=>canManage(r)||canArchiveTrial(r);
+const displayDate=value=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||''));return m?m[2]+'/'+m[3]+'/'+m[1]:String(value||'—')};
 const mappingResponse=r=>{const x=String(r||'').toLowerCase();if(['independent_correct','correct','independent','target_correct'].includes(x))return'independent';if(['prompted_correct','prompted','prompt'].includes(x))return'prompted';if(['incorrect','target_incorrect','distractor_incorrect'].includes(x))return'incorrect';if(['no_response','no-response'].includes(x))return'no_response';if(['na','no_valid_opportunity'].includes(x))return'na';return x||'unknown'};
 const countBehaviors=b=>{if(!b)return{};if(Array.isArray(b))return Object.fromEntries(b.map(x=>[String(x),1]));if(typeof b==='object')return Object.fromEntries(Object.entries(b).filter(([,v])=>Number(v)>0).map(([k,v])=>[k,Number(v)||1]));return{}};
 async function pages(make,chunk=500){const output=[];for(let i=0;i<200;i++){const rows=await query(make(i*chunk,(i+1)*chunk-1));output.push(...rows);if(rows.length<chunk)return output}throw Error('History exceeds the safe loading limit (100,000 records). Please narrow the date range; data has not been deleted.')}
@@ -103,7 +106,7 @@ return {id:'session:'+s.id,origin:'session',student_id:a.student_id,student_comp
 function trialRecord(t,a,sessions){
 const parent=sessions.get(t.session_id),when=String(t.occurred_at||t.created_at||parent?.started_at||'');
 const behavior=countBehaviors(t.behavior_counts);
-return {id:'trial:'+t.id,origin:'live',student_id:a.student_id,student_compass_program_id:a.id,program_id:a.program_id,event_date:when.slice(0,10)||parent?.session_date||'',event_time:when.includes('T')?when.slice(11,16):'',provider_name:st.profiles.find(p=>p.id===parent?.staff_id)?.full_name||'Recorded staff',target_name:t.target_name||t.target_key||parent?.target_name||'Target',target_key:t.target_key,benchmark_key:t.benchmark_key,trial_number:t.trial_number,trial_type:t.trial_type||'T',response:mappingResponse(t.result),prompt_level:t.prompt_level||'None',behavior_counts:behavior,notes:parent?.notes||'',session_id:t.session_id,source:t.source||'Live session',goal_id:t.goal_id};
+return {id:'trial:'+t.id,originalId:t.id,origin:'live',staff_id:parent?.staff_id||null,student_id:a.student_id,student_compass_program_id:a.id,program_id:a.program_id,event_date:when.slice(0,10)||parent?.session_date||'',event_time:when.includes('T')?when.slice(11,16):'',provider_name:st.profiles.find(p=>p.id===parent?.staff_id)?.full_name||'Recorded staff',target_name:t.target_name||t.target_key||parent?.target_name||'Target',target_key:t.target_key,benchmark_key:t.benchmark_key,trial_number:t.trial_number,trial_type:t.trial_type||'T',response:mappingResponse(t.result),prompt_level:t.prompt_level||'None',behavior_counts:behavior,notes:parent?.notes||'',session_id:t.session_id,source:t.source||'Live session',goal_id:t.goal_id};
 }
 function manualRecord(m){return {...m,id:'manual:'+m.id,originalId:m.id,origin:'manual',program_id:assignment(m.student_compass_program_id)?.program_id,source:'Manual entry',response:m.response,behavior_counts:countBehaviors(m.behavior_counts)}}
 function behaviorObservation(b,sid){
@@ -167,12 +170,17 @@ function responseLabel(row){
  const t=labels[row.response]||row.response||'Not recorded';return'<span class="mi-chip '+esc(row.response)+'">'+esc(t)+'</span>';
 }
 function historyTr(row){
- const editable=canManage(row),id=esc(row.id);
- const checkbox=row.origin==='manual'?'<input type="checkbox" data-mi-select="'+id+'" aria-label="Select manual entry" '+(st.selected.has(row.originalId)?'checked':'')+(editable?'':' disabled')+'>':'';
- const actions=row.origin==='manual'?'<button class="mi-link-action" type="button" data-mi-edit="'+id+'" aria-label="Edit manual entry" '+(editable?'':'disabled')+'>✎</button> <button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Delete manual entry" '+(editable?'':'disabled')+'>▤</button>':'<span title="Recorded session data is read-only here">Read-only</span>';
+ const removable=canRemove(row),id=esc(row.id);
+ const checkLabel=row.origin==='manual'?'manual entry':row.origin==='live'?'recorded trial':'read-only record';
+ const checkbox='<input type="checkbox" data-mi-select="'+id+'" aria-label="Select '+esc(checkLabel)+'" '+(st.selected.has(row.id)?'checked ':'')+(removable?'':'disabled title="Read-only session summary or behavior observation"')+'>';
+ const actions=row.origin==='manual'
+ ?'<button class="mi-link-action" type="button" data-mi-edit="'+id+'" aria-label="Edit manual entry" '+(removable?'':'disabled')+'>✎</button> <button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Delete manual entry" '+(removable?'':'disabled')+'>▤</button>'
+ :row.origin==='live'
+ ?'<button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive recorded trial" '+(removable?'':'disabled')+'>▤</button>'
+ :'<span title="Session summaries and behavior observations are managed in their own workspaces">Read-only</span>';
  const source=row.origin==='manual'?'<span class="mi-chip manual">Manual: '+esc(row.provider_name||'')+'</span>':'<span class="mi-chip">'+esc(row.source||'Recorded')+'</span>';
  return '<tr>'+
- '<td>'+checkbox+'</td><td>'+esc(row.event_date||'—')+'</td><td>'+esc(row.event_time||'—')+'</td>'+
+ '<td>'+checkbox+'</td><td class="mi-record-date">'+esc(displayDate(row.event_date))+'</td><td>'+esc(row.event_time||'—')+'</td>'+
  '<td>'+esc(studentName(student(row.student_id)))+'</td><td>'+esc(row.program_label||programName(row.student_compass_program_id))+'</td>'+
  '<td>'+esc(row.target_name||'—')+'</td><td>'+esc(row.response==='summary'?'—':row.trial_number||1)+'</td>'+
  '<td>'+responseLabel(row)+'</td><td>'+esc(row.prompt_level||'N/A')+'</td><td>'+behaviorLabels(row.behavior_counts)+'</td>'+
@@ -208,8 +216,8 @@ function renderGraph(rows){
  const w=680,h=195,pad=26,step=points.length>1?(w-2*pad)/(points.length-1):0;
  const xy=points.map(([d,v],i)=>({x:pad+i*step,y:h-pad-(v.total?v.correct/v.total:0)*(h-pad*2),date:d,n:v.total,rate:v.total?Math.round(v.correct/v.total*100):0}));
  const path=xy.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');
- const circles=xy.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="#1b6fee"><title>'+esc(p.date)+': '+p.rate+'% independent · '+p.n+' trials</title></circle>').join('');
- div.innerHTML='<strong>Independent response rate by date · '+points.length+' dates</strong><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Daily independent response percentage" style="width:100%;max-height:235px"><path d="M26 26V169H654" fill="none" stroke="#b1cee9"/><path d="'+path+'" fill="none" stroke="#1a70eb" stroke-width="3"/>'+circles+'<text x="28" y="20" font-size="12" fill="#315f96">100%</text><text x="28" y="185" font-size="12" fill="#315f96">0%</text></svg><div class="mi-source-note">'+esc(points[0][0])+' – '+esc(points[points.length-1][0])+' · Manual and live recorded responses</div>';
+ const circles=xy.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="4" fill="#1b6fee"><title>'+esc(displayDate(p.date))+': '+p.rate+'% independent · '+p.n+' trials</title></circle>').join('');
+ div.innerHTML='<strong>Independent response rate by date · '+points.length+' dates</strong><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Daily independent response percentage" style="width:100%;max-height:235px"><path d="M26 26V169H654" fill="none" stroke="#b1cee9"/><path d="'+path+'" fill="none" stroke="#1a70eb" stroke-width="3"/>'+circles+'<text x="28" y="20" font-size="12" fill="#315f96">100%</text><text x="28" y="185" font-size="12" fill="#315f96">0%</text></svg><div class="mi-source-note">'+esc(displayDate(points[0][0]))+' – '+esc(displayDate(points[points.length-1][0]))+' · Manual and live recorded responses</div>';
 }
 function renderRows(){
  st.visible=displayRows();const n=st.visible.length;st.page=Math.max(0,Math.min(st.page,Math.ceil(n/st.limit)-1));
@@ -217,7 +225,7 @@ function renderRows(){
  by('miHistoryRows').innerHTML=rows.length?rows.map(historyTr).join(''):'<tr><td colspan="14" class="mi-empty">No entries found for this student and range.</td></tr>';
  by('miRowCount').textContent=n?'Showing '+(start+1)+'–'+(start+rows.length)+' of '+n+' entries':'0 entries';
  by('miPageNumber').textContent=String(st.page+1);by('miPrev').disabled=st.page===0;by('miNext').disabled=start+st.limit>=n;
- const selectable=rows.filter(canManage).filter(r=>r.origin==='manual');by('miSelectAll').checked=selectable.length>0&&selectable.every(r=>st.selected.has(r.originalId));
+ const selectable=rows.filter(canRemove);by('miSelectAll').checked=selectable.length>0&&selectable.every(r=>st.selected.has(r.id));by('miSelectAll').indeterminate=selectable.some(r=>st.selected.has(r.id))&&!by('miSelectAll').checked;by('miSelectAll').disabled=!selectable.length;
  by('miDeleteSelected').disabled=!st.selected.size;
  renderSummary(st.visible);renderGraph(st.visible);
 }
@@ -291,14 +299,35 @@ async function editEntry(id){
  by('miSave').textContent='Save Changes';status('Editing manual entry. Student and original assignment are locked for record integrity.');by('miForm').scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function deleteEntries(ids){
- const authorized=uniq(ids).map(id=>st.manual.find(x=>x.id===id)).filter(x=>x&&!x.deleted_at&&canManage(manualRecord(x)));
- if(!authorized.length)return status('No editable manual entries were selected.',true,'miHistoryStatus');
- if(!window.confirm('Delete '+authorized.length+' manual entr'+(authorized.length===1?'y':'ies')+'? Live-session records are never deleted. Deleted entries retain an audit record.'))return;
- status('Deleting selected manual entries…',false,'miHistoryStatus');
+ const chosen=uniq(ids).map(id=>st.rows.find(x=>x.id===id)).filter(canRemove);
+ if(!chosen.length)return status('No authorized entries were selected. Recorded summaries and behavior observations must be managed in their respective workspaces.',true,'miHistoryStatus');
+ const manual=chosen.filter(r=>r.origin==='manual'),trials=chosen.filter(r=>r.origin==='live');
+ const message='Archive '+chosen.length+' selected record'+(chosen.length===1?'':'s')+' ('+manual.length+' manual, '+trials.length+' recorded trials)?\n\nArchived records are removed from active data displays, retained in the audit history, and cannot be restored from this screen.';
+ if(!window.confirm(message))return;
+ status('Archiving '+chosen.length+' selected records…',false,'miHistoryStatus');
+ let done=0;
  try{
-  for(const row of authorized){const out=await query(table('compass_manual_trial_entries').update({deleted_at:new Date().toISOString()}).eq('id',row.id).eq('student_id',st.selectedStudent).is('deleted_at',null).select('id'));if(out.length!==1)throw Error('Permission denied or entry already deleted: '+row.id);}
-  st.selected.clear();await loadHistory();status(authorized.length+' manual entr'+(authorized.length===1?'y':'ies')+' deleted with audit retained.',false,'miHistoryStatus');window.COMPASS_MANUAL_BRIDGE?.notify();
- }catch(e){status('Unable to delete every entry: '+e.message,true,'miHistoryStatus');await loadHistory();}
+  for(const row of chosen){
+   if(row.origin==='manual'){
+    const out=await query(table('compass_manual_trial_entries').update({deleted_at:new Date().toISOString()}).eq('id',row.originalId).eq('student_id',st.selectedStudent).is('deleted_at',null).select('id'));
+    if(out.length!==1)throw Error('The manual record was not archived. Check your permissions.');
+   }else if(row.origin==='live'){
+    const {error,count}=await table('compass_trial_events')
+      .update({deleted_at:new Date().toISOString(),deleted_by:context().userId},{count:'exact'})
+      .eq('id',row.originalId).eq('student_compass_program_id',row.student_compass_program_id).is('deleted_at',null);
+    if(error)throw error;
+    if(count!==1)throw Error('Recorded trial was not archived. Check your permission to correct this session.');
+   }
+   done++;
+  }
+  st.selected.clear();await loadHistory();
+  status(done+' record'+(done===1?'':'s')+' archived with audit history retained.',false,'miHistoryStatus');
+  window.COMPASS_MANUAL_BRIDGE?.notify();
+ }catch(e){
+  st.selected.clear();await loadHistory();
+  status('Archived '+done+' of '+chosen.length+' records. Unable to complete the remainder: '+e.message,true,'miHistoryStatus');
+  if(done)window.COMPASS_MANUAL_BRIDGE?.notify();
+ }
 }
 function attach(){
  if(st.ready)return;st.ready=true;
@@ -318,10 +347,10 @@ function attach(){
  by('miPrev').addEventListener('click',()=>{st.page=Math.max(0,st.page-1);renderRows()});
  by('miNext').addEventListener('click',()=>{st.page++;renderRows()});
  by('miGraphToggle').addEventListener('click',()=>{st.showGraph=!st.showGraph;by('miGraphToggle').textContent=st.showGraph?'Hide Graph':'⌁ Show Graph';by('miGraphToggle').setAttribute('aria-expanded',String(st.showGraph));renderGraph(st.visible)});
- by('miSelectAll').addEventListener('change',e=>{for(const r of st.visible.slice(st.page*st.limit,(st.page+1)*st.limit).filter(canManage)){if(e.target.checked)st.selected.add(r.originalId);else st.selected.delete(r.originalId)}renderRows()});
+ by('miSelectAll').addEventListener('change',e=>{for(const r of st.visible.slice(st.page*st.limit,(st.page+1)*st.limit).filter(canRemove)){if(e.target.checked)st.selected.add(r.id);else st.selected.delete(r.id)}renderRows()});
  by('miDeleteSelected').addEventListener('click',()=>deleteEntries([...st.selected]));
- by('miHistoryRows').addEventListener('change',e=>{const id=e.target.dataset.miSelect;if(!id)return;const row=st.rows.find(x=>x.id===id);if(!canManage(row))return;if(e.target.checked)st.selected.add(row.originalId);else st.selected.delete(row.originalId);renderRows()});
- by('miHistoryRows').addEventListener('click',e=>{const edit=e.target.closest('[data-mi-edit]'),del=e.target.closest('[data-mi-delete]');if(edit)editEntry(edit.dataset.miEdit);if(del){const row=st.rows.find(x=>x.id===del.dataset.miDelete);if(row)deleteEntries([row.originalId]);}});
+ by('miHistoryRows').addEventListener('change',e=>{const id=e.target.dataset.miSelect;if(!id)return;const row=st.rows.find(x=>x.id===id);if(!canRemove(row))return;if(e.target.checked)st.selected.add(row.id);else st.selected.delete(row.id);renderRows()});
+ by('miHistoryRows').addEventListener('click',e=>{const edit=e.target.closest('[data-mi-edit]'),del=e.target.closest('[data-mi-delete]');if(edit)editEntry(edit.dataset.miEdit);if(del){const row=st.rows.find(x=>x.id===del.dataset.miDelete);if(row)deleteEntries([row.id]);}});
 }
 async function start(){
  if(!by('sessionPanelManual')||!window.COMPASS_MANUAL_BRIDGE)return;
