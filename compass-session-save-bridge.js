@@ -57,6 +57,21 @@
    if(!isCurrent()||frame.contentWindow!==child||String(runtime.context.assignment_id)!==String(assignment.id))
     throw Error('Student program changed. Reopen the original program before saving.');
    validate(payload);
+   // Verify each trial is tied to its assigned COMPASS target, not a local
+   // image index or an unrelated student's target key.
+   const catalog=runtime.context.targets;
+   if(!Array.isArray(catalog)||!catalog.length)
+    throw Error('Assigned COMPASS targets are unavailable; the trial was not sent.');
+   const norm=x=>String(x||'').trim().toLocaleLowerCase('en-US');
+   const byName=new Map(catalog.map(t=>[norm(t.target_name),String(t.target_key||'')]));
+   const sessionKey=byName.get(norm(payload.target_name));
+   if(!sessionKey||String(payload.target_key||'')!==sessionKey)
+    throw Error('Session target key does not match this student program.');
+   for(const event of payload.trial_events){
+    const expected=byName.get(norm(event.target_name));
+    if(!expected||String(event.target_key||'')!==expected)
+     throw Error('Recorded trial target does not match an assigned COMPASS target.');
+   }
    const key=payload.submission_key;
    if(pending.has(key))return pending.get(key);
    const job=(async()=>{
