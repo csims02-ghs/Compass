@@ -1,0 +1,20 @@
+name: Workspace fullscreen sidebar toggle QA
+on:
+  push:
+    branches: [feature/workspace-fullscreen-sidebar-toggle]
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Verify far-right button sidebar hide and restore at five viewports
+        run: node qa/test-workspace-fullscreen.cjs
