@@ -14,36 +14,55 @@ const {chromium}=require('playwright');
         document.getElementById('page-home')?.classList.add('active');
         document.body.classList.add('compass-home-active');
       });
-      await page.waitForTimeout(250);
-      const positions=async()=>await page.evaluate(()=>{
-        const rect=id=>{const el=document.getElementById(id),r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}};
-        const h=document.querySelector('#page-home .v4-header').getBoundingClientRect();
+      await page.waitForFunction(()=>document.getElementById('workspaceFullscreenToggle')?.dataset.bound==='true');
+      const snapshot=()=>page.evaluate(()=>{
+        const box=e=>{const r=e.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}};
         return {
-          toolbar:rect('workspaceTopToolbar'),
-          toggle:rect('workspaceFullscreenToggle'),
-          homeHeader:{top:h.top,bottom:h.bottom},
-          quickRun:rect('quickRunBtn'),
-          main:document.querySelector('#app > .main').getBoundingClientRect().top,
+          mainTop:document.querySelector('#app > .main').getBoundingClientRect().top,
+          mainLeft:document.querySelector('#app > .main').getBoundingClientRect().left,
+          mainPaddingTop:parseFloat(getComputedStyle(document.querySelector('#app > .main')).paddingTop),
+          homeHeader:box(document.querySelector('#page-home .v4-header')),
+          fullScreen:box(document.querySelector('#workspaceFullscreenToggle')),
+          restore:box(document.querySelector('#workspaceShowMenuToggle')),
+          showMenuHidden:document.querySelector('#workspaceShowMenuToggle').hidden,
         };
       });
-      let p=await positions();
-      assert(p.toolbar.height>=58,`Missing reserved toolbar height at width ${width}`);
-      assert(p.homeHeader.top>=p.toolbar.bottom-1,`Home overlaps toolbar at width ${width}: ${JSON.stringify(p)}`);
-      assert(p.toggle.bottom<=p.homeHeader.top+1,`Full Screen covers home controls at width ${width}: ${JSON.stringify(p)}`);
-      const b=await page.locator('#workspaceFullscreenToggle');
-      await b.click();
+      assert.equal(await page.locator('#workspaceTopToolbar').count(),0,'Old top toolbar must be removed');
+      assert.equal(await page.locator('.workspace-sidebar-fullscreen #workspaceFullscreenToggle').count(),1,
+        'Full Screen must be inside sidebar, directly under compliance navigation');
+      assert.equal(await page.locator('#sidebar .nav[aria-label="Compliance"] + .workspace-sidebar-fullscreen').count(),1,
+        'Full Screen belongs directly after Deadlines & Tasks');
+      if(width<=850){
+        await page.locator('#sidebar').evaluate(e=>e.classList.add('open'));
+      }
+      let p=await snapshot();
+      assert.equal(p.mainPaddingTop,0,`Top spacing not restored at width ${width}`);
+      assert(p.homeHeader.top<95,`Home page is still pushed down at width ${width}: ${JSON.stringify(p)}`);
+      assert(p.showMenuHidden,'Show Menu tab should not display while sidebar is visible');
+      assert(await page.locator('#workspaceFullscreenToggle').isVisible(),`Full Screen should be visible in open sidebar at ${width}`);
+      await page.locator('#workspaceFullscreenToggle').click();
       assert.equal(await page.locator('#app').evaluate(e=>e.classList.contains('compass-focus-mode')),true,
-        `Focus mode did not enable at width ${width}`);
+        `Full Screen failed at ${width}`);
       assert.equal(await page.locator('#sidebar').evaluate(e=>getComputedStyle(e).display),'none',
-        `Sidebar did not hide at width ${width}`);
-      p=await positions();
-      assert(p.homeHeader.top>=p.toolbar.bottom-1,`Focused Home overlaps toolbar at width ${width}: ${JSON.stringify(p)}`);
-      assert(p.toggle.bottom<=p.homeHeader.top+1,`Focused toggle covers Home controls at width ${width}: ${JSON.stringify(p)}`);
-      await b.click();
+        `Sidebar should be completely hidden at ${width}`);
+      p=await snapshot();
+      assert.equal(p.mainPaddingTop,0,'Full Screen must not add a toolbar or top spacer');
+      assert(p.homeHeader.top<95,`Focused content was pushed down at ${width}: ${JSON.stringify(p)}`);
+      assert.equal(p.showMenuHidden,false,`Show Menu tab unavailable at ${width}`);
+      assert(p.mainLeft>=p.restore.right-1,`Show Menu overlaps the page at ${width}: ${JSON.stringify(p)}`);
+      assert.equal(await page.locator('#workspaceShowMenuToggle span').innerText(),'Show Menu');
+      await page.locator('#workspaceShowMenuToggle').click();
       assert.equal(await page.locator('#app').evaluate(e=>e.classList.contains('compass-focus-mode')),false,
-        `Focus mode did not restore at width ${width}`);
+        `Show Menu did not restore normal view at ${width}`);
+      assert.equal(await page.locator('#workspaceFullscreenToggle .workspace-fullscreen-label').innerText(),'Full Screen');
+      assert.equal(await page.locator('#workspaceShowMenuToggle').isVisible(),false,
+        'Restore tab should disappear once sidebar returns');
+      if(width<=850){
+        assert.equal(await page.locator('#sidebar').evaluate(e=>e.classList.contains('open')),true,
+          `Restoring on mobile must reopen its menu at ${width}`);
+      }
       await page.close();
-      console.log('COMPASS_FULLSCREEN_LAYOUT_PASS',width);
+      console.log('COMPASS_SIDEBAR_FULLSCREEN_PASS',width);
     }
   }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exit(1)});
