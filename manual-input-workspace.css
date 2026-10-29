@@ -76,3 +76,39 @@
 @media(max-width:1250px){#sessionPanelManual .mi-grid{grid-template-columns:minmax(310px,.85fr) minmax(0,1.7fr)}#sessionPanelManual .mi-toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}#sessionPanelManual .mi-behavior-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#sessionPanelManual .mi-stat-grid,#sessionPanelManual .mi-behavior-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:850px){#sessionPanelManual .mi-grid{grid-template-columns:1fr}#sessionPanelManual .mi-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}#sessionPanelManual .mi-behavior-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:540px){#sessionPanelManual .mi-field{grid-template-columns:1fr;gap:4px}#sessionPanelManual .mi-provider-manual{grid-column:1}#sessionPanelManual .mi-behavior-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#sessionPanelManual .mi-stat-grid,#sessionPanelManual .mi-behavior-stat-grid{grid-template-columns:1fr 1fr}#sessionPanelManual .mi-toolbar{grid-template-columns:1fr 1fr}}
+
+/* 2026-10-29: One-line month/day/year and usable history selection controls. */
+#sessionPanelManual .mi-data-table th:nth-child(2),
+#sessionPanelManual .mi-data-table td:nth-child(2),
+#sessionPanelManual .mi-data-table .mi-record-date {
+  min-width:110px;
+  width:110px;
+  white-space:nowrap!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+  font-variant-numeric:tabular-nums;
+}
+#sessionPanelManual .mi-data-table th:first-child,
+#sessionPanelManual .mi-data-table td:first-child {
+  width:40px;
+  min-width:40px;
+  text-align:center;
+}
+#sessionPanelManual .mi-data-table input[type="checkbox"],
+#sessionPanelManual #miSelectAll {
+  display:inline-block;
+  box-sizing:border-box;
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+  min-height:18px!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:4px;
+  vertical-align:middle;
+  accent-color:#176af2;
+  cursor:pointer;
+}
+#sessionPanelManual .mi-data-table input[type="checkbox"]:disabled {cursor:not-allowed;opacity:.38}
+#sessionPanelManual .mi-data-table tr:has(input[data-mi-select]:checked) {background:#eaf3ff}
+#sessionPanelManual .mi-data-table tr:has(input[data-mi-select]:checked) td {border-top-color:#c7dcfb}
