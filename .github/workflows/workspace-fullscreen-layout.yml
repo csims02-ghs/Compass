@@ -1,0 +1,33 @@
+name: COMPASS Full Screen header overlap regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'workspace-fullscreen.css'
+      - 'workspace-fullscreen.js'
+      - 'compass-home-v4.css'
+      - 'scripts/test-workspace-fullscreen-layout.cjs'
+      - '.github/workflows/workspace-fullscreen-layout.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser test runner
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          google-chrome --version
+      - name: Test toolbar isolation, Home controls and fullscreen toggle
+        run: |
+          python3 -m http.server 8099 --bind 127.0.0.1 >/tmp/compass-layout-http.log 2>&1 &
+          sleep 2
+          node scripts/test-workspace-fullscreen-layout.cjs
