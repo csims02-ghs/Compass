@@ -65,6 +65,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
    notify(){window.changes++;window.dispatchEvent(new CustomEvent('compass-manual-record-changed'))}
   };
  });
+ await page.addScriptTag({content:fs.readFileSync('session-notes-tabs.js','utf8')});
  await page.addScriptTag({content:js});
  await page.locator('#sessionTabManual').click();
  await page.waitForFunction(()=>document.querySelector('#miHistoryRows')?.textContent.includes('Existing manual'),null,{timeout:8000});
