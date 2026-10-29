@@ -1176,7 +1176,7 @@ body{display:block!important;width:100%;min-width:0}
 <script src="./compass-page2-standard.js?v=20261028-v23" defer></script>
 <link rel="stylesheet" href="./session-notes-tabs.css?v=1">
 <link rel="stylesheet" href="./manual-input-workspace.css?v=2">
-<link rel="stylesheet" href="./workspace-fullscreen.css?v=1">
+<link rel="stylesheet" href="./workspace-fullscreen.css?v=2">
 </head>
 <body>
 
@@ -1306,11 +1306,7 @@ body{display:block!important;width:100%;min-width:0}
   </div>
 
   <div id="app" class="app hidden">
-    <button id="workspaceFullscreenToggle" type="button" aria-label="Full screen — hide left navigation menu" aria-pressed="false" title="Full screen — hide navigation menu">
-      <svg class="workspace-fullscreen-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M3 3l7 7M16 3h5v5m0-5-7 7M3 16v5h5m-5 0 7-7M21 16v5h-5m5 0-7-7"/></svg>
-      <svg class="workspace-fullscreen-restore" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h6V3M9 9 3 3M21 9h-6V3m0 6 6-6M3 15h6v6m0-6-6 6M21 15h-6v6m0-6 6 6"/></svg>
-      <span class="workspace-fullscreen-label">Full Screen</span>
-    </button>
+    
     <aside id="sidebar" class="sidebar">
   <div class="compass-sidebar-scroll" id="compassSidebarScroll">
     <div class="brand"><div class="brand-title">COMPASS</div><div class="brand-sub">Student Support</div></div>
@@ -1337,7 +1333,14 @@ body{display:block!important;width:100%;min-width:0}
 </aside>
 
     <main class="main">
-      <button id="mobileMenu" class="mobile-menu btn" type="button">☰</button>
+      <div id="workspaceTopToolbar" class="workspace-top-toolbar" role="toolbar" aria-label="Workspace view controls">
+        <button id="mobileMenu" class="mobile-menu btn" type="button">☰</button>
+        <button id="workspaceFullscreenToggle" type="button" aria-label="Full screen — hide left navigation menu" aria-pressed="false" title="Full screen — hide navigation menu">
+        <svg class="workspace-fullscreen-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M3 3l7 7M16 3h5v5m0-5-7 7M3 16v5h5m-5 0 7-7M21 16v5h-5m5 0-7-7"/></svg>
+        <svg class="workspace-fullscreen-restore" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h6V3M9 9 3 3M21 9h-6V3m0 6 6-6M3 15h6v6m0-6-6 6M21 15h-6v6m0-6 6 6"/></svg>
+        <span class="workspace-fullscreen-label">Full Screen</span>
+    </button>
+      </div>
 
       <section id="page-home" class="page active">
       <div class="content compass-home-v4">
