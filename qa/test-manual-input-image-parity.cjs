@@ -50,7 +50,16 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
         const record={id:'manual-new-'+(++counter),...self.payload,source:'manual',deleted_at:null};
         db[name].push(record);rows=[record];
        }else if(self.op==='update'){
-        rows=rows.map(r=>Object.assign(r,self.payload));
+        rows=rows.map(r=>{
+          if(name==='compass_trial_events'&&self.payload.deleted_at&&!r.deleted_at){
+            const parent=db.compass_program_sessions.find(session=>session.id===r.session_id);
+            if(parent){
+              parent.trials_total=Math.max(0,Number(parent.trials_total||0)-1);
+              if(r.result==='independent_correct')parent.targets_correct=Math.max(0,Number(parent.targets_correct||0)-1);
+            }
+          }
+          return Object.assign(r,self.payload);
+        });
        }else{
         orders.forEach(o=>rows.sort((a,b)=>String(a[o.k]||'').localeCompare(String(b[o.k]||''))*(o.asc?1:-1)));
         if(self.range)rows=rows.slice(self.range[0],self.range[1]+1);
