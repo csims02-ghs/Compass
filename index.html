@@ -1914,7 +1914,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function toast(msg,type='success'){const t=$('toast');t.textContent=msg;t.className='toast '+type;clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.add('hidden'),3600)}
   async function safe(fn,fallback=[]){try{const r=await fn();if(r.error)throw r.error;return r.data??fallback}catch(e){console.warn(e);return fallback}}
   function schoolForStudent(s){const classroom=state.classrooms.find(c=>c.id===s?.classroom_id);const school=classroom?state.schools.find(x=>x.id===classroom.school_id):null;return{classroom,school}}
-  function accuracy(s){const total=Number(s?.trials_total||0),correct=Number(s?.targets_correct||0);if(total>0)return Math.round(correct/total*100);const src=s?.source_record||{};if(Number.isFinite(Number(src.accuracy)))return Math.round(Number(src.accuracy));if(Number.isFinite(Number(src.percent)))return Math.round(Number(src.percent));return null}
+  function accuracy(s){const all=Number(s?.trials_total||0),total=Math.max(0,all-Number(s?.no_response||0)),correct=Number(s?.targets_correct||0);if(total>0)return Math.round(correct/total*100);if(all>0)return null;const src=s?.source_record||{};if(Number.isFinite(Number(src.accuracy)))return Math.round(Number(src.accuracy));if(Number.isFinite(Number(src.percent)))return Math.round(Number(src.percent));return null}
   function showLanding(){$('landingScreen')?.classList.remove('hidden');$('loginScreen').classList.add('hidden');$('app').classList.add('hidden');window.scrollTo({top:0})}
   function showLogin(msg=''){$('landingScreen')?.classList.add('hidden');$('loginScreen').classList.remove('hidden');$('app').classList.add('hidden');$('loginMessage').textContent=msg}
   function showApp(){$('landingScreen')?.classList.add('hidden');$('loginScreen').classList.add('hidden');$('app').classList.remove('hidden')}
@@ -2516,7 +2516,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const trials=(state.trialEvents||[]).filter(t=>t.goal_id===goal.id&&ids.has(t.student_compass_program_id)&&t.trial_type==='T'&&['independent_correct','prompted','incorrect','no_response'].includes(t.result));
     const correct=trials.filter(t=>t.result==='independent_correct').length;
     const last=[...trials.map(t=>t.occurred_at||''),...sessions.map(s=>s.session_date||'')].filter(Boolean).sort().at(-1)||null;
-    return {goal,programs:ids.size,sessions:sessions.length,trials:trials.length,independent:trials.length?Math.round(100*correct/trials.length):null,last};
+    const opportunities=trials.filter(t=>t.result!=='no_response');return {goal,programs:ids.size,sessions:sessions.length,trials:trials.length,independent:opportunities.length?Math.round(100*correct/opportunities.length):null,last};
   }
   function renderIEPEvidenceReview(){
     const card=$('iepEvidenceReviewPanel');if(!card)return;
@@ -2637,7 +2637,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const activeIds=new Set(active.map(a=>a.id));
     const instructional=recent.filter(s=>activeIds.has(s.student_compass_program_id));
     const sum=(a,key)=>a.reduce((v,s)=>v+Math.max(0,Number(s[key])||0),0);
-    const avg=pct(sum(instructional,'targets_correct'),sum(instructional,'trials_total'));
+    const avg=pct(sum(instructional,'targets_correct'),Math.max(0,sum(instructional,'trials_total')-sum(instructional,'no_response')));
     setVal('compassAccuracySummaryValue',avg==null?'—':avg+'%');setBar('compassAccuracySummaryBar',avg);
     const rate=(a)=>{const t=sum(a,'trials_total');return t>0?sum(a,'total_behaviors')/t:null};
     const currRate=rate(instructional),prevRate=rate(previous.filter(s=>activeIds.has(s.student_compass_program_id)));
@@ -2652,7 +2652,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     ];
     $('compassOverviewDomains').innerHTML=domains.map(d=>{
       const matching=instructional.filter(s=>{const p=assignments.get(s.student_compass_program_id);const def=p?programById(p.program_id):null;return d.pattern.test(String(def?.program_name||s.program_name||'')+' '+String(def?programDomain(def):''))});
-      const amount=pct(sum(matching,'targets_correct'),sum(matching,'trials_total'));
+      const amount=pct(sum(matching,'targets_correct'),Math.max(0,sum(matching,'trials_total')-sum(matching,'no_response')));
       return '<div class="compass-domain-row"><span class="compass-domain-name">'+esc(d.label)+'</span><div class="compass-domain-track"><span class="'+d.theme+'" style="width:'+(amount==null?0:amount)+'%"></span></div><strong>'+(amount==null?'—':amount+'%')+'</strong></div>';
     }).join('');
     // Mastery is retrieved from the target records; a zero means no mastery recorded, not an inferred clinical conclusion.
@@ -3162,8 +3162,9 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     if(sessions)update('homePerfSessions',String(new Set(sessions.map(x=>x.id)).size),'Logged program sessions ('+days+' days)');
     if(trials){
       const valid=trials.filter(x=>['independent_correct','prompted','incorrect','no_response'].includes(x.result));
-      const independent=valid.filter(x=>x.result==='independent_correct').length;
-      update('homePerfAccuracy',valid.length?Math.round(100*independent/valid.length)+'%':'—',valid.length?independent+' independent / '+valid.length+' scored teaching trials':'No scored teaching trials');
+      const opportunities=valid.filter(x=>x.result!=='no_response');
+      const independent=opportunities.filter(x=>x.result==='independent_correct').length;
+      update('homePerfAccuracy',opportunities.length?Math.round(100*independent/opportunities.length)+'%':'—',opportunities.length?independent+' independent / '+opportunities.length+' valid target opportunities':'No valid target opportunities');
     }
     if(targets)update('homePerfMastered',String(new Set(targets.map(x=>x.id)).size),'Targets with recorded mastery dates');
     if(links&&goals&&sessions&&trials){
