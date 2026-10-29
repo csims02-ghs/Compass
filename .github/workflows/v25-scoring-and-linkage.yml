@@ -1,0 +1,23 @@
+name: COMPASS V25 scoring and trial-save linkage
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'program-hub.html'
+      - 'compass-session-save-bridge.js'
+      - 'qa/test-v25-scoring-and-linkage.cjs'
+      - '.github/workflows/v25-scoring-and-linkage.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  trial-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test scoring, authorized trial-to-target links, and exact save acknowledgments
+        run: node qa/test-v25-scoring-and-linkage.cjs
