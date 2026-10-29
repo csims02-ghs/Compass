@@ -31,7 +31,14 @@ function targetRows(cfg){const arr=Array.isArray(cfg.targets)?cfg.targets:Array.
 async function loadTargetOptions(){const a=assignment(by('miProgram').value);const cfg=currentTargetMeta(),b=by('miBenchmark').value;
 let targets=targetRows(cfg);
 if(a&&targets.length===0){try{const rows=await query(table('compass_programming_targets').select('target_key,target_name,metadata').eq('program_id',a.program_id).order('display_order'));targets=rows.map(t=>({key:String(t.target_key||t.target_name),name:t.target_name,benchmark:String(t.metadata?.benchmark||'')}))}catch(e){status('Targets could not load: '+e.message,true);}}
-const valid=targets.filter(t=>!b||!t.benchmark||t.benchmark===b);
+const spec=(Array.isArray(cfg.benchmark_sets)?cfg.benchmark_sets:[])[Math.max(0,Number(b)-1)];
+const hasRange=!!(b&&spec&&Number.isFinite(Number(spec.start))&&Number.isFinite(Number(spec.end)));
+const valid=targets.filter((t,i)=>{
+ if(!b)return true;
+ if(hasRange){const number=Number(t.key);return Number.isFinite(number)&&number>=Number(spec.start)&&number<=Number(spec.end)||
+   (!Number.isFinite(number)&&i+1>=Number(spec.start)&&i+1<=Number(spec.end));}
+ return !t.benchmark||t.benchmark===b;
+});
 fillSelect('miTarget',valid.map(t=>[t.key,t.name]),'Select target');
 by('miTarget').required=true;
 }
@@ -169,8 +176,9 @@ function historyTr(row){
  '<td>'+esc(studentName(student(row.student_id)))+'</td><td>'+esc(row.program_label||programName(row.student_compass_program_id))+'</td>'+
  '<td>'+esc(row.target_name||'—')+'</td><td>'+esc(row.response==='summary'?'—':row.trial_number||1)+'</td>'+
  '<td>'+responseLabel(row)+'</td><td>'+esc(row.prompt_level||'N/A')+'</td><td>'+behaviorLabels(row.behavior_counts)+'</td>'+
- '<td>'+esc(row.provider_name||'Recorded staff')+'</td><td class="mi-notes-col" title="'+esc(row.notes||'')+'">'+esc(row.notes||'—')+'</td>'+
- '<td>'+source+'</td><td style="white-space:nowrap">'+actions+'</td></tr>';
+ '<td>'+esc(row.provider_name||'Recorded staff')+'</td><td>'+source+'</td>'+
+ '<td class="mi-notes-col" title="'+esc(row.notes||'')+'">'+esc(row.notes||'—')+'</td>'+
+ '<td style="white-space:nowrap">'+actions+'</td></tr>';
 }
 function metricTotals(rows){
  const totals={trials:0,independent:0,prompted:0,incorrect:0,no_response:0,behaviors:{}};
@@ -204,7 +212,7 @@ function renderGraph(rows){
  div.innerHTML='<strong>Independent response rate by date · '+points.length+' dates</strong><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Daily independent response percentage" style="width:100%;max-height:235px"><path d="M26 26V169H654" fill="none" stroke="#b1cee9"/><path d="'+path+'" fill="none" stroke="#1a70eb" stroke-width="3"/>'+circles+'<text x="28" y="20" font-size="12" fill="#315f96">100%</text><text x="28" y="185" font-size="12" fill="#315f96">0%</text></svg><div class="mi-source-note">'+esc(points[0][0])+' – '+esc(points[points.length-1][0])+' · Manual and live recorded responses</div>';
 }
 function renderRows(){
- st.visible=displayRows();const n=st.visible.length;st.page=Math.min(st.page,Math.max(0,Math.ceil(n/st.limit)-1));
+ st.visible=displayRows();const n=st.visible.length;st.page=Math.max(0,Math.min(st.page,Math.ceil(n/st.limit)-1));
  const start=st.page*st.limit,rows=st.visible.slice(start,start+st.limit);
  by('miHistoryRows').innerHTML=rows.length?rows.map(historyTr).join(''):'<tr><td colspan="14" class="mi-empty">No entries found for this student and range.</td></tr>';
  by('miRowCount').textContent=n?'Showing '+(start+1)+'–'+(start+rows.length)+' of '+n+' entries':'0 entries';
@@ -236,7 +244,8 @@ async function saveEntry(){
  const providerChoice=by('miProvider').value,isManual=providerChoice==='manual';
  const providerName=(isManual?by('miProviderManual').value:st.profiles.find(p=>p.id===providerChoice)?.full_name||(providerChoice===context().userId?context().providerName:'')).trim();
  if(!providerName)return status('Select a provider, or choose Manual Enter and type their name.',true);
- if(!target.value||!targetName)return status('Select a program target.',true);
+ if(!target.value||!targetName||!Array.from(target.options).some(o=>o.value===target.value))
+   return status('Select a target belonging to the assigned program.',true);
  const response=st.selectedResponse;if(!response)return status('Select the student response.',true);
  const prompt=by('miPrompt').value;if(response==='prompted'&&prompt==='None')return status('Select the prompt level used.',true);
  if(!by('miDate').value)return status('Select the data collection date.',true);
