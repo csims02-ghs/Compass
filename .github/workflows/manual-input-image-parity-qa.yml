@@ -1,7 +1,16 @@
 name: Manual Input image parity and data links
 on:
   push:
-    branches: [feature/manual-input-image-parity-connected]
+    branches: [main, feature/manual-input-image-parity-connected]
+    paths:
+      - 'index.html'
+      - 'manual-input-workspace.js'
+      - 'manual-input-workspace.css'
+      - 'manual-progress-sync.js'
+      - 'compass-date-display.js'
+      - 'qa/test-manual-input-image-parity.cjs'
+      - 'qa/test-manual-progress-sync.cjs'
+      - '.github/workflows/manual-input-image-parity-qa.yml'
   workflow_dispatch:
 jobs:
   browser:
