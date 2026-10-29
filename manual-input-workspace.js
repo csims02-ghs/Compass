@@ -105,6 +105,34 @@ const behaviors=countBehaviors(s.behavior_counts),when=String(s.started_at||s.cr
 const count=Number(s.trials_total||0),independent=Number(s.targets_correct||0),prompted=Number(s.prompted_correct||0),incorrect=Number(s.incorrect||0);
 return {id:'session:'+s.id,originalId:s.id,origin:'session',staff_id:s.staff_id||null,student_id:a.student_id,student_compass_program_id:a.id,program_id:a.program_id,event_date:s.session_date,event_time:when.includes('T')?when.slice(11,16):'',provider_name:st.profiles.find(p=>p.id===s.staff_id)?.full_name||'Recorded staff',target_name:s.target_name||'Session summary',target_key:s.target_key||'',benchmark_key:'',trial_number:count,trial_type:'',response:'summary',prompt_level:'',behavior_counts:behaviors,notes:s.notes||'',session_id:s.id,totals:{count,independent,prompted,incorrect,no_response:Number(s.no_response||0)},source:'Recorded session'};
 }
+/* Display one row per saved program session; events remain individually stored.
+   Session behavior_counts are the authoritative run totals (do not sum
+   potentially cumulative behavior snapshots from individual trials). */
+function consolidatedSession(s,a,activeTrials){
+ const row=historicalSession(s,a);
+ const trials=activeTrials.filter(t=>t.session_id===s.id);
+ const targets=trials.filter(t=>t.trial_type==='T');
+ if(targets.length){
+  row.totals={
+   count:targets.length,
+   independent:targets.filter(t=>mappingResponse(t.result)==='independent').length,
+   incorrect:targets.filter(t=>mappingResponse(t.result)==='incorrect').length,
+   prompted:targets.filter(t=>mappingResponse(t.result)==='prompted').length,
+   no_response:targets.filter(t=>mappingResponse(t.result)==='no_response'||mappingResponse(t.result)==='na').length
+  };
+ }
+ row.trial_ids=trials.map(t=>t.id);
+ row.trial_event_count=trials.length;
+ row.behavior_counts=countBehaviors(s.behavior_counts);
+ row.source='COMPASS session';
+ const first=trials.find(t=>t.occurred_at||t.created_at);
+ if(first){
+  const ts=String(first.occurred_at||first.created_at);
+  if(ts.includes('T'))row.event_time=ts.slice(11,16);
+ }
+ if(!s.target_name&&targets.length)row.target_name=targets[0].target_name||'—';
+ return row;
+}
 function trialRecord(t,a,sessions){
 const parent=sessions.get(t.session_id),when=String(t.occurred_at||t.created_at||parent?.started_at||'');
 const behavior=countBehaviors(t.behavior_counts);
@@ -131,10 +159,10 @@ async function loadHistory(){
  ]);
  if(st.selectedStudent!==sid)return;
  st.manual=manual;const activeSessions=sessions.filter(s=>!s.deleted_at);const activeTrials=trials.filter(t=>!t.deleted_at);const map=new Map(activeSessions.map(s=>[s.id,s]));
- const trialsBySession=new Set(activeTrials.map(t=>t.session_id));
- const base=activeTrials.filter(t=>map.has(t.session_id)).map(t=>trialRecord(t,assignment(t.student_compass_program_id)||{id:t.student_compass_program_id,student_id:sid},map));
- const residual=activeSessions.filter(s=>!trialsBySession.has(s.id)&&Number(s.trials_total||0)>0).map(s=>historicalSession(s,assignment(s.student_compass_program_id)||{id:s.student_compass_program_id,student_id:sid}));
- st.live=[...base,...residual,...behaviorOnly.map(b=>behaviorObservation(b,sid))];st.rows=[...manual.map(manualRecord),...st.live];
+ // Aggregate by immutable COMPASS session ID, never by clock minute or target.
+ // This avoids combining unrelated teaching runs that happened at the same time.
+ const sessionsGrouped=activeSessions.map(s=>consolidatedSession(s,assignment(s.student_compass_program_id)||{id:s.student_compass_program_id,student_id:sid},activeTrials));
+ st.live=[...sessionsGrouped,...behaviorOnly.map(b=>behaviorObservation(b,sid))];st.rows=[...manual.map(manualRecord),...st.live];
  renderFilters();renderRows();status('All available COMPASS trial and session records loaded.',false,'miHistoryStatus');
  }catch(e){status('Unable to load full history: '+e.message,true,'miHistoryStatus');st.rows=[];renderRows();}
  finally{st.loading=false}
@@ -163,36 +191,43 @@ function displayRows(){
 }
 function behaviorLabels(value){
  const entries=Object.entries(countBehaviors(value));
- if(!entries.length)return '<span class="mi-chip">None</span>';
- return entries.slice(0,2).map(([name,count])=>'<span class="mi-chip behavior">'+esc(name)+(count>1?' ×'+count:'')+'</span>').join(' ')+(entries.length>2?'<span class="mi-chip">+'+(entries.length-2)+'</span>':'');
+ if(!entries.length)return '<span class="mi-chip mi-none">None</span>';
+ return '<span class="mi-behavior-pills">'+entries.map(([name,count])=>
+  '<span class="mi-chip behavior">'+esc(name)+' ('+esc(count)+')</span>').join('')+'</span>';
 }
-function responseLabel(row){
- if(row.response==='summary')return'<span class="mi-chip">Session Summary</span>';
- const labels={independent:'Independent',prompted:'Prompted',incorrect:'Incorrect',no_response:'No Response',na:'N/A'};
- const t=labels[row.response]||row.response||'Not recorded';return'<span class="mi-chip '+esc(row.response)+'">'+esc(t)+'</span>';
+function targetMetrics(row){
+ if(row.response==='summary'){
+  const t=row.totals||{};
+  const total=Math.max(0,Number(t.count)||0),correct=Math.max(0,Number(t.independent)||0),
+        noResponse=Math.max(0,Number(t.no_response)||0);
+  return {total,correct,valid:Math.max(0,total-noResponse)};
+ }
+ if(row.origin==='manual'&&row.trial_type!=='D'&&row.response!=='na'){
+  const valid=row.response!=='no_response'?1:0;
+  return {total:1,correct:row.response==='independent'?1:0,valid};
+ }
+ return {total:0,correct:0,valid:0};
 }
 function historyTr(row){
- const removable=canRemove(row),id=esc(row.id);
- const checkLabel=row.origin==='manual'?'manual entry':row.origin==='live'?'recorded trial':row.origin==='session'?'session summary':'behavior observation';
- const checkbox='<input type="checkbox" data-mi-select="'+id+'" aria-label="Select '+esc(checkLabel)+'" '+(st.selected.has(row.id)?'checked ':'')+(removable?'':'disabled title="You do not have permission to archive this entry"')+'>';
+ const removable=canRemove(row),id=esc(row.id),metrics=targetMetrics(row);
+ const checkLabel=row.origin==='session'?'program session':row.origin==='manual'?'manual entry':'behavior observation';
+ const checkbox='<input type="checkbox" data-mi-select="'+id+'" aria-label="Select '+esc(checkLabel)+'" '+(st.selected.has(row.id)?'checked ':'')+(removable?'':'disabled title="Not authorized to archive this record"')+'>';
  const actions=row.origin==='manual'
- ?'<button class="mi-link-action" type="button" data-mi-edit="'+id+'" aria-label="Edit manual entry" '+(removable?'':'disabled')+'>✎</button> <button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Delete manual entry" '+(removable?'':'disabled')+'>▤</button>'
- :row.origin==='live'
- ?'<button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive recorded trial" '+(removable?'':'disabled')+'>▤</button>'
+ ?'<button class="mi-link-action" type="button" data-mi-edit="'+id+'" aria-label="Edit manual entry" '+(removable?'':'disabled')+'>✎</button> <button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive manual entry" '+(removable?'':'disabled')+'>▤</button>'
  :row.origin==='session'
- ?'<button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive session summary" '+(removable?'':'disabled')+'>▤</button>'
- :row.origin==='behavior_only'
- ?'<button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive behavior observation" '+(removable?'':'disabled')+'>▤</button>'
- :'<span>Unavailable</span>';
- const source=row.origin==='manual'?'<span class="mi-chip manual">Manual: '+esc(row.provider_name||'')+'</span>':'<span class="mi-chip">'+esc(row.source||'Recorded')+'</span>';
- return '<tr>'+
- '<td>'+checkbox+'</td><td class="mi-record-date">'+esc(displayDate(row.event_date))+'</td><td>'+esc(row.event_time||'—')+'</td>'+
+ ?'<button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive entire program session" '+(removable?'':'disabled')+'>▤</button>'
+ :'<button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive behavior observation" '+(removable?'':'disabled')+'>▤</button>';
+ const targets=metrics.total?metrics.correct+'/'+metrics.total+' Correct':'—';
+ const percentage=metrics.valid?Math.round(metrics.correct/metrics.valid*100)+'%':'—';
+ return '<tr title="'+esc(row.notes||'')+'">'+
+ '<td>'+checkbox+'</td><td class="mi-record-date">'+esc(displayDate(row.event_date))+'</td>'+
+ '<td class="mi-record-time">'+esc(row.event_time||'—')+'</td>'+
  '<td>'+esc(studentName(student(row.student_id)))+'</td><td>'+esc(row.program_label||programName(row.student_compass_program_id))+'</td>'+
- '<td>'+esc(row.target_name||'—')+'</td><td>'+esc(row.response==='summary'?'—':row.trial_number||1)+'</td>'+
- '<td>'+responseLabel(row)+'</td><td>'+esc(row.prompt_level||'N/A')+'</td><td>'+behaviorLabels(row.behavior_counts)+'</td>'+
- '<td>'+esc(row.provider_name||'Recorded staff')+'</td><td>'+source+'</td>'+
- '<td class="mi-notes-col" title="'+esc(row.notes||'')+'">'+esc(row.notes||'—')+'</td>'+
- '<td style="white-space:nowrap">'+actions+'</td></tr>';
+ '<td>'+esc(row.target_name||'—')+'</td>'+
+ '<td class="mi-target-score">'+esc(targets)+'</td><td class="mi-accuracy">'+esc(percentage)+'</td>'+
+ '<td>'+behaviorLabels(row.behavior_counts)+'</td>'+
+ '<td>'+esc(row.provider_name||'Recorded staff')+'</td>'+
+ '<td class="mi-record-actions">'+actions+'</td></tr>';
 }
 function metricTotals(rows){
  const totals={trials:0,independent:0,prompted:0,incorrect:0,no_response:0,behaviors:{}};
@@ -228,7 +263,7 @@ function renderGraph(rows){
 function renderRows(){
  st.visible=displayRows();const n=st.visible.length;st.page=Math.max(0,Math.min(st.page,Math.ceil(n/st.limit)-1));
  const start=st.page*st.limit,rows=st.visible.slice(start,start+st.limit);
- by('miHistoryRows').innerHTML=rows.length?rows.map(historyTr).join(''):'<tr><td colspan="14" class="mi-empty">No entries found for this student and range.</td></tr>';
+ by('miHistoryRows').innerHTML=rows.length?rows.map(historyTr).join(''):'<tr><td colspan="11" class="mi-empty">No entries found for this student and range.</td></tr>';
  by('miRowCount').textContent=n?'Showing '+(start+1)+'–'+(start+rows.length)+' of '+n+' entries':'0 entries';
  by('miPageNumber').textContent=String(st.page+1);by('miPrev').disabled=st.page===0;by('miNext').disabled=start+st.limit>=n;
  const selectable=rows.filter(canRemove);by('miSelectAll').checked=selectable.length>0&&selectable.every(r=>st.selected.has(r.id));by('miSelectAll').indeterminate=selectable.some(r=>st.selected.has(r.id))&&!by('miSelectAll').checked;by('miSelectAll').disabled=!selectable.length;
@@ -308,7 +343,8 @@ async function deleteEntries(ids){
  const chosen=uniq(ids).map(id=>st.rows.find(x=>x.id===id)).filter(canRemove);
  if(!chosen.length)return status('No authorized entries were selected. Check your permissions for these students.',true,'miHistoryStatus');
  const manual=chosen.filter(r=>r.origin==='manual'),trials=chosen.filter(r=>r.origin==='live'),sessions=chosen.filter(r=>r.origin==='session'),behaviors=chosen.filter(r=>r.origin==='behavior_only');
- const message='Archive '+chosen.length+' selected record'+(chosen.length===1?'':'s')+' ('+manual.length+' manual, '+trials.length+' recorded trials, '+sessions.length+' session summaries, '+behaviors.length+' behavior observations)?\n\nArchived records are removed from active data displays, retained in the audit history, and cannot be restored from this screen.';
+ const includedTrials=sessions.reduce((n,r)=>n+(r.trial_event_count||0),0);
+ const message='Archive '+chosen.length+' selected record'+(chosen.length===1?'':'s')+' ('+manual.length+' manual, '+sessions.length+' program sessions, '+includedTrials+' session trial events, '+behaviors.length+' behavior observations)?\n\nArchived records are removed from active data displays, retained in the audit history, and cannot be restored from this screen.';
  if(!window.confirm(message))return;
  status('Archiving '+chosen.length+' selected records…',false,'miHistoryStatus');
  let done=0;
@@ -324,11 +360,22 @@ async function deleteEntries(ids){
     if(error)throw error;
     if(count!==1)throw Error('Recorded trial was not archived. Check your permission to correct this session.');
    }else if(row.origin==='session'){
+    // The database blocks deleting a session with live trial events. Archive
+    // its recorded trials first, retaining each audit record and updating
+    // counts, then archive the parent session. Do not silently skip failures.
+    if((row.trial_ids||[]).length){
+      const {error,count}=await table('compass_trial_events')
+        .update({deleted_at:new Date().toISOString(),deleted_by:context().userId},{count:'exact'})
+        .eq('session_id',row.originalId).eq('student_compass_program_id',row.student_compass_program_id)
+        .is('deleted_at',null);
+      if(error)throw error;
+      if(count!==row.trial_ids.length)throw Error('Some trial events were not archived; session remains available for review.');
+    }
     const {error,count}=await table('compass_program_sessions')
       .update({deleted_at:new Date().toISOString(),deleted_by:context().userId},{count:'exact'})
       .eq('id',row.originalId).eq('student_compass_program_id',row.student_compass_program_id).is('deleted_at',null);
     if(error)throw error;
-    if(count!==1)throw Error('Session summary was not archived. Check your access or archive remaining individual trials first.');
+    if(count!==1)throw Error('Program session was not archived. Check access and remaining trial records.');
    }else if(row.origin==='behavior_only'){
     const {error,count}=await table('student_behavior_data')
       .update({deleted_at:new Date().toISOString(),deleted_by:context().userId},{count:'exact'})
