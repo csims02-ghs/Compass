@@ -20,7 +20,9 @@ const program=id=>st.catalog.find(p=>p.id===id);
 const programName=id=>program(assignment(id)?.program_id)?.program_name||'Program';
 const canManage=r=>!!r&&r.origin==='manual'&&(r.created_by===context().userId||['platform_admin','district_admin','school_admin','bcba'].includes(context().role));
 const canArchiveTrial=r=>!!r&&r.origin==='live'&&(r.staff_id===context().userId||['platform_admin','district_admin','school_admin','bcba'].includes(context().role));
-const canRemove=r=>canManage(r)||canArchiveTrial(r);
+const canArchiveSession=r=>!!r&&r.origin==='session'&&(r.staff_id===context().userId||['platform_admin','district_admin','school_admin','bcba'].includes(context().role));
+const canArchiveBehavior=r=>!!r&&r.origin==='behavior_only'&&(r.collected_by===context().userId||['platform_admin','district_admin','school_admin','bcba'].includes(context().role));
+const canRemove=r=>canManage(r)||canArchiveTrial(r)||canArchiveSession(r)||canArchiveBehavior(r);
 const displayDate=value=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||''));return m?m[2]+'/'+m[3]+'/'+m[1]:String(value||'—')};
 const mappingResponse=r=>{const x=String(r||'').toLowerCase();if(['independent_correct','correct','independent','target_correct'].includes(x))return'independent';if(['prompted_correct','prompted','prompt'].includes(x))return'prompted';if(['incorrect','target_incorrect','distractor_incorrect'].includes(x))return'incorrect';if(['no_response','no-response'].includes(x))return'no_response';if(['na','no_valid_opportunity'].includes(x))return'na';return x||'unknown'};
 const countBehaviors=b=>{if(!b)return{};if(Array.isArray(b))return Object.fromEntries(b.map(x=>[String(x),1]));if(typeof b==='object')return Object.fromEntries(Object.entries(b).filter(([,v])=>Number(v)>0).map(([k,v])=>[k,Number(v)||1]));return{}};
@@ -101,7 +103,7 @@ async function selectStudent(sid){
 function historicalSession(s,a){
 const behaviors=countBehaviors(s.behavior_counts),when=String(s.started_at||s.created_at||s.session_date||'');
 const count=Number(s.trials_total||0),independent=Number(s.targets_correct||0),prompted=Number(s.prompted_correct||0),incorrect=Number(s.incorrect||0);
-return {id:'session:'+s.id,origin:'session',student_id:a.student_id,student_compass_program_id:a.id,program_id:a.program_id,event_date:s.session_date,event_time:when.includes('T')?when.slice(11,16):'',provider_name:st.profiles.find(p=>p.id===s.staff_id)?.full_name||'Recorded staff',target_name:s.target_name||'Session summary',target_key:s.target_key||'',benchmark_key:'',trial_number:count,trial_type:'',response:'summary',prompt_level:'',behavior_counts:behaviors,notes:s.notes||'',session_id:s.id,totals:{count,independent,prompted,incorrect,no_response:Number(s.no_response||0)},source:'Recorded session'};
+return {id:'session:'+s.id,originalId:s.id,origin:'session',staff_id:s.staff_id||null,student_id:a.student_id,student_compass_program_id:a.id,program_id:a.program_id,event_date:s.session_date,event_time:when.includes('T')?when.slice(11,16):'',provider_name:st.profiles.find(p=>p.id===s.staff_id)?.full_name||'Recorded staff',target_name:s.target_name||'Session summary',target_key:s.target_key||'',benchmark_key:'',trial_number:count,trial_type:'',response:'summary',prompt_level:'',behavior_counts:behaviors,notes:s.notes||'',session_id:s.id,totals:{count,independent,prompted,incorrect,no_response:Number(s.no_response||0)},source:'Recorded session'};
 }
 function trialRecord(t,a,sessions){
 const parent=sessions.get(t.session_id),when=String(t.occurred_at||t.created_at||parent?.started_at||'');
@@ -111,7 +113,7 @@ return {id:'trial:'+t.id,originalId:t.id,origin:'live',staff_id:parent?.staff_id
 function manualRecord(m){return {...m,id:'manual:'+m.id,originalId:m.id,origin:'manual',program_id:assignment(m.student_compass_program_id)?.program_id,source:'Manual entry',response:m.response,behavior_counts:countBehaviors(m.behavior_counts)}}
 function behaviorObservation(b,sid){
  const n=Math.max(0,Number(b.count||0));
- return {id:'behavior:'+b.id,origin:'behavior_only',student_id:sid,student_compass_program_id:'',program_id:'',
+ return {id:'behavior:'+b.id,originalId:b.id,collected_by:b.collected_by||null,origin:'behavior_only',student_id:sid,student_compass_program_id:'',program_id:'',
   program_label:'Unassigned behavior observation',event_date:b.data_date,event_time:'',provider_name:st.profiles.find(p=>p.id===b.collected_by)?.full_name||'Recorded staff',
   target_name:'Behavior · '+String(b.data_type||'Observation'),target_key:'',benchmark_key:'',trial_number:null,trial_type:'',
   response:'behavior_only',prompt_level:'',behavior_counts:n>0?{[b.behavior_name||'Observed behavior']:n}:{},notes:b.notes||'',source:'Behavior observation'};
@@ -123,15 +125,15 @@ async function loadHistory(){
  const ids=st.assignments.filter(a=>a.student_id===sid).map(a=>a.id);
  const [manual,sessions,trials,behaviorOnly]=await Promise.all([
   pages((a,b)=>table('compass_manual_trial_entries').select('*').eq('student_id',sid).is('deleted_at',null).order('event_date',{ascending:false}).range(a,b)),
-  ids.length?getMany('compass_program_sessions','student_compass_program_id',ids,'id,student_compass_program_id,staff_id,session_date,target_name,target_key,trials_total,targets_correct,prompted_correct,incorrect,no_response,behavior_counts,notes,started_at,created_at','created_at'):Promise.resolve([]),
+  ids.length?getMany('compass_program_sessions','student_compass_program_id',ids,'id,student_compass_program_id,staff_id,session_date,target_name,target_key,trials_total,targets_correct,prompted_correct,incorrect,no_response,behavior_counts,notes,started_at,created_at,deleted_at','created_at'):Promise.resolve([]),
   ids.length?getMany('compass_trial_events','student_compass_program_id',ids,'id,session_id,student_compass_program_id,trial_number,trial_type,target_key,target_name,benchmark_key,goal_id,result,prompt_level,behavior_counts,occurred_at,source,created_at,deleted_at','occurred_at'):Promise.resolve([]),
- pages((a,b)=>table('student_behavior_data').select('id,student_id,data_type,behavior_name,data_date,count,notes,collected_by').eq('student_id',sid).order('data_date',{ascending:false}).range(a,b))
+ pages((a,b)=>table('student_behavior_data').select('id,student_id,data_type,behavior_name,data_date,count,notes,collected_by,deleted_at').eq('student_id',sid).is('deleted_at',null).order('data_date',{ascending:false}).range(a,b))
  ]);
  if(st.selectedStudent!==sid)return;
- st.manual=manual;const activeTrials=trials.filter(t=>!t.deleted_at);const map=new Map(sessions.map(s=>[s.id,s]));
+ st.manual=manual;const activeSessions=sessions.filter(s=>!s.deleted_at);const activeTrials=trials.filter(t=>!t.deleted_at);const map=new Map(activeSessions.map(s=>[s.id,s]));
  const trialsBySession=new Set(activeTrials.map(t=>t.session_id));
- const base=activeTrials.map(t=>trialRecord(t,assignment(t.student_compass_program_id)||{id:t.student_compass_program_id,student_id:sid},map));
- const residual=sessions.filter(s=>!trialsBySession.has(s.id)&&Number(s.trials_total||0)>0).map(s=>historicalSession(s,assignment(s.student_compass_program_id)||{id:s.student_compass_program_id,student_id:sid}));
+ const base=activeTrials.filter(t=>map.has(t.session_id)).map(t=>trialRecord(t,assignment(t.student_compass_program_id)||{id:t.student_compass_program_id,student_id:sid},map));
+ const residual=activeSessions.filter(s=>!trialsBySession.has(s.id)&&Number(s.trials_total||0)>0).map(s=>historicalSession(s,assignment(s.student_compass_program_id)||{id:s.student_compass_program_id,student_id:sid}));
  st.live=[...base,...residual,...behaviorOnly.map(b=>behaviorObservation(b,sid))];st.rows=[...manual.map(manualRecord),...st.live];
  renderFilters();renderRows();status('All available COMPASS trial and session records loaded.',false,'miHistoryStatus');
  }catch(e){status('Unable to load full history: '+e.message,true,'miHistoryStatus');st.rows=[];renderRows();}
@@ -171,13 +173,17 @@ function responseLabel(row){
 }
 function historyTr(row){
  const removable=canRemove(row),id=esc(row.id);
- const checkLabel=row.origin==='manual'?'manual entry':row.origin==='live'?'recorded trial':'read-only record';
- const checkbox='<input type="checkbox" data-mi-select="'+id+'" aria-label="Select '+esc(checkLabel)+'" '+(st.selected.has(row.id)?'checked ':'')+(removable?'':'disabled title="Read-only session summary or behavior observation"')+'>';
+ const checkLabel=row.origin==='manual'?'manual entry':row.origin==='live'?'recorded trial':row.origin==='session'?'session summary':'behavior observation';
+ const checkbox='<input type="checkbox" data-mi-select="'+id+'" aria-label="Select '+esc(checkLabel)+'" '+(st.selected.has(row.id)?'checked ':'')+(removable?'':'disabled title="You do not have permission to archive this entry"')+'>';
  const actions=row.origin==='manual'
  ?'<button class="mi-link-action" type="button" data-mi-edit="'+id+'" aria-label="Edit manual entry" '+(removable?'':'disabled')+'>✎</button> <button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Delete manual entry" '+(removable?'':'disabled')+'>▤</button>'
  :row.origin==='live'
  ?'<button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive recorded trial" '+(removable?'':'disabled')+'>▤</button>'
- :'<span title="Session summaries and behavior observations are managed in their own workspaces">Read-only</span>';
+ :row.origin==='session'
+ ?'<button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive session summary" '+(removable?'':'disabled')+'>▤</button>'
+ :row.origin==='behavior_only'
+ ?'<button class="mi-link-action delete" type="button" data-mi-delete="'+id+'" aria-label="Archive behavior observation" '+(removable?'':'disabled')+'>▤</button>'
+ :'<span>Unavailable</span>';
  const source=row.origin==='manual'?'<span class="mi-chip manual">Manual: '+esc(row.provider_name||'')+'</span>':'<span class="mi-chip">'+esc(row.source||'Recorded')+'</span>';
  return '<tr>'+
  '<td>'+checkbox+'</td><td class="mi-record-date">'+esc(displayDate(row.event_date))+'</td><td>'+esc(row.event_time||'—')+'</td>'+
@@ -300,9 +306,9 @@ async function editEntry(id){
 }
 async function deleteEntries(ids){
  const chosen=uniq(ids).map(id=>st.rows.find(x=>x.id===id)).filter(canRemove);
- if(!chosen.length)return status('No authorized entries were selected. Recorded summaries and behavior observations must be managed in their respective workspaces.',true,'miHistoryStatus');
- const manual=chosen.filter(r=>r.origin==='manual'),trials=chosen.filter(r=>r.origin==='live');
- const message='Archive '+chosen.length+' selected record'+(chosen.length===1?'':'s')+' ('+manual.length+' manual, '+trials.length+' recorded trials)?\n\nArchived records are removed from active data displays, retained in the audit history, and cannot be restored from this screen.';
+ if(!chosen.length)return status('No authorized entries were selected. Check your permissions for these students.',true,'miHistoryStatus');
+ const manual=chosen.filter(r=>r.origin==='manual'),trials=chosen.filter(r=>r.origin==='live'),sessions=chosen.filter(r=>r.origin==='session'),behaviors=chosen.filter(r=>r.origin==='behavior_only');
+ const message='Archive '+chosen.length+' selected record'+(chosen.length===1?'':'s')+' ('+manual.length+' manual, '+trials.length+' recorded trials, '+sessions.length+' session summaries, '+behaviors.length+' behavior observations)?\n\nArchived records are removed from active data displays, retained in the audit history, and cannot be restored from this screen.';
  if(!window.confirm(message))return;
  status('Archiving '+chosen.length+' selected records…',false,'miHistoryStatus');
  let done=0;
@@ -317,6 +323,18 @@ async function deleteEntries(ids){
       .eq('id',row.originalId).eq('student_compass_program_id',row.student_compass_program_id).is('deleted_at',null);
     if(error)throw error;
     if(count!==1)throw Error('Recorded trial was not archived. Check your permission to correct this session.');
+   }else if(row.origin==='session'){
+    const {error,count}=await table('compass_program_sessions')
+      .update({deleted_at:new Date().toISOString(),deleted_by:context().userId},{count:'exact'})
+      .eq('id',row.originalId).eq('student_compass_program_id',row.student_compass_program_id).is('deleted_at',null);
+    if(error)throw error;
+    if(count!==1)throw Error('Session summary was not archived. Check your access or archive remaining individual trials first.');
+   }else if(row.origin==='behavior_only'){
+    const {error,count}=await table('student_behavior_data')
+      .update({deleted_at:new Date().toISOString(),deleted_by:context().userId},{count:'exact'})
+      .eq('id',row.originalId).eq('student_id',st.selectedStudent).is('deleted_at',null);
+    if(error)throw error;
+    if(count!==1)throw Error('Behavior observation was not archived. Check your access.');
    }
    done++;
   }
