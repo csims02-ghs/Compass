@@ -12,7 +12,7 @@ const helpers=html.slice(start,end);
 const render=html.slice(tableStart,tableEnd);
 assert(html.includes("if(g.representative&&g.representative.status!=='archived')chosenAssignmentIds.add(g.representative.id)"),'Goals-page checked selections must link current assignment');
 (async()=>{
-const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
 try {
  const page=await browser.newPage({viewport:{width:1480,height:850}});
  await page.setContent('<table><tbody id="studentProgramsBody"></tbody></table><strong id="pAssigned"></strong><strong id="pActive"></strong><strong id="pMastered"></strong><strong id="pHold"></strong>');
