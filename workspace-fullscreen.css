@@ -1,0 +1,30 @@
+/* COMPASS workspace-only fullscreen toggle: hides the left menu; never uses browser Fullscreen API. */
+#app #workspaceFullscreenToggle{
+  position:fixed;top:14px;right:16px;z-index:70;
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:44px;padding:10px 13px;border:1px solid #c6d9ee;border-radius:12px;
+  background:#fff;color:#164b86;box-shadow:0 4px 16px rgba(13,49,91,.14);
+  font-family:inherit;font-size:13px;font-weight:750;line-height:1.2;
+  cursor:pointer;white-space:nowrap;
+}
+#app #workspaceFullscreenToggle svg{width:19px;height:19px;flex:none;stroke:currentColor}
+#app #workspaceFullscreenToggle:hover{background:#eff6ff;border-color:#8bb8f3}
+#app #workspaceFullscreenToggle:focus-visible{outline:3px solid #1d73ed;outline-offset:3px}
+#app #workspaceFullscreenToggle[aria-pressed="true"]{background:#e9f3ff;color:#145cc6;border-color:#92baf4}
+#app #workspaceFullscreenToggle .workspace-fullscreen-restore{display:none}
+#app.compass-focus-mode #workspaceFullscreenToggle .workspace-fullscreen-expand{display:none}
+#app.compass-focus-mode #workspaceFullscreenToggle .workspace-fullscreen-restore{display:block}
+#app.compass-focus-mode #sidebar{display:none!important}
+#app.compass-focus-mode>.main{
+  margin-left:0!important;width:100%!important;max-width:none!important;min-width:0;
+}
+#app.compass-focus-mode #mobileMenu{display:none!important}
+@media(max-width:850px){
+  #app:not(.compass-focus-mode) #mobileMenu{right:74px}
+}
+@media(max-width:540px){
+  #app #workspaceFullscreenToggle{right:10px;top:10px;width:46px;height:46px;padding:9px}
+  #app #workspaceFullscreenToggle .workspace-fullscreen-label{display:none}
+  #app:not(.compass-focus-mode) #mobileMenu{right:66px}
+}
+@media print{#app #workspaceFullscreenToggle{display:none!important}}
