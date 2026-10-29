@@ -1,0 +1,19 @@
+name: Fullscreen top toolbar browser QA
+on:
+  push:
+    branches: [fix/fullscreen-toggle-top-toolbar]
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@latest
+          npx playwright install chromium
+      - name: Verify toolbar placement, layout and menu restoration
+        run: node qa/test-fullscreen-top-toolbar.cjs
