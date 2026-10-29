@@ -82,7 +82,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  await page.addScriptTag({content:fs.readFileSync('session-notes-tabs.js','utf8')});
  await page.addScriptTag({content:js});
  await page.locator('#sessionTabManual').click();
- await page.waitForFunction(()=>document.querySelector('#miHistoryRows')?.textContent.includes('Existing manual'),null,{timeout:8000});
+ await page.waitForFunction(()=>!!document.querySelector('#miHistoryRows [data-mi-select="manual:manual-old"]'),null,{timeout:8000});
  assert.equal(await page.locator('#miStudent').inputValue(),'a');
  assert.equal(await page.locator('#miProgram').inputValue(),'assign-a');
  assert.equal(await page.locator('#miFilterStudent').inputValue(),'a');
@@ -95,7 +95,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  for(const behaviorText of ['Tantrums (5)','Noncompliance (1)','Leaving the area (2)'])
   assert((await sess.innerText()).includes(behaviorText),'Session behavior pill missing: '+behaviorText);
  assert.equal(await sess.locator('.mi-chip.behavior').count(),3,'Show all saved behaviors without duplicating per-trial counts');
- assert((await page.locator('#miHistoryRows').innerText()).includes('Behavior observation'));
+ assert.equal(await page.locator('#miHistoryRows [data-mi-select="behavior:beh1"]').count(),1,'Keep unassigned behavior observation as a distinct record');
  await page.locator('#miProvider').selectOption('manual');
  await page.locator('#miProviderManual').fill('Test Provider');
  await page.locator('#miDate').fill('2026-10-27');
