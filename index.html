@@ -636,6 +636,34 @@ body{display:block!important;width:100%;min-width:0}
 
 </style>
 
+<style id="compass-assigned-program-iep-goal-list">
+/* Student Profile / Assigned Programs: numbered annual goals from Goals page. */
+#studentProgramsBody td.assigned-iep-goals {
+  min-width:235px;
+  max-width:340px;
+  white-space:normal!important;
+  overflow:visible;
+  overflow-wrap:break-word;
+  word-break:normal;
+  vertical-align:middle;
+}
+#studentProgramsBody .assigned-iep-goal-list {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:5px;
+}
+#studentProgramsBody .assigned-iep-goal-entry {
+  display:block;
+  max-width:100%;
+  font-weight:600;
+  font-size:inherit;
+  line-height:1.35;
+  white-space:normal;
+  overflow-wrap:break-word;
+}
+</style>
+
 <style id="compass-edit-programs-iep-matrix">
 /* COMPASS edit-programs IEP matrix: checkbox, name, setup, IEP goals, actions */
 .edit-programs-modal .program-edit-row{
@@ -2708,13 +2736,19 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         (Number(a.annual_goal_number||999)-Number(b.annual_goal_number||999))||
         String(a.title||'').localeCompare(String(b.title||'')));
   }
+  const assignedGoalLabel=g=>'IEP Goal '+(g.annual_goal_number==null?'—':Number(g.annual_goal_number))+' · '+(g.title||g.goal_area||'Untitled Goal');
   function goalForSP(spid){
     const goals=goalsForAssignedProgram(spid);
-    return goals.length?goals.map(g=>g.title||g.goal_area||'IEP Goal').join(' · '):'—';
+    return goals.length?goals.map(assignedGoalLabel).join(' | '):'—';
+  }
+  function goalMarkupForSP(spid){
+    const goals=goalsForAssignedProgram(spid);
+    return goals.length?'<div class="assigned-iep-goal-list">'+goals.map(g=>
+      '<span class="assigned-iep-goal-entry">'+esc(assignedGoalLabel(g))+'</span>').join('')+'</div>':'<span class="muted">—</span>';
   }
   function goalDetailsForSP(spid){
     const goals=goalsForAssignedProgram(spid);
-    return goals.length?goals.map(g=>(g.annual_goal_number?'IEP Goal '+g.annual_goal_number+': ':'')+(g.title||g.goal_area||'IEP Goal')).join(' | '):'No IEP goals linked on Goals page';
+    return goals.length?goals.map(assignedGoalLabel).join(' | '):'No IEP goals linked on Goals page';
   }
   function renderGoals(){const a=$('goalsList'),b=$('serviceGoalsList');a.innerHTML='';b.innerHTML='';for(const g of state.goals){const cur=g.current_percent==null?0:Number(g.current_percent),target=Number(g.target_percent||80),pct=target?Math.min(100,Math.round(cur/target*100)):0,linked=linkedIds(g.id).map(id=>programById(state.studentPrograms.find(sp=>sp.id===id)?.program_id)?.program_name).filter(Boolean);const div=document.createElement('div');div.className='goal-card';div.innerHTML=`<div class="panel-head"><div><h3>${esc(g.title)}</h3><small class="muted">${g.annual_goal_number?'IEP Goal '+Number(g.annual_goal_number)+' · ':''}${esc(g.goal_area||'Goal Area not assigned')} · ${esc(roleName(g.status))}</small></div><div class="button-row"><button class="btn small" data-edit-goal="${g.id}">Edit</button><button class="btn small danger" data-delete-goal="${g.id}">Delete</button></div></div>${renderAnnualGoalDescriptionSections(g)}<small class="muted">Baseline ${g.baseline_percent??'—'}% · Current ${g.current_percent??'—'}% · Target ${g.target_percent??80}%</small><div class="goal-progress"><span style="width:${pct}%"></span></div><small class="muted">${linked.length?'Linked: '+esc(linked.join(', ')):'No programs linked'}</small>`;a.appendChild(div);const si=document.createElement('div');si.className='stack-item';si.innerHTML=`<strong>${esc(g.title)}</strong><small>${esc(g.goal_area||'Goal')} · target ${g.target_percent??80}% · ${linked.length} linked program${linked.length===1?'':'s'}</small>`;b.appendChild(si)}if(!state.goals.length){a.innerHTML='<div class="empty-state compact">No IEP goals entered yet.</div>';b.innerHTML='<div class="empty-state compact">No IEP goals entered yet.</div>'}$('overviewGoals').innerHTML=state.goals.filter(g=>g.status==='active').slice(0,5).map(g=>`<div class="stack-item"><strong>${esc(g.title)}</strong><small>${esc(g.goal_area||'IEP Goal')} · ${g.current_percent??'—'} / ${g.target_percent??80}%</small></div>`).join('')||'<div class="empty-state compact">No active IEP goals yet.</div>'}
   function renderPrograms(){
@@ -2722,7 +2756,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const rows=activeStudentProgramsOrdered();
     for(const sp of rows){
       const p=programById(sp.program_id),tr=document.createElement('tr');
-      tr.innerHTML=`<td><strong>${esc(p?.program_name||'Program')}</strong></td><td>${esc(programDomain(p))}</td><td class="assigned-iep-goals" data-assigned-goals="${sp.id}" title="${esc(goalDetailsForSP(sp.id))}">${esc(goalForSP(sp.id))}</td><td><select class="control compact" data-program-status="${sp.id}"><option value="active"${sp.status==='active'?' selected':''}>Active</option><option value="hold"${sp.status==='hold'?' selected':''}>On Hold</option><option value="mastered"${sp.status==='mastered'?' selected':''}>Mastered</option></select></td><td><input class="control compact num" type="number" min="0" max="100" value="${Number(sp.goal_percentage||80)}" data-program-goal="${sp.id}"></td><td>${sp.display_order??0}</td><td><button class="btn small program-acquisition-btn" type="button" data-acquisition-program="${sp.id}" aria-label="Acquisition Data for ${esc(p?.program_name||'Program')}">Acquisition Data</button></td>`;
+      tr.innerHTML=`<td><strong>${esc(p?.program_name||'Program')}</strong></td><td>${esc(programDomain(p))}</td><td class="assigned-iep-goals" data-assigned-goals="${sp.id}" title="${esc(goalDetailsForSP(sp.id))}">${goalMarkupForSP(sp.id)}</td><td><select class="control compact" data-program-status="${sp.id}"><option value="active"${sp.status==='active'?' selected':''}>Active</option><option value="hold"${sp.status==='hold'?' selected':''}>On Hold</option><option value="mastered"${sp.status==='mastered'?' selected':''}>Mastered</option></select></td><td><input class="control compact num" type="number" min="0" max="100" value="${Number(sp.goal_percentage||80)}" data-program-goal="${sp.id}"></td><td>${sp.display_order??0}</td><td><button class="btn small program-acquisition-btn" type="button" data-acquisition-program="${sp.id}" aria-label="Acquisition Data for ${esc(p?.program_name||'Program')}">Acquisition Data</button></td>`;
       b.appendChild(tr)
     }
     if(!rows.length)b.innerHTML='<tr><td colspan="7" class="muted">No assigned programs. Use + Assign Program to choose from the '+state.programCatalog.length+'-program COMPASS library.</td></tr>';
