@@ -116,8 +116,10 @@ async function loadRunner(sp,seq){
    try{frame.contentWindow.scrollTo(0,0)}catch(_){}
   };
   frame.onerror=()=>{if(seq!==S.loadSeq)return;$('loading').hidden=true;status(name+' could not render.','error')};
+  // Prevent stale iframe content from flashing while the replacement loads.
+  // The onload handler above is the only path that reveals the new program.
+  frame.hidden=true;
   frame.removeAttribute('srcdoc');frame.src=url;
-  frame.hidden=false;
  }catch(err){
   console.error(err);if(seq!==S.loadSeq)return;
   $('loading').hidden=true;S.runnerAssignmentId=null;frame.hidden=true;

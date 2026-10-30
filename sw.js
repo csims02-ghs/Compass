@@ -1,5 +1,5 @@
 /* COMPASS service worker: online navigation is authoritative; caches are offline fallbacks only. */
-const CACHE='compass-shell-v49';
+const CACHE='compass-shell-v50';
 const RELEASE='v20261010-3';
 const CORE=['./','./compass-page2-standard.js?v=20261027-v9','./compass-page2-standard.css?v=20261027-v3','./compass-body-parts-v25.js','./compass-body-parts-v25.css','./compass-functions-v25.js','./compass-functions-v25.css','./compass-fine-motor-imitation-v25.js?v=20261027-v1','./compass-fine-motor-imitation-v25.css?v=20261027-v1','./compass-colors-v25.js','./compass-colors-v25.css','./compass-clothing-v25.js','./compass-clothing-v25.css','./compass-colors-v25.js?v=20261027-v25-5','./compass-colors-v25.css?v=20261027-v25-5','./index.html','./compass-admin-ui.js','./index-profile-charts-v5-20261017.html','./program-hub.html','./manifest.webmanifest',
 './release/v20261010-3/part01.txt?release=v20261010-3-program-hub-v4',
@@ -42,7 +42,9 @@ self.addEventListener('fetch',event=>{
   }catch(err){return(await caches.match(key))||Response.error()}})());return;
  }
  if(isRelease){
-  event.respondWith((async()=>{const cached=await caches.match(req);if(cached)return cached;const res=await fetch(req,{cache:'no-store'});if(res.ok){const cache=await caches.open(CACHE);await cache.put(req,res.clone())}return res})());return;
+  // Online release assets are authoritative. Cache-first would serve stale legacy HTML
+  // when content is updated at an unchanged release URL.
+  event.respondWith((async()=>{try{const res=await fetch(req,{cache:'no-store'});if(res.ok){const cache=await caches.open(CACHE);await cache.put(req,res.clone())}return res}catch(err){return(await caches.match(req))||Response.error()}})());return;
  }
  event.respondWith((async()=>{try{const res=await fetch(req,{cache:'no-store'});if(res.ok){const cache=await caches.open(CACHE);await cache.put(req,res.clone())}return res}catch(err){return(await caches.match(req))||Response.error()}})());
 });
