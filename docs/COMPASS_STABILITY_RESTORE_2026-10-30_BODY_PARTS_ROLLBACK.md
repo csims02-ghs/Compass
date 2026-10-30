@@ -2,13 +2,13 @@
 Program: `CP-BODY-PARTS`. Active runner before fix: `compass-body-parts-v25` version 3.
 
 ## Versioned fix
-The corrected version 4 changes only the native Page 2 Images Only UI: one visible toggle enters/exits, moves to the student-material header when scoring is hidden, and restores its location when controls return. Scoring, targets, benchmarks, behavior assignments, session saving, and mastery remain unchanged.
+The corrected version 5 changes only the native Page 2 Images Only UI: one visible toggle enters/exits, moves to the student-material header when scoring is hidden, and restores its location when controls return. Scoring, targets, benchmarks, behavior assignments, session saving, and mastery remain unchanged.
 
 ## Rollback SQL
 ```sql
 BEGIN;
 UPDATE public.compass_programming_runners SET active=false
- WHERE runner_key='compass-body-parts-v25' AND version=4;
+ WHERE runner_key='compass-body-parts-v25' AND version IN (4,5);
 UPDATE public.compass_programming_runners SET active=true
  WHERE runner_key='compass-body-parts-v25' AND version=3;
 UPDATE public.compass_programming_programs SET runner_version=3
@@ -16,4 +16,4 @@ UPDATE public.compass_programming_programs SET runner_version=3
 COMMIT;
 ```
 
-Original version 3 is retained inactive after fix. Test complete same-button toggle, Page 2, and program/session integrity before considering all Body Parts requirements verified.
+Original version 3 and intermediate version 4 are retained inactive after fix. Version 5 additionally restores the Exit Images Only button's visibility, overcoming an older `no-controls .material-top` CSS rule. Test complete same-button toggle, Page 2, and program/session integrity before considering all Body Parts requirements verified.
