@@ -1,0 +1,882 @@
+{
+  "backup_title": "COMPASS Functions — Before Verbal Instructions Benchmark",
+  "original_version": 4,
+  "description": "Functional independence through written and visual directions, with Application and Expressive response modes while keeping written instructions visible.",
+  "program_config": {
+    "ui": {
+      "IEP_chain": "T,T,T,T,T after Short",
+      "iep_chain": {
+        "after": "Short",
+        "label": "IEP Chain",
+        "sequence": "T,T,T,T,T",
+        "select_value": "IEP_TTTTT"
+      },
+      "reference": "Constructive Play identical setup/34 markers",
+      "staff_scored": true,
+      "circuit_chain": true,
+      "circuit_scope": "selected_benchmark_all_10_once",
+      "circuit_enabled": true,
+      "preserve_history": true,
+      "custom_distractor": true,
+      "two_page_standard": "v25",
+      "benchmark_dropdown": true,
+      "program_setup_rows": 2,
+      "student_setup_save": true,
+      "learner_choice_array": false,
+      "four_benchmark_groups": [
+        10,
+        10,
+        10,
+        10
+      ],
+      "mastery_distinct_dates": 3,
+      "mastered_target_distractor": true,
+      "accessible_AAC_adapted_input": true,
+      "apply_save_inside_program_setup": true,
+      "staff_verified_written_or_visual_cues": true
+    },
+    "targets": [
+      {
+        "id": 1,
+        "name": "Sit down.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Sit down.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 2,
+        "name": "Stand up.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Stand up.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 3,
+        "name": "Clap.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Clap.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 4,
+        "name": "Touch your head.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Touch your head.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 5,
+        "name": "Pick up the pencil.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Pick up the pencil.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 6,
+        "name": "Open the book.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Open the book.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 7,
+        "name": "Close the book.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Close the book.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 8,
+        "name": "Put the block in the box.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Put the block in the box.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 9,
+        "name": "Point to the door.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Point to the door.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 10,
+        "name": "Raise your hand or use your established request signal.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 1,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Raise your hand or use your established request signal.",
+          "benchmark_id": "FUNC-B1",
+          "benchmark_name": "Following Written and Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 1,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 11,
+        "name": "Write your name or use your approved name-entry method.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Write your name or use your approved name-entry method.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 12,
+        "name": "Circle the answer.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Circle the answer.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 13,
+        "name": "Underline the word.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Underline the word.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 14,
+        "name": "Color the circle.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Color the circle.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 15,
+        "name": "Cut on the line using adapted tools if needed.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Cut on the line using adapted tools if needed.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 16,
+        "name": "Glue the picture.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Glue the picture.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 17,
+        "name": "Put your paper in the tray.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Put your paper in the tray.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 18,
+        "name": "Get your folder.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Get your folder.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 19,
+        "name": "Check your work.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Check your work.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 20,
+        "name": "Put your materials away.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 2,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Put your materials away.",
+          "benchmark_id": "FUNC-B2",
+          "benchmark_name": "Classroom & Academic Written Directions",
+          "staff_observed": true,
+          "benchmark_number": 2,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 21,
+        "name": "Get pencil → Write name.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Get pencil → Write name.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 22,
+        "name": "Get folder → Sit down.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Get folder → Sit down.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 23,
+        "name": "Wash hands → Dry hands.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Wash hands → Dry hands.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 24,
+        "name": "Get lunch → Sit at table.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Get lunch → Sit at table.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 25,
+        "name": "Pick up paper → Put it in tray.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Pick up paper → Put it in tray.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 26,
+        "name": "Get book → Open book → Read or access text.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Get book → Open book → Read or access text.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 27,
+        "name": "Finish work → Check work → Turn it in.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Finish work → Check work → Turn it in.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 28,
+        "name": "Get backpack → Put folder inside → Zip backpack.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Get backpack → Put folder inside → Zip backpack.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 29,
+        "name": "Enter room → Put belongings away → Sit down.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Enter room → Put belongings away → Sit down.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 30,
+        "name": "Gather materials → Complete task → Clean area.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 3,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Gather materials → Complete task → Clean area.",
+          "benchmark_id": "FUNC-B3",
+          "benchmark_name": "Multistep Written & Visual Directions",
+          "staff_observed": true,
+          "benchmark_number": 3,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 31,
+        "name": "Follow a classroom visual schedule.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow a classroom visual schedule.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 32,
+        "name": "Follow a First/Then board.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow a First/Then board.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 33,
+        "name": "Follow a work checklist.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow a work checklist.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 34,
+        "name": "Follow a bathroom routine visual.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow a bathroom routine visual.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 35,
+        "name": "Follow a handwashing visual.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow a handwashing visual.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 36,
+        "name": "Follow a cleanup checklist.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow a cleanup checklist.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 37,
+        "name": "Follow an approved computer login instruction card without sharing credentials.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow an approved computer login instruction card without sharing credentials.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 38,
+        "name": "Follow a classroom center schedule.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow a classroom center schedule.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 39,
+        "name": "Follow posted steps for completing an assignment.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow posted steps for completing an assignment.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      },
+      {
+        "id": 40,
+        "name": "Follow a posted transition or dismissal routine.",
+        "metadata": {
+          "scoring": "Present the actual accessible written, visual, or combined direction. Score independent completion; the text shown here is not a substitute for a pictorial visual support.",
+          "benchmark": 4,
+          "condition": "",
+          "skill_type": "Application",
+          "base_target": "Follow a posted transition or dismissal routine.",
+          "benchmark_id": "FUNC-B4",
+          "benchmark_name": "Visual Schedules, Checklists & Routines",
+          "staff_observed": true,
+          "benchmark_number": 4,
+          "expected_response": ""
+        }
+      }
+    ],
+    "sd_prefix": "",
+    "runner_key": "compass-functions",
+    "skill_type": "Application",
+    "description": "Functional independence through written, visual, combined, multistep, checklist, schedule, and routine-based directions using accessible supports.",
+    "mastery_pct": 80,
+    "skill_types": [
+      "Application",
+      "Expressive"
+    ],
+    "instructions": {
+      "circuit": "Circuit presents all 10 targets in the selected benchmark once in a newly randomized order and prevents the immediately previous full order from repeating.",
+      "purpose": "Teach functional independence by following written, visual, combined, multistep, checklist, schedule, and routine-based directions across relevant environments.",
+      "teaching_procedure": [
+        "Gain attention and present the actual written, visual, checklist, schedule, or combined cue required by the target.",
+        "Allow approximately 3–5 seconds for an independent response when appropriate.",
+        "Use the least intrusive prompt needed and fade prompts systematically.",
+        "Honor AAC, pointing, adapted writing/input methods, motor supports, and other individualized accessibility supports.",
+        "Score Correct, Prompted, or Incorrect / No Response and reinforce according to the learner plan."
+      ],
+      "mastered_distractors": "Use Mastered Target inserts learner-specific mastered Functions targets into D trials as maintenance opportunities."
+    },
+    "program_code": "CP-DIR-VISUAL-087",
+    "program_name": "Functions",
+    "scoring_mode": "staff",
+    "trial_chains": [
+      {
+        "label": "Default · T T D T D D T T",
+        "value": "T,T,D,T,D,D,T,T",
+        "runner_select_value": "TTDTDDTT"
+      },
+      {
+        "label": "Momentum · T T T T",
+        "value": "T,T,T,T",
+        "runner_select_value": "TTTT"
+      },
+      {
+        "label": "Short · T T D T T",
+        "value": "T,T,D,T,T",
+        "runner_select_value": "TTDTT"
+      },
+      {
+        "label": "IEP Chain · T T T T T",
+        "value": "T,T,T,T,T",
+        "runner_select_value": "IEP_TTTTT"
+      },
+      {
+        "label": "Alternating · T D T D T D T",
+        "value": "T,D,T,D,T,D,T",
+        "runner_select_value": "TDTDTDT"
+      },
+      {
+        "label": "3 Target Steps",
+        "value": "T,T,T",
+        "runner_select_value": "TTT"
+      },
+      {
+        "label": "5 Target Steps",
+        "value": "T,T,T,T,T",
+        "runner_select_value": "TTTTT"
+      },
+      {
+        "label": "10 Target Steps",
+        "value": "T,T,T,T,T,T,T,T,T,T",
+        "runner_select_value": "TTTTTTTTTT"
+      },
+      {
+        "label": "15 Target Steps",
+        "value": "T,T,T,T,T,T,T,T,T,T,T,T,T,T,T",
+        "runner_select_value": "TTTTTTTTTTTTTTT"
+      },
+      {
+        "label": "Single · T",
+        "value": "T",
+        "runner_select_value": "T"
+      },
+      {
+        "label": "Circuit — all benchmark targets",
+        "value": "CIRCUIT",
+        "runner_select_value": "CIRCUIT"
+      }
+    ],
+    "default_chain": "T,T,D,T,D,D,T,T",
+    "benchmark_sets": [
+      {
+        "id": "FUNC-B1",
+        "name": "Following Written and Visual Directions",
+        "number": 1,
+        "target_count": 10
+      },
+      {
+        "id": "FUNC-B2",
+        "name": "Classroom & Academic Written Directions",
+        "number": 2,
+        "target_count": 10
+      },
+      {
+        "id": "FUNC-B3",
+        "name": "Multistep Written & Visual Directions",
+        "number": 3,
+        "target_count": 10
+      },
+      {
+        "id": "FUNC-B4",
+        "name": "Visual Schedules, Checklists & Routines",
+        "number": 4,
+        "target_count": 10
+      }
+    ],
+    "runner_version": 4,
+    "expressive_mode": {
+      "staff_scored": true,
+      "requires_execution": false,
+      "accepted_modalities": [
+        "speech",
+        "AAC",
+        "sign",
+        "typing",
+        "other established communication"
+      ],
+      "written_instruction_visible": true
+    },
+    "program_version": "v3-functions-application-expressive-written-directions",
+    "circuit_order_mode": "random_each_run",
+    "compass_v25_standard": {
+      "qa": {
+        "browser_stress_test": "passed",
+        "catalog_structural_audit": "completed",
+        "ready_for_district_release": false,
+        "per_program_clinical_review": "pending",
+        "two_screen_visual_conversion": "completed"
+      },
+      "scoring": {
+        "preserve_trial_events": true,
+        "mastery_percent_default": 80,
+        "teaching_distinct_dates_required": 3,
+        "probe_counts_towards_teaching_mastery": false
+      },
+      "version": "25.2",
+      "workflow": {
+        "setup_screen": "Program Setup and Instructions side by side",
+        "touch_min_px": 44,
+        "behaviors_max": 8,
+        "teaching_screen": "70% student materials / 30% staff scoring"
+      },
+      "reference": "COMPASS 1:1 Counting V25 locked universal design",
+      "benchmarks": [
+        {
+          "id": "FUNC-B1",
+          "end": 10,
+          "name": "Following Written and Visual Directions",
+          "start": 1,
+          "number": 1,
+          "target_count": 10
+        },
+        {
+          "id": "FUNC-B2",
+          "end": 20,
+          "name": "Classroom & Academic Written Directions",
+          "start": 11,
+          "number": 2,
+          "target_count": 10
+        },
+        {
+          "id": "FUNC-B3",
+          "end": 30,
+          "name": "Multistep Written & Visual Directions",
+          "start": 21,
+          "number": 3,
+          "target_count": 10
+        },
+        {
+          "id": "FUNC-B4",
+          "end": 40,
+          "name": "Visual Schedules, Checklists & Routines",
+          "start": 31,
+          "number": 4,
+          "target_count": 10
+        }
+      ],
+      "asset_policy": {
+        "no_placeholder_substitution": true,
+        "preserve_original_runner_html": true,
+        "preserve_original_embedded_images": true
+      },
+      "target_registry": {
+        "source": "master_target_table",
+        "config_count": 40,
+        "counts_match": true,
+        "master_count": 40,
+        "preserve_original_targets": true
+      },
+      "benchmark_source": "explicit_benchmark_sets",
+      "updated_for_audit_at": "2026-10-26T05:02:34.37131+00:00"
+    },
+    "staff_scored_skill_types": [
+      "Application",
+      "Expressive"
+    ],
+    "circuit_no_immediate_repeat": true,
+    "written_instructions_preserved": true
+  },
+  "note": "Backup of program template only; student data deliberately omitted. Original runner HTML retained as inactive Supabase version 4."
+}
