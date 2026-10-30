@@ -54,6 +54,7 @@ const cases=[
         setupVisible:!!document.querySelector('.program-setup')||
                      !!document.querySelector('#setupPage')||
                      !!document.querySelector('#setup'),
+                     !!(document.getElementById('setupBody')&&document.getElementById('target')&&document.getElementById('chain')),
         twoPage:!!document.getElementById('setupPage')&&!!document.getElementById('runPage'),
         behaviors:!!document.getElementById('behaviorBar')||
                   !!document.getElementById('behaviorList')||
