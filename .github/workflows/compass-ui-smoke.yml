@@ -7,6 +7,7 @@ on:
       - 'scripts/smoke-ui.cjs'
       - 'scripts/test-bulk-edit.cjs'
       - 'scripts/test-edit-program-goals.cjs'
+      - 'scripts/test-quick-student-switch.cjs'
       - 'scripts/test-aac-auth-handoff.cjs'
       - 'scripts/test-actions-v25-live.cjs'
       - 'scripts/test-animal-v25-live.cjs'
@@ -29,6 +30,7 @@ on:
       - 'scripts/smoke-ui.cjs'
       - 'scripts/test-bulk-edit.cjs'
       - 'scripts/test-edit-program-goals.cjs'
+      - 'scripts/test-quick-student-switch.cjs'
       - 'scripts/test-aac-auth-handoff.cjs'
       - 'scripts/test-actions-v25-live.cjs'
       - 'scripts/test-animal-v25-live.cjs'
@@ -68,6 +70,7 @@ jobs:
           node scripts/smoke-ui.cjs
           node scripts/test-bulk-edit.cjs
           node scripts/test-edit-program-goals.cjs
+          node scripts/test-quick-student-switch.cjs
           node scripts/test-aac-auth-handoff.cjs
           node scripts/test-actions-v25-live.cjs
           node scripts/test-animal-v25-live.cjs
