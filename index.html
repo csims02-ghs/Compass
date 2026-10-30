@@ -1947,6 +1947,37 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   const programSubDomain=p=>programConfig(p).sub_domain||programConfig(p).domain||'';
   function toast(msg,type='success'){const t=$('toast');t.textContent=msg;t.className='toast '+type;clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.add('hidden'),3600)}
   async function safe(fn,fallback=[]){try{const r=await fn();if(r.error)throw r.error;return r.data??fallback}catch(e){console.warn(e);return fallback}}
+  // A failed library request must never masquerade as zero programs.
+  let programCatalogRefreshPromise=null;
+  async function fetchProgramCatalog(){
+    for(let attempt=1;attempt<=2;attempt++){
+      try{
+        const {data,error}=await sb.from('compass_programming_programs').select('*').eq('active',true).order('program_name');
+        if(error)throw error;
+        if(!Array.isArray(data))throw new Error('Invalid program catalog response');
+        state.programCatalogLoadFailed=false;
+        return data;
+      }catch(error){
+        console.warn('COMPASS catalog load attempt '+attempt+' failed',error);
+      }
+    }
+    state.programCatalogLoadFailed=true;
+    return [];
+  }
+  async function reloadProgramCatalog(){
+    if(state.offlineMode||!state.user)return;
+    if(programCatalogRefreshPromise)return programCatalogRefreshPromise;
+    const status=$('programLibraryResults');
+    if(status)status.textContent='Reloading COMPASS programs…';
+    programCatalogRefreshPromise=(async()=>{
+      const results=await fetchProgramCatalog();
+      // Do not discard previously loaded programs after a temporary fetch failure.
+      if(!state.programCatalogLoadFailed)state.programCatalog=results;
+      renderProgramLibrary();
+      return results;
+    })().finally(()=>{programCatalogRefreshPromise=null});
+    return programCatalogRefreshPromise;
+  }
   function schoolForStudent(s){const classroom=state.classrooms.find(c=>c.id===s?.classroom_id);const school=classroom?state.schools.find(x=>x.id===classroom.school_id):null;return{classroom,school}}
   function accuracy(s){const all=Number(s?.trials_total||0),total=Math.max(0,all-Number(s?.no_response||0)),correct=Number(s?.targets_correct||0);if(total>0)return Math.round(correct/total*100);if(all>0)return null;const src=s?.source_record||{};if(Number.isFinite(Number(src.accuracy)))return Math.round(Number(src.accuracy));if(Number.isFinite(Number(src.percent)))return Math.round(Number(src.percent));return null}
   function showLanding(){$('landingScreen')?.classList.remove('hidden');$('loginScreen').classList.add('hidden');$('app').classList.add('hidden');window.scrollTo({top:0})}
@@ -2082,7 +2113,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   const withTimeout=(p,ms,v)=>Promise.race([p,new Promise(r=>setTimeout(()=>r(v),ms))]);
   function bootstrap(){if(bootInFlight){bootAgain=true;return bootInFlight}bootInFlight=bootstrapInner().finally(()=>{bootInFlight=null;if(bootAgain){bootAgain=false;sb.auth.getSession().then(({data})=>{const id=data?.session?.user?.id||null;if(id&&id!==(state.user?.id||null))bootstrap()}).catch(()=>{})}});return bootInFlight}
   function takeAuthNotice(){try{const n=sessionStorage.getItem('compassAuthNotice');if(n)sessionStorage.removeItem('compassAuthNotice');return n||''}catch(e){return''}}
-  async function bootstrapInner(){const authNotice=takeAuthNotice();await registerOfflineShell();updateConnectionUI();if(!navigator.onLine){await bootstrapOffline();return}const {data:{session}}=await sb.auth.getSession();if(!session?.user){if(authNotice)showLogin(authNotice);else showLanding();await renderOfflinePage();await updateOfflineBadges();return}state.user=session.user;const {data:p,error}=await sb.from('profiles').select('*').eq('id',state.user.id).maybeSingle();if(error&&!error.code&&/failed to fetch|load failed|networkerror|network request failed/i.test(String(error.message||''))){await bootstrapOffline();return}if(error||!p||p.active===false){showLogin('This account is not provisioned as an active COMPASS staff profile.');return}state.profile=p;state.offlineMode=false;await withTimeout(purgeOtherUsersDownloads(state.user.id),1500);showApp();renderIdentity();const [students,classrooms,schools,programs,behaviors,caseload]=await Promise.all([safe(()=>sb.from('students').select('*').order('display_label')),safe(()=>sb.from('classrooms').select('*').order('name')),safe(()=>sb.from('schools').select('*').order('name')),safe(()=>sb.from('compass_programming_programs').select('*').eq('active',true).order('program_name')),safe(()=>sb.from('behavior_definitions').select('*').order('display_order').order('name')),safe(()=>sb.from('provider_caseloads').select('*').eq('status','active'))]);Object.assign(state,{students,classrooms,schools,programCatalog:programs,behaviorDefinitions:behaviors,caseloadRows:caseload});deriveCaseload();renderDirectory();renderStudentSearch();renderProgramLibrary();await Promise.all([loadHome(),loadGlobalData(),loadCalendar(),renderOfflinePage()]);await updateOfflineBadges();const h=location.hash.replace('#','');showPage(h&&$('page-'+h)?h:'home',false)}
+  async function bootstrapInner(){const authNotice=takeAuthNotice();await registerOfflineShell();updateConnectionUI();if(!navigator.onLine){await bootstrapOffline();return}const {data:{session}}=await sb.auth.getSession();if(!session?.user){if(authNotice)showLogin(authNotice);else showLanding();await renderOfflinePage();await updateOfflineBadges();return}state.user=session.user;const {data:p,error}=await sb.from('profiles').select('*').eq('id',state.user.id).maybeSingle();if(error&&!error.code&&/failed to fetch|load failed|networkerror|network request failed/i.test(String(error.message||''))){await bootstrapOffline();return}if(error||!p||p.active===false){showLogin('This account is not provisioned as an active COMPASS staff profile.');return}state.profile=p;state.offlineMode=false;await withTimeout(purgeOtherUsersDownloads(state.user.id),1500);showApp();renderIdentity();const [students,classrooms,schools,programs,behaviors,caseload]=await Promise.all([safe(()=>sb.from('students').select('*').order('display_label')),safe(()=>sb.from('classrooms').select('*').order('name')),safe(()=>sb.from('schools').select('*').order('name')),fetchProgramCatalog(),safe(()=>sb.from('behavior_definitions').select('*').order('display_order').order('name')),safe(()=>sb.from('provider_caseloads').select('*').eq('status','active'))]);Object.assign(state,{students,classrooms,schools,programCatalog:programs,behaviorDefinitions:behaviors,caseloadRows:caseload});deriveCaseload();renderDirectory();renderStudentSearch();renderProgramLibrary();await Promise.all([loadHome(),loadGlobalData(),loadCalendar(),renderOfflinePage()]);await updateOfflineBadges();const h=location.hash.replace('#','');showPage(h&&$('page-'+h)?h:'home',false)}
   function deriveCaseload(){let rows=[...state.caseloadRows].filter(r=>r.provider_user_id===state.user.id);const seen=new Set(),list=[];for(const r of rows){if(seen.has(r.student_id))continue;const s=studentById(r.student_id);if(s){seen.add(r.student_id);list.push({...s,_caseloadRow:r})}}state.caseloadStudents=list;renderCaseload();renderHomeCaseload()}
   async function refreshReferences(){state.students=await safe(()=>sb.from('students').select('*').order('display_label'));state.caseloadRows=await safe(()=>sb.from('provider_caseloads').select('*').eq('status','active'));deriveCaseload();renderDirectory();renderStudentSearch();await loadHome()}
   async function loadHome(){const start=new Date();start.setDate(1);start.setHours(0,0,0,0);const end=new Date(start);end.setMonth(end.getMonth()+1);const [actions,reqs,logs,comp,todaySessions]=await Promise.all([safe(()=>sb.from('provider_action_items').select('*').in('status',['open','in_progress'])),safe(()=>sb.from('student_service_requirements').select('*').eq('active',true)),safe(()=>sb.from('service_delivery_logs').select('*').gte('service_date',localISO(start)).lt('service_date',localISO(end))),safe(()=>sb.from('provider_monthly_compliance').select('*').order('month_start',{ascending:false}).limit(1)),safe(()=>sb.from('compass_program_sessions').select('id,session_date').eq('session_date',todayISO()).is('deleted_at',null))]);$('homeCaseloadCount').textContent=state.caseloadStudents.length;const myStudentIds=homeScopeIds();$('homeActionCount').textContent=actions.filter(t=>String(t.provider_user_id||'')===String(state.user?.id||'')||(!t.provider_user_id&&myStudentIds.has(t.student_id))).length;const delivered=logs.reduce((a,x)=>a+Number(x.minutes_delivered||0),0),required=reqs.reduce((a,x)=>a+Number(x.monthly_required_minutes||0),0);$('homeServiceCount').textContent=delivered+' / '+required;$('homeCompliance').textContent=comp[0]?.compliance_percent!=null?Math.round(Number(comp[0].compliance_percent))+'%':'—';$('homeComplianceDesc').textContent=comp[0]?.status?roleName(comp[0].status):'Not calculated';await updateCaseloadInsights();renderHomeInsights();renderHomeCaseload();renderSchedules();await renderHomePerformance()}
@@ -2350,7 +2381,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const count=items.length,size=25,pages=Math.max(1,Math.ceil(count/size));
     programLibraryPage=Math.max(1,Math.min(programLibraryPage,pages));
     const visible=items.slice((programLibraryPage-1)*size,programLibraryPage*size);
-    $('programLibraryResults').textContent='Showing '+visible.length+' of '+count+' matching programs'+(count===state.programCatalog.length?'':' · '+state.programCatalog.length+' total');
+    $('programLibraryResults').textContent=state.programCatalogLoadFailed?'Program list could not be loaded — retry below.':'Showing '+visible.length+' of '+count+' matching programs'+(count===state.programCatalog.length?'':' · '+state.programCatalog.length+' total');
     $('programPageSummary').textContent=count?'Showing '+((programLibraryPage-1)*size+1)+'–'+((programLibraryPage-1)*size+visible.length)+' of '+count+' programs':'No matching programs';
     $('programPageIndicator').textContent='Page '+programLibraryPage+' of '+pages;
     $('programPrevPage').disabled=programLibraryPage<=1;
@@ -2368,7 +2399,8 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       '<button class="btn small cp-program-open" type="button" data-open-library-program="'+esc(p.id)+'"'+disable+'>Open</button>'+
       (state.profile?.role==='platform_admin'?'<button class="btn small cp-program-more" type="button" data-program-details="'+esc(p.id)+'" aria-label="Edit '+esc(p.program_name)+'">⋮</button>':'')+
       '</div></td></tr>';
-    }).join('')||'<tr><td colspan="7" class="muted">No matching programs. Adjust your filters or search.</td></tr>';
+    }).join('')||(state.programCatalog.length?' <tr><td colspan="7" class="muted">No matching programs. Adjust your filters or search.</td></tr>':'<tr><td colspan="7">Programs are not displayed yet. <button type="button" class="btn small" id="reloadProgramCatalog">Reload Programs</button></td></tr>');
+    $('reloadProgramCatalog')?.addEventListener('click',()=>{void reloadProgramCatalog()});
   }
   function previewLibraryProgram(id){
     const p=state.programCatalog.find(x=>x.id===id);if(!p)return;
@@ -2402,8 +2434,13 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       if(state.currentStudent?.id===id){if(page){page.classList.remove('compass-profile-loading');page.removeAttribute('aria-busy')}if(pending)pending.hidden=true}
     }catch(error){
       console.error('COMPASS student profile load failed',error);
-      if(state.currentStudent?.id===id&&pending)pending.textContent='Student profile could not load. Please return to Caseload and try again.';
-      toast('Student profile could not load. Please try again.','error');
+      if(state.currentStudent?.id===id){
+        // Never reveal another student's old profile after a failed request.
+        showPage('students');
+        if(page){page.classList.remove('compass-profile-loading');page.removeAttribute('aria-busy')}
+        if(pending)pending.hidden=true;
+      }
+      toast('Student profile could not load. Open the student again to retry.','error');
     }
   }
   let studentProfileLoadSeq=0;
@@ -2429,6 +2466,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       grab(()=>sb.from('service_delivery_logs').select('*').eq('student_id',sid).order('service_date',{ascending:false}).limit(100))
     ]);
     if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
+    state.studentProgramsLoadError=!!programRes?.error;
     const programs=take(programRes,priorPrograms,'programs'),goals=take(goalRes,priorGoals,'IEP goals'),notes=take(noteRes,priorNotes,'notes'),docs=take(docRes,priorDocs,'documents'),assessments=take(assessmentRes,priorAssessments,'assessments'),services=take(serviceRes,priorServices,'services'),logs=take(logRes,priorLogs,'service logs');
     Object.assign(state,{studentPrograms:programs,goals,notes,documents:docs,assessments,services,serviceLogs:logs});
     const sessionIds=notes.filter(n=>n.note_type==='session').map(n=>n.id);
@@ -2462,8 +2500,14 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     await loadTeam();
     if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
     renderStudentProfile();
-    await loadCalendar();
-    await loadProgramLists();
+    // The student's own programs are rendered. Unmask now; calendar/list sync is ancillary.
+    if(seq===studentProfileLoadSeq&&state.currentStudent?.id===sid){
+      const profilePage=$('page-student-profile'),indicator=$('compassProfileLoading');
+      if(profilePage){profilePage.classList.remove('compass-profile-loading');profilePage.removeAttribute('aria-busy')}
+      if(indicator)indicator.hidden=true;
+    }
+    const auxiliary=await Promise.allSettled([loadCalendar(),loadProgramLists()]);
+    auxiliary.forEach((result,i)=>{if(result.status==='rejected')console.warn('COMPASS student auxiliary refresh failed',i,result.reason)});
   }
   async function loadTeam(){const cid=state.currentStudent?.classroom_id;if(!cid){state.team=[];return}const staff=await safe(()=>sb.from('classroom_staff').select('*').eq('classroom_id',cid)),ids=staff.map(x=>x.user_id);if(!ids.length){state.team=[];return}const profiles=await safe(()=>sb.from('profiles').select('id,full_name,role,active').in('id',ids));state.team=staff.map(x=>({...x,profile:profiles.find(p=>p.id===x.user_id)}))}
 
@@ -2791,7 +2835,8 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       tr.innerHTML=`<td><strong>${esc(p?.program_name||'Program')}</strong></td><td>${esc(programDomain(p))}</td><td class="assigned-iep-goals" data-assigned-goals="${sp.id}" title="${esc(goalDetailsForSP(sp.id))}">${goalMarkupForSP(sp.id)}</td><td><select class="control compact" data-program-status="${sp.id}"><option value="active"${sp.status==='active'?' selected':''}>Active</option><option value="hold"${sp.status==='hold'?' selected':''}>On Hold</option><option value="mastered"${sp.status==='mastered'?' selected':''}>Mastered</option></select></td><td><input class="control compact num" type="number" min="0" max="100" value="${Number(sp.goal_percentage||80)}" data-program-goal="${sp.id}"></td><td>${sp.display_order??0}</td><td><button class="btn small program-acquisition-btn" type="button" data-acquisition-program="${sp.id}" aria-label="Acquisition Data for ${esc(p?.program_name||'Program')}">Acquisition Data</button></td>`;
       b.appendChild(tr)
     }
-    if(!rows.length)b.innerHTML='<tr><td colspan="7" class="muted">No assigned programs. Use + Assign Program to choose from the '+state.programCatalog.length+'-program COMPASS library.</td></tr>';
+    if(!rows.length)b.innerHTML=state.studentProgramsLoadError?'<tr><td colspan="7">Assigned programs could not be loaded. <button class="btn small" type="button" id="retryAssignedPrograms">Retry Programs</button></td></tr>':'<tr><td colspan="7" class="muted">No assigned programs. Use + Assign Program to choose from the '+state.programCatalog.length+'-program COMPASS library.</td></tr>';
+    $('retryAssignedPrograms')?.addEventListener('click',()=>{void loadStudentProfile()});
     $('pAssigned').textContent=rows.length;
     $('pActive').textContent=rows.filter(x=>x.status==='active').length;
     $('pMastered').textContent=rows.filter(x=>x.status==='mastered').length;
@@ -3301,7 +3346,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function renderCalendarInto(titleId,gridId){const d=new Date(state.calendarDate.getFullYear(),state.calendarDate.getMonth(),1),title=$(titleId),g=$(gridId);if(!title||!g)return;title.textContent=d.toLocaleDateString(undefined,{month:'long',year:'numeric'});g.innerHTML=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="cal-head">${x}</div>`).join('');const first=new Date(d);first.setDate(1-first.getDay());for(let i=0;i<42;i++){const day=new Date(first);day.setDate(first.getDate()+i);const iso=[day.getFullYear(),String(day.getMonth()+1).padStart(2,'0'),String(day.getDate()).padStart(2,'0')].join('-'),ev=state.events.filter(e=>localISO(e.start_at)===iso),el=document.createElement('div');el.className='cal-day'+(day.getMonth()!==d.getMonth()?' other':'')+(iso===todayISO()?' today':'');el.dataset.date=iso;el.innerHTML=`<div class="cal-num">${day.getDate()}</div>`+ev.slice(0,4).map(calendarEventHtml).join('');g.appendChild(el)}}
   function showTodayInHomeCalendar(){const g=$('homeCalendarGrid'),sc=g?g.parentElement:null;if(!sc||!sc.classList.contains('home-calendar-scroll')||sc.scrollWidth<=sc.clientWidth+1)return;const t=g.querySelector('.cal-day.today');if(!t)return;sc.scrollLeft=Math.max(0,t.getBoundingClientRect().left-g.getBoundingClientRect().left-(sc.clientWidth-t.offsetWidth)/2)}
   function renderCalendar(){renderCalendarInto('homeCalendarTitle','homeCalendarGrid');showTodayInHomeCalendar()}
-  function showPage(name,push=true){if(name==='calendar')name='home';if(name==='student-search'||name==='student-directory')name='students';const p=$('page-'+name);if(!p)return;const siblings=p.parentElement?Array.from(p.parentElement.children).filter(el=>el.id&&el.id.startsWith('page-')):[];const candidates=new Set([...qsa('.page'),...siblings]);const home=$('page-home');if(home)candidates.add(home);candidates.forEach(page=>{const active=page===p;page.classList.toggle('active',active);page.hidden=!active;if(active){page.style.removeProperty('display')}else{page.style.setProperty('display','none','important')}});document.body.dataset.compassPage=name;document.body.classList.toggle('compass-home-active',name==='home');qsa('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));const additionalNav=$('compassAdditionalNav'),additionalToggle=$('compassAdditionalToggle');if(additionalNav&&['offline-programs','sessions','settings','admin-users'].includes(name)){additionalNav.hidden=false;if(additionalToggle)additionalToggle.setAttribute('aria-expanded','true')}if(push)location.hash=name;$('sidebar').classList.remove('open');window.scrollTo({top:0});if(name==='students')renderDirectory();if(name==='data-collection')loadDataCollection();if(name==='offline-programs')renderOfflinePage();if(name==='home')showTodayInHomeCalendar()}
+  function showPage(name,push=true){if(name==='calendar')name='home';if(name==='student-search'||name==='student-directory')name='students';const p=$('page-'+name);if(!p)return;const siblings=p.parentElement?Array.from(p.parentElement.children).filter(el=>el.id&&el.id.startsWith('page-')):[];const candidates=new Set([...qsa('.page'),...siblings]);const home=$('page-home');if(home)candidates.add(home);candidates.forEach(page=>{const active=page===p;page.classList.toggle('active',active);page.hidden=!active;if(active){page.style.removeProperty('display')}else{page.style.setProperty('display','none','important')}});document.body.dataset.compassPage=name;document.body.classList.toggle('compass-home-active',name==='home');qsa('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));const additionalNav=$('compassAdditionalNav'),additionalToggle=$('compassAdditionalToggle');if(additionalNav&&['offline-programs','sessions','settings','admin-users'].includes(name)){additionalNav.hidden=false;if(additionalToggle)additionalToggle.setAttribute('aria-expanded','true')}if(push)location.hash=name;$('sidebar').classList.remove('open');window.scrollTo({top:0});if(name==='students')renderDirectory();if(name==='programs'&&!state.offlineMode&&state.user&&!state.programCatalog.length)void reloadProgramCatalog();if(name==='data-collection')loadDataCollection();if(name==='offline-programs')renderOfflinePage();if(name==='home')showTodayInHomeCalendar()}
   function showProfileTab(name){if(name==='docs')name='notes';if(name==='behavior'){openBehaviorSelection();return}qsa('#profileTabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));qsa('.profile-tab').forEach(p=>p.classList.remove('active'));$('profile-tab-'+name)?.classList.add('active')}
   let modalReturnFocus=null;
   function openModal(title,html,onReady){const bd=$('modalBackdrop'),m=$('modal');if(bd.classList.contains('hidden'))modalReturnFocus=document.activeElement;bd.classList.remove('edit-programs-backdrop');m.className='modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-labelledby','modalTitle');m.setAttribute('tabindex','-1');$('modalTitle').textContent=title;$('modalBody').innerHTML=html;bd.classList.remove('hidden');setTimeout(()=>{onReady?.();if(!bd.contains(document.activeElement))m.focus({preventScroll:true})},0)}
