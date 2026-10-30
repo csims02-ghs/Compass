@@ -191,7 +191,7 @@ window.__COMPASS_STUDENT_RUNTIME__={
      document.querySelector('[data-score="correct"]').click();
      document.getElementById('saveNextBtn').click();
    });
-   await page.waitForFunction(()=>document.getElementById('validation').textContent.includes('save failed'));
+   await page.waitForFunction(()=>document.getElementById('validation').textContent.includes('COMPASS save not confirmed'));
    console.log('ANIMALS_FAILED_SAVE_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({
      validation:document.getElementById('validation').textContent,
      nextDisabled:document.getElementById('nextProgramBtn').disabled,
