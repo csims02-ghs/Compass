@@ -23,6 +23,7 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
   for(const view of [{width:1024,height:768},{width:1440,height:900}]){
    const page=await browser.newPage({viewport:view});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+   page.on('dialog',dialog=>dialog.accept());
    await page.addInitScript(({targets})=>{
      window.__QA_SAVES__=[];
      window.__COMPASS_STUDENT_RUNTIME__={
@@ -39,7 +40,7 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    },{targets:cfg.targets});
    await page.route('**/compass-program-runner?*',route=>route.fulfill({status:200,contentType:'text/html',body:html}));
    await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
-   await page.locator('#benchmarkSelect option').last().waitFor({timeout:15000});
+   await page.waitForFunction(()=>document.querySelector('#benchmarkSelect')?.options.length===5,null,{timeout:15000});
    assert.equal(await page.locator('#benchmarkSelect option').count(),5);
    await page.locator('#benchmarkSelect').selectOption('5');
    assert.equal(await page.locator('#targetSelect option').count(),10,'B5 must have 10 targets');
