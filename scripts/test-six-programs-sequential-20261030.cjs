@@ -9,18 +9,24 @@ const base='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-progra
 const cases=[
  {name:'1:1 Count',code:'CP-1TO1-COUNT',targets:100,chain:'setupChain',bench:null},
  {name:'Prepositions & Spatial Concepts',code:'CP-PREPOSITIONS-SPATIAL',targets:25,chain:'setupChain',bench:'setupBenchmark',benchCount:10},
- {name:'Pretend and Imaginative Play',code:'CP-116-PRETEND-AND-IMAGINATIVE-PLAY',targets:40,chain:'setupChain'},
- {name:'Requesting Help and Assistance',code:'CP-119-REQUESTING-HELP-AND-ASSISTANCE',targets:40,chain:'setupChain'},
+ {name:'Pretend and Imaginative Play',code:'CP-116-PRETEND-AND-IMAGINATIVE-PLAY',targets:40,chain:'setupChain',onHold:true},
+ {name:'Requesting Help and Assistance',code:'CP-119-REQUESTING-HELP-AND-ASSISTANCE',targets:40,chain:'setupChain',onHold:true},
  {name:'Letter Discrimination',code:'CP-LETTER-DISCRIMINATION',targets:220,chain:'chain',bench:'benchmark',benchCount:8},
  {name:'Less Than / Equal To / Greater Than',code:'CP-LESS-EQUAL-GREATER',targets:180,chain:'chain',bench:'benchmark',benchCount:12}
 ];
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
  try{
-  const all=[];
+  const all=[],held=[];
   for(const spec of cases){ // deliberately not Promise.all()
    const url=base+'?program_code='+encodeURIComponent(spec.code)+'&format=html&qa=1';
    const response=await fetch(url,{signal:AbortSignal.timeout(40000)});
+   if(spec.onHold){
+    assert.equal(response.status,403,spec.name+' must remain on hold (Platform Admin-only)');
+    held.push(spec.name);
+    console.log('COMPASS_PROGRAM_PROTECTED_ON_HOLD',JSON.stringify({name:spec.name,status:403,runnerTestSkipped:true,existingStatusPreserved:true}));
+    continue;
+   }
    assert.equal(response.status,200,spec.name+' response');
    const html=await response.text();
    assert(html.length>18000,spec.name+' malformed runner');
@@ -78,7 +84,8 @@ const cases=[
     await page.close();
    }
   }
-  assert.equal(all.length,12);
-  console.log('COMPASS_SIX_PROGRAMS_SEQUENTIAL_SMOKE_PASS',JSON.stringify({programs:6,views:12,markerParity38Verified:false,authenticatedStudentSaveVerified:false}));
+  assert.equal(all.length,8);
+  assert.equal(held.length,2);
+  console.log('COMPASS_SIX_PROGRAMS_SEQUENTIAL_SMOKE_PASS',JSON.stringify({programsAudited:6,activeProgramViewsTested:8,protectedOnHold:2,markerParity38Verified:false,authenticatedStudentSaveVerified:false}));
  }finally{await browser.close()}
 })().catch(e=>{console.error('COMPASS_SIX_PROGRAMS_SEQUENTIAL_SMOKE_FAIL',e);process.exitCode=1});
