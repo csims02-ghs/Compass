@@ -21,7 +21,7 @@ assert.equal(ids.length,38);
  const js=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!m[1].includes('application/json'));
  for(const m of js)new Function(m[2]);
  const standard=fs.readFileSync(path.join(__dirname,'..','compass-page2-standard.js'),'utf8');
- const win={};vm.runInNewContext(standard,{window:win});
+ const win={};vm.runInNewContext(standard,{window:win,fetch:async()=>{throw Error('Attempted legacy overlay on native V25 runner')}});
  assert.equal(await win.COMPASS_PAGE2_STANDARD.standardize(html),html,'Native V25 should not load legacy adapter');
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
  try{
