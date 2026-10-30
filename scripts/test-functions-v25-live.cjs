@@ -1,95 +1,109 @@
 'use strict';
-const fs=require('node:fs'),p=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
-const {chromium}=require('playwright'),root=p.resolve(__dirname,'..');
-const read=x=>fs.readFileSync(p.join(root,x),'utf8');
+// Native Functions V25 validation: active Supabase runner + synthetic authorized save transport.
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const {chromium}=require('playwright');
+const root=path.resolve(__dirname,'..'),read=name=>fs.readFileSync(path.join(root,name),'utf8');
 const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program-runner?program_code=CP-DIR-VISUAL-087&test=1';
 (async()=>{
  const response=await fetch(url,{signal:AbortSignal.timeout(40000)});
- assert.equal(response.status,200);
- const raw=await response.text(),win={};
- vm.runInNewContext(read('compass-page2-standard.js'),{window:win,fetch:async x=>({ok:true,text:async()=>
-  x.includes('body-parts-v25.css')?read('compass-body-parts-v25.css'):
-  x.includes('functions-v25.css')?read('compass-functions-v25.css'):read('compass-functions-v25.js')})});
- const html=await win.COMPASS_PAGE2_STANDARD.standardize(raw);
- assert(html.includes('id="compass-functions-v25-logic"'),'Production Functions V25 not injected');
- assert.equal(await win.COMPASS_PAGE2_STANDARD.standardize(html),html,'Duplicate adapter');
+ assert.equal(response.status,200,'Functions live runner unavailable');
+ const html=await response.text();
+ const match=html.match(/<script id="compassConfig" type="application\/json">([\s\S]*?)<\/script>/);
+ assert(match,'Native Functions embedded config missing');
+ const cfg=JSON.parse(match[1]);
+ assert.equal(cfg.benchmarks.length,5);
+ assert.equal(cfg.targets.length,50);
+ assert.equal(cfg.targets.filter(t=>Number(t.benchmark)===5).length,10);
+ assert.equal(cfg.targets.filter(t=>Number(t.benchmark)<=4).length,40);
+ const win={};
+ vm.runInNewContext(read('compass-page2-standard.js'),{window:win,fetch:async()=>{throw Error('Native runner must not load deprecated adapter')}});
+ assert.equal(await win.COMPASS_PAGE2_STANDARD.standardize(html),html,'Native runner must remain native; no legacy adapter overlay');
  const browser=await chromium.launch({channel:'chrome',headless:true,args:['--no-sandbox']});
  try{
   for(const view of [{width:1024,height:768},{width:1440,height:900}]){
    const page=await browser.newPage({viewport:view});
-   await page.addInitScript(()=>{
-    window.__QA_SAVES__=[];
-    window.__COMPASS_STUDENT_RUNTIME__={
-      context:{behaviors:['Noncompliance','Elopement','Aggression','Climbing','Refusal','Yelling','Disruption','Bolting']},
-      securePost:async b=>{window.__QA_SAVES__.push(b);return b.action==='save_probe'?{ok:true,probe_saved:true}:{ok:true,saved:true};},
-      autoSave:async reason=>{window.__QA_SAVES__.push({action:'save_session',reason,trial_events:window.__COMPASS_TRIAL_CAPTURE__.getEvents()});return {ok:true};}
-    };
-   });
+   const errors=[];page.on('pageerror',e=>errors.push(e.message));
+   await page.addInitScript(({targets})=>{
+     window.__QA_SAVES__=[];
+     window.__COMPASS_STUDENT_RUNTIME__={
+       context:{assignment_id:'qa-functions-assignment',student_id:'qa-functions-student',
+         targets:targets.map(t=>({id:'qa-'+t.id,target_key:String(t.id),target_name:t.name})),
+         primary_behaviors:['Leaving area','Property destruction'],iep_goals:[],instance_config:{}},
+       securePost:async req=>{window.__QA_SAVES__.push(req);
+         if(req.action==='save_setup')return{ok:true,saved:true,programSetup:req.setup};
+         if(req.action==='save_probe')return{ok:true,probe_saved:true,probe_id:'qa-verbal-probe'};
+         return{ok:true,saved:true};},
+       saveSession:async payload=>{window.__QA_SAVES__.push({action:'save_session',payload});
+         return{ok:true,session_id:'qa-functions-session',saved_trial_events:payload.trial_events?.length||0};}
+     };
+   },{targets:cfg.targets});
    await page.route('**/compass-program-runner?*',route=>route.fulfill({status:200,contentType:'text/html',body:html}));
-   let errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
-   await page.locator('#bpRun').waitFor({timeout:12000});
-   assert.equal(await page.locator('#funcBenchmark option').count(),5);
-   assert.equal(await page.locator('#setupTarget option').count(),10);
-   await page.locator('#funcBenchmark').selectOption('2');
-   assert.equal(await page.locator('#setupTarget option').count(),10);
-   await page.locator('#funcBenchmark').selectOption('4');
-   assert.equal(await page.locator('#setupTarget option').count(),10,'Verbal benchmark needs 10 distinct targets');
-   await page.locator('#funcBenchmark').selectOption('0');
-   await page.locator('#bpRun').click();
-   await page.locator('#bpPageTwo').waitFor({state:'visible'});
-   const metrics=await page.evaluate(()=>{const a=document.querySelector('#bpMaterial').getBoundingClientRect(),b=document.querySelector('#bpScoring').getBoundingClientRect(),n=document.querySelector('#behaviorItems');return {ratio:a.width/(a.width+b.width),behaviors:n.querySelectorAll('.behavior').length,scroll:n.scrollHeight>n.clientHeight,old:document.querySelector('#workspace').getBoundingClientRect().height};});
-   console.log('FUNCTIONS_V25_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({context:window.__COMPASS_STUDENT_RUNTIME__?.context?.behaviors,exists:typeof setBehaviorDefinitions,defs:typeof behaviorDefinitions==='undefined'?null:behaviorDefinitions,container:document.getElementById('behaviorItems')?.outerHTML.slice(0,950),state:window.__COMPASS_FUNCTIONS_V25__?.getState()}))));
-   assert(metrics.ratio>.60&&metrics.ratio<.76,'Page2 ratio '+JSON.stringify(metrics));
-   assert.equal(metrics.behaviors,8);assert(metrics.scroll);assert.equal(metrics.old,0);
-   await page.locator('#bpImages').click();
-   assert((await page.locator('#bpImages').innerText()).includes('Exit'));
-   await page.locator('#bpImages').click();
-   const len=await page.evaluate(()=>plan.length);
-   for(let i=0;i<len;i++){
-    await page.locator(i%3===0?'#correctBtn':i%3===1?'#promptedBtn':'#incorrectBtn').click();
-    await page.waitForFunction(n=>window.__COMPASS_FUNCTIONS_V25__.getState().events.length===n+1,i,{timeout:12000});
-    if(i<len-1)await page.waitForFunction(n=>Number(trial)===n+1,i,{timeout:12000});
-   }
-   const state=await page.evaluate(()=>({r:window.__COMPASS_FUNCTIONS_V25__.getState(),s:window.__QA_SAVES__}));
-   assert(state.r.complete&&state.r.saved,'Final autosave failed');
-   assert.equal(state.s.filter(x=>x.action==='save_session').length,len);
-   await page.locator('#bpBack').click();
-   await page.locator('#funcBenchmark').selectOption('4');
-   assert.equal(await page.locator('#setupTarget option').count(),10);
-   await page.locator('#funcCircuit').selectOption('probe');
-   await page.locator('#bpRun').click();
-   assert.equal(await page.evaluate(()=>plan.length),10);
-   const verbal=await page.evaluate(()=>{
-     const staff=document.querySelector('#funcStaffVerbalCue');
-     const target=document.querySelector('#funcVerbalDirection')?.textContent||'';
-     const material=document.querySelector('#bpMaterial')?.textContent||'';
-     const panel=document.querySelector('#funcPrompt')?.textContent||'';
-     const support=document.querySelector('#funcSupport')?.textContent||'';
-     return {staffVisible:!!staff&&!staff.hidden, target,material,panel,support,
-       stepsHidden:document.querySelector('#funcSteps')?.hidden};
+   await page.locator('#benchmarkSelect option').last().waitFor({timeout:15000});
+   assert.equal(await page.locator('#benchmarkSelect option').count(),5);
+   await page.locator('#benchmarkSelect').selectOption('5');
+   assert.equal(await page.locator('#targetSelect option').count(),10,'B5 must have 10 targets');
+   const firstCue=await page.locator('#targetSelect option').first().textContent();
+   await page.locator('#chainSelect').selectOption('T');
+   await page.locator('#runBtn').click();
+   await page.locator('#runPage.active').waitFor({timeout:15000});
+   const details=await page.evaluate(()=>{
+     const target=document.querySelector('#functionsVerbalStaffCue')?.querySelector('p')?.textContent||'';
+     const learner=document.querySelector('#runPage .material-card')?.textContent||'';
+     const gate=document.querySelector('#actionsMaterialsGate');
+     const material=document.querySelector('#runPage .material-card')?.getBoundingClientRect();
+     const scoring=document.querySelector('#runPage .score-card')?.getBoundingClientRect();
+     return{target,learner,gateText:gate?.textContent||'',
+       staffVisible:document.querySelector('#functionsVerbalStaffCue')?.hidden===false,
+       icon:document.querySelector('#sdPrompt')?.textContent,ratio:material.width/(material.width+scoring.width),
+       overflow:document.documentElement.scrollWidth>innerWidth+2};
    });
-   assert(verbal.staffVisible,'Spoken SD not provided in staff panel');
-   assert(verbal.target.length>10,'Missing actual spoken direction');
-   assert(!verbal.material.includes(verbal.target),'Written answer must NOT appear in student-facing material');
-   assert.equal(verbal.panel,'🔊','Student-facing signal should be neutral');
-   assert(verbal.stepsHidden,'Do not show written multi-step SD to student');
-   assert(/Listen/.test(verbal.support),'Student-facing instruction should remain neutral');
+   assert(details.staffVisible,'Staff spoken direction must be visible');
+   assert(details.target.length>10&&details.target===firstCue,'Staff cue must match the selected target');
+   assert(!details.learner.includes(details.target),'Never reveal the spoken SD in student-facing material');
+   assert.equal(details.icon,'🔊');
+   assert(details.gateText.includes('Spoken direction delivered'),'B5 needs verbal-specific verification');
+   assert(details.ratio>.62&&details.ratio<.76,'V25 70/30 split changed');
+   assert.equal(details.overflow,false,'Viewport has horizontal overflow');
+   assert.equal(await page.locator('[data-score="correct"]').first().isDisabled(),true,'Must deliver spoken cue before scoring');
+   await page.locator('#actionsVerifyMaterialsBtn').click();
+   await page.locator('[data-score="correct"]').first().click();
+   await page.locator('#saveNextBtn').click();
+   await page.waitForFunction(()=>window.__QA_SAVES__.some(x=>x.action==='save_session'),{timeout:15000});
+   const teaching=await page.evaluate(()=>({run:window.COMPASS_REVIEW_TEST.getRun(),saved:window.__QA_SAVES__.filter(x=>x.action==='save_session')}));
+   assert.equal(teaching.run.events.length,1);
+   assert.equal(teaching.run.events[0].instruction_delivery,'verbal_only');
+   assert.equal(teaching.saved[0].payload.v25_run.instruction_delivery,'verbal_only');
+   assert.equal(teaching.saved[0].payload.trial_events.length,1);
+   await page.locator('#backBtn').click();
+   await page.locator('#benchmarkSelect').selectOption('1');
+   assert.equal(await page.locator('#targetSelect option').count(),10,'Original B1 missing');
+   await page.locator('#runBtn').click();
+   assert.equal(await page.locator('#functionsVerbalStaffCue').isHidden(),true,'Staff-only B5 cue leaked into B1');
+   const normal=await page.locator('#sdPrompt').textContent();
+   assert.notEqual(normal,'🔊','Original written/visual benchmark changed');
+   await page.locator('#backBtn').click();
+   await page.locator('#benchmarkSelect').selectOption('5');
+   await page.locator('#circuitSelect').selectOption('probe');
+   await page.locator('#runBtn').click();
+   assert.equal(await page.evaluate(()=>window.COMPASS_REVIEW_TEST.getRun().steps.length),10);
    for(let i=0;i<10;i++){
-    await page.locator('#correctBtn').click();
-    if(i<9)await page.waitForFunction(n=>Number(trial)===n+1,i,{timeout:12000});
+     await page.locator('#actionsVerifyMaterialsBtn').click();
+     await page.locator('[data-score="correct"]').first().click();
+     await page.locator('#saveNextBtn').click();
+     await page.waitForFunction(n=>window.COMPASS_REVIEW_TEST.getRun().events.length>=n,i+1,{timeout:12000});
    }
-   await page.waitForFunction(()=>window.__COMPASS_FUNCTIONS_V25__.getState().complete);
-   const probe=await page.evaluate(()=>window.__QA_SAVES__.filter(x=>x.action==='save_probe'));
-   assert.equal(probe.length,1);
-   assert.equal(probe[0].benchmark_key,'FUNC-B5');
-   assert.equal(probe[0].events.length,10);
-   assert.equal(new Set(probe[0].events.map(x=>x.target_name)).size,10);
-   const all=await page.evaluate(()=>window.__COMPASS_FUNCTIONS_V25__.getState().events);
-   assert(all.every(x=>x.instruction_delivery==='verbal_only'),'Probe events must retain verbal-only modality');
-   assert.deepEqual(errors,[]);
-   console.log('FUNCTIONS_VERBAL_B5_STRESS_PASS',JSON.stringify({view,metrics,teachingSteps:len,verbalProbeTargets:10,staffOnlyCue:true}));
+   await page.waitForFunction(()=>window.__QA_SAVES__.some(x=>x.action==='save_probe'),{timeout:15000});
+   const probed=await page.evaluate(()=>({saves:window.__QA_SAVES__.filter(x=>x.action==='save_probe'),
+     run:window.COMPASS_REVIEW_TEST.getRun()}));
+   assert.equal(probed.saves.length,1);
+   assert.equal(probed.saves[0].benchmark_key,'5');
+   assert.equal(probed.saves[0].events.length,10);
+   assert.equal(new Set(probed.saves[0].events.map(x=>x.target_name)).size,10);
+   assert.equal(probed.run.events.filter(x=>x.instruction_delivery==='verbal_only').length,10);
+   assert.deepEqual(errors,[],'Browser page errors: '+errors.join('|'));
+   console.log('FUNCTIONS_VERBAL_B5_NATIVE_PASS',JSON.stringify({view,benchmarks:5,targets:50,verbalTargets:10,staffOnly:true,modalitySaved:true,probeSaved:true,ratio:details.ratio,overflow:false}));
    await page.close();
   }
  }finally{await browser.close()}
-})().catch(e=>{console.error('FUNCTIONS_V25_STRESS_FAIL',e);process.exit(1)});
+})().catch(e=>{console.error('FUNCTIONS_VERBAL_B5_NATIVE_FAIL',e);process.exitCode=1});
