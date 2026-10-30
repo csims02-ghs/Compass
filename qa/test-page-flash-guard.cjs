@@ -14,10 +14,10 @@ assert(runner.includes("frame.onload=()=>{\n   if(seq!==S.loadSeq)return;\n   $(
 assert(!runner.includes("frame.removeAttribute('srcdoc');frame.src=url;\n  frame.hidden=false;"),'Never expose iframe immediately after setting src');
 assert(hub.includes('.runner[hidden]{visibility:hidden}'),'Hidden frames must remain invisible');
 assert(/const CACHE='compass-shell-v\d+'/.test(sw),'Service worker cache release must be versioned');
-const release=sw.slice(sw.indexOf(' if(isRelease){'),sw.lastIndexOf(' event.respondWith'));
-assert(release.includes("fetch(req,{cache:'no-store'})"),'Release assets must prefer network');
-assert(!release.includes('if(cached)return cached'),'Release assets must not use cache-first');
-assert(sw.includes('return(await caches.match(req))||Response.error()'),'Offline release fallback must remain available');
+assert(!sw.includes('v20261010-3')&&!sw.includes('index-profile-charts-v5-20261017'),'Archived releases must not be in the live pre-cache');
+assert(!sw.includes('if(cached)return cached'),'Service worker must not use cache-first for active files');
+assert(sw.includes("fetch(req,{cache:'no-store'})"),'Active files must prefer the network');
+assert(sw.includes('return(await caches.match(req))||Response.error()'),'Offline cache fallback must remain available');
 new vm.Script(sw,{filename:'sw.js'});
 const inline=[...hub.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)].filter(m=>!(/\bsrc\s*=/.test(m[1])));
 for(let i=0;i<inline.length;i++)new vm.Script(inline[i][2],{filename:'hub-inline-'+i+'.js'});
