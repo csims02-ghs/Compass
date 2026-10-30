@@ -43,3 +43,11 @@ html.functions-v25 #bpSetupMount{overflow:auto;min-height:0}
  .functions-v25 .func-settings{grid-template-columns:minmax(0,1fr)}
 }
 .functions-v25 [hidden]{display:none!important}
+
+/* B5: staff-only spoken SD; never project the target wording onto the learner's material panel. */
+.functions-v25 #funcStaffVerbalCue{padding:10px 12px;margin:5px 0 8px;border:1px solid #bbd2ed;background:#edf5ff;border-radius:11px;min-width:0;max-height:130px;overflow-y:auto;color:#0e3159}
+.functions-v25 #funcStaffVerbalCue strong{display:block;font-size:11px;letter-spacing:.02em;color:#2b5f97}
+.functions-v25 #funcStaffVerbalCue p{font-size:15px;line-height:1.3;font-weight:850;margin:5px 0;overflow-wrap:anywhere}
+.functions-v25 #funcStaffVerbalCue small{display:block;font-size:11px;line-height:1.25}
+.functions-v25 #bpRoot.bp-images-only #funcStaffVerbalCue{display:none!important}
+.functions-v25 #funcStaffVerbalCue[hidden]{display:none!important}

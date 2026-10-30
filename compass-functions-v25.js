@@ -1,4 +1,4 @@
-/* COMPASS Functions V25: isolated production interface for written/visual directions.
+/* COMPASS Functions V25: isolated production interface for written, visual and verbal directions.
    Leaves all 40 targets, historic trials, assignment IDs, and old runner HTML intact. */
 (function(){
 'use strict';
@@ -14,13 +14,13 @@ if(!main||!setup||!workspace||!behaviorBar||!top||!response||!choices)throw Erro
 document.documentElement.classList.add('bp-v25','functions-v25');
 const targets=(Array.isArray(C.targets)?C.targets:[]).filter(t=>t&&typeof t.name==='string');
 const standards=Array.isArray(C.compass_v25_standard?.benchmarks)?C.compass_v25_standard.benchmarks:[];
-const benchmarks=standards.length?standards:[1,2,3,4].map(n=>({id:'FUNC-B'+n,number:n,name:'Benchmark '+n,target_count:10}));
+const benchmarks=standards.length?standards:[1,2,3,4,5].map(n=>({id:'FUNC-B'+n,number:n,name:n===5?'Following Verbal Instructions':'Benchmark '+n,target_count:10}));
 function members(b){return targets.filter(t=>Number(t.metadata?.benchmark_number??t.metadata?.benchmark)===Number(b.number));}
 const root=document.createElement('div');root.id='bpRoot';
 root.innerHTML=
 '<header id="bpHeader"><div><div class="bp-title">Functions <span class="bp-subtitle">· COMPASS V25 Instructional Program</span></div><div class="bp-subtitle" id="bpStepText">Program Setup → Run Program</div></div><nav class="bp-header-actions"><button class="bp-btn" id="bpBack" type="button" hidden>← Setup</button><button class="bp-btn" id="bpEnd" type="button">End Session</button></nav></header>'+
 '<section class="bp-page" id="bpPageOne"><div class="bp-panel func-setup-panel" id="bpSetupMount"><h2 class="bp-h3">Program Setup</h2><div class="func-settings"><label>Benchmark<select id="funcBenchmark"></select></label><label>Circuit<select id="funcCircuit"><option value="teach">N/A · Teaching</option><option value="probe">Probe Benchmark</option></select></label><label>Qualifying mastery dates<input id="funcDays" type="number" min="1" max="30" value="3"></label><label>Runs per selection<input value="1 complete DTI chain" disabled aria-label="One full chain per run"></label></div></div><aside class="bp-panel bp-guide" id="bpInstructions"><span class="bp-chip">FUNCTIONS · V25</span><h2>Instructions</h2><ol><li>Prepare the actual accessible written directions, picture schedule, checklist, or routine cue from the student’s materials. Text on screen does not substitute for a pictorial visual support.</li><li>Gain attention and present the selected direction. Allow appropriate response time (typically 3–5 seconds), honoring processing and motor needs.</li><li><b>Application:</b> observe the student following the direction. <b>Expressive:</b> accept speech, AAC, pointing or an approved response method as appropriate to the target and IEP.</li><li>Score every Target (T) and reviewed Distractor (D) step independently. Prompts are recorded separately from independent correct responses.</li><li>Behavior tracking uses student-assigned behaviors (up to eight). Teaching mastery requires the configured percentage across distinct qualifying dates; probes do not count.</li></ol><button class="bp-btn primary bp-run" id="bpRun" type="button">Run Program →</button></aside></section>'+
-'<section class="bp-page" id="bpPageTwo" hidden><div class="bp-panel" id="bpMaterial"><div class="bp-panel-head"><h2 class="bp-h3">Student Material</h2></div><div id="bpContext" role="status"></div><div id="funcMaterial" aria-live="polite"><div class="func-material-chip" id="funcMaterialKind">Direction</div><div id="funcPrompt">Ready</div><div id="funcSupport"></div><ol id="funcSteps" hidden></ol></div><div id="funcStaffReminder">Staff: present the matching individualized accessible cue or real materials. Observe the actual response.</div></div><aside class="bp-panel" id="bpScoring"><div class="bp-panel-head"><h2 class="bp-h3">Trial &amp; Scoring</h2><button class="bp-btn" id="bpImages" type="button" aria-pressed="false">▣ Materials Only</button></div><div id="bpScoringMount"></div><div id="bpBehaviorMount"></div><div id="bpSaveStatus" role="status" aria-live="polite">Choose Run Program to begin.</div><button class="bp-btn" type="button" id="funcRetry" hidden>Retry Save</button><button class="bp-btn primary" type="button" id="bpNextProgram" hidden disabled>Next Program →</button></aside></section>';
+'<section class="bp-page" id="bpPageTwo" hidden><div class="bp-panel" id="bpMaterial"><div class="bp-panel-head"><h2 class="bp-h3">Student Material</h2></div><div id="bpContext" role="status"></div><div id="funcMaterial" aria-live="polite"><div class="func-material-chip" id="funcMaterialKind">Direction</div><div id="funcPrompt">Ready</div><div id="funcSupport"></div><ol id="funcSteps" hidden></ol></div><div id="funcStaffReminder">Staff: present the matching individualized accessible cue or real materials. Observe the actual response.</div></div><aside class="bp-panel" id="bpScoring"><div class="bp-panel-head"><h2 class="bp-h3">Trial &amp; Scoring</h2><button class="bp-btn" id="bpImages" type="button" aria-pressed="false">▣ Materials Only</button></div><div id="bpScoringMount"></div><div id="funcStaffVerbalCue" role="note" hidden><strong>STAFF ONLY · Speak this instruction</strong><p id="funcVerbalDirection"></p><small id="funcVerbalExpected"></small></div><div id="bpBehaviorMount"></div><div id="bpSaveStatus" role="status" aria-live="polite">Choose Run Program to begin.</div><button class="bp-btn" type="button" id="funcRetry" hidden>Retry Save</button><button class="bp-btn primary" type="button" id="bpNextProgram" hidden disabled>Next Program →</button></aside></section>';
 main.appendChild(root);
 const mount=$('bpSetupMount');setup.classList.add('bp-setup');mount.appendChild(setup);
 const body=$('setupBody');if(body)body.hidden=false;
@@ -68,12 +68,21 @@ function display(){
  if(!q)return;
  const t=currentTarget(q),direction=String(q.custom?q.action:(t?.metadata?.base_target||q.animal||''));
  const kind=q.type==='Distractor'?'Review / D':'Target / T';
+ const verbal=Number(currentBenchmark()?.number)===5;
  $('bpContext').textContent='Step '+(idx+1)+' / '+total+' · '+kind+' · '+(skills?.value||'Application');
  $('bpStepText').textContent='Run Program · Step '+(idx+1)+' of '+total;
- $('funcMaterialKind').textContent=kind;
- $('funcPrompt').textContent=direction;
- $('funcSupport').textContent=q.custom?'Complete the individualized reviewed distractor direction.':'SD: Present the actual accessible written or visual direction. Observe completion or an approved expressive response.';
- const pieces=direction.split(/\s*(?:→|->)\s*/).map(x=>x.trim()).filter(Boolean), list=$('funcSteps');
+ $('funcMaterialKind').textContent=verbal?'Spoken instruction':kind;
+ $('funcPrompt').textContent=verbal?'🔊':direction;
+ $('funcSupport').textContent=verbal
+  ?'Listen, then complete the action using your established communication and access supports.'
+  :q.custom?'Complete the individualized reviewed distractor direction.':'SD: Present the actual accessible written or visual direction. Observe completion or an approved expressive response.';
+ const staffCue=$('funcStaffVerbalCue');staffCue.hidden=!verbal;
+ $('funcVerbalDirection').textContent=verbal?direction:'';
+ $('funcVerbalExpected').textContent=verbal?(t?.metadata?.expected_response||'Score independent, prompted, or incorrect/no response.'):'';
+ $('funcStaffReminder').textContent=verbal
+  ?'Staff: speak the direction once, allow individualized processing time, and do not show the written cue to the learner.'
+  :'Staff: present the matching individualized accessible cue or real materials. Observe the actual response.';
+ const pieces=verbal?[]:direction.split(/\s*(?:→|->)\s*/).map(x=>x.trim()).filter(Boolean), list=$('funcSteps');
  list.hidden=pieces.length<=1;list.replaceChildren();
  if(pieces.length>1)pieces.forEach(part=>{const li=document.createElement('li');li.textContent=part;list.appendChild(li)});
  response.querySelectorAll('.action.correct,.action.incorrect,.action.prompted').forEach(b=>{b.disabled=saving||seen.has(idx)});
@@ -99,7 +108,7 @@ function selectedScore(answer){
   result:responseType,target_key:t?.key||null,
   target_name:String(q?.animal||q?.action||''),benchmark_key:currentBenchmark()?.id||null,
   goal_id:window.__COMPASS_ACTIVE_GOAL_ID__||null,occurred_at:new Date().toISOString(),
-  instructional_date:instructionDate,probe:probeMode(),source:'functions_v25_staff_scored'});
+  instructional_date:instructionDate,instruction_delivery:Number(currentBenchmark()?.number)===5?'verbal_only':'written_or_visual',probe:probeMode(),source:'functions_v25_staff_scored'});
  const total=Array.isArray(plan)?plan.length:0;
  status('Step '+events.length+' of '+total+' recorded. Saving…');
  void commitStep(idx===total-1);
