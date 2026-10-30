@@ -12,9 +12,9 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <style id="compass-profile-transition-guard">
     #page-student-profile.compass-profile-loading{position:relative;min-height:55vh}
-    #page-student-profile.compass-profile-loading > :not(#compassProfileLoading){visibility:hidden!important}
+    #page-student-profile.compass-profile-loading .compass-premium-grid,#page-student-profile.compass-profile-loading .profile-content{visibility:hidden!important}
     #compassProfileLoading[hidden]{display:none!important}
-    #compassProfileLoading{position:absolute;inset:48px 24px auto;min-height:180px;display:grid;place-items:center;text-align:center;border:1px solid #d3dfeb;border-radius:16px;background:#fff;color:#10396c;font-weight:750;padding:24px;z-index:2}
+    #compassProfileLoading{position:absolute;inset:152px 24px auto;min-height:180px;display:grid;place-items:center;text-align:center;border:1px solid #d3dfeb;border-radius:16px;background:#fff;color:#10396c;font-weight:750;padding:24px;z-index:2}
   </style>
   <style>:root{--nav:#10396c;--nav-dark:#0b2f59;--blue:#2366d5;--blue-dark:#1458c4;--bg:#f2f7fb;--card:#fff;--line:#d3dfeb;--text:#0e3159;--muted:#637b98;--green:#148652;--red:#d64754;--gold:#a86a00;--purple:#7757a7;--shadow:0 2px 8px rgba(15,49,89,.05);--sidebar:335px;--radius:18px}
 *{box-sizing:border-box}html{font-size:16px}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}button,input,select,textarea{font:inherit}button{cursor:pointer}textarea{resize:vertical;min-height:92px}.hidden{display:none!important}.muted{color:var(--muted)}.red{color:var(--red)!important}.green{color:var(--green)!important}.gold{color:var(--gold)!important}.app{min-height:100vh}.sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar);background:var(--nav);color:#fff;padding:38px 28px 24px;display:flex;flex-direction:column;z-index:30;overflow-y:auto}.brand{margin-bottom:34px}.brand-title{font-size:38px;font-weight:900;letter-spacing:-1.2px;line-height:1}.brand-sub{font-size:17px;color:#dcecff;margin-top:5px}.side-label{margin:23px 12px 8px;text-transform:uppercase;font-weight:850;font-size:15px;color:#9bc4f5;letter-spacing:.04em}.nav{display:grid;gap:6px}.nav button{border:0;background:transparent;color:#fff;text-align:left;padding:13px 17px;border-radius:12px;font-size:20px;font-weight:650}.nav button:hover{background:rgba(255,255,255,.08)}.nav button.active{background:var(--blue)}.side-foot{margin-top:auto;border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:15px 18px;color:#dceaff}.side-foot small{display:block;color:#a9c8ec;margin-top:4px}.main{margin-left:var(--sidebar);min-height:100vh}.page{display:none}.page.active{display:block}.content{padding:32px 40px 50px;max-width:1750px;margin:0 auto}h1{font-size:44px;line-height:1.03;margin:0;letter-spacing:-1px}h2{font-size:25px;margin:0}h3{margin:0}.subtitle{font-size:20px;color:var(--muted);margin:6px 0 0}.page-head,.panel-head,.calendar-head,.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.page-head{margin-bottom:28px}.head-actions,.button-row,.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.panel{padding:26px}.panel h2{margin-bottom:16px}.panel-head h2{margin-bottom:0}.btn{border:1px solid var(--line);background:#fff;color:var(--text);padding:13px 18px;border-radius:12px;font-weight:800}.btn:hover{filter:brightness(.98)}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.danger{background:#fff3f3;color:#a52b36;border-color:#f0c6ca}.btn.small{padding:9px 13px;font-size:14px}.btn.wide{width:100%}.link-btn{border:0;background:transparent;color:var(--blue);font-weight:800;padding:5px}.control,input,select,textarea{border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--text);padding:12px 14px;outline:none}.control:focus,input:focus,select:focus,textarea:focus{border-color:#7ca9ec;box-shadow:0 0 0 3px rgba(35,102,213,.10)}.flex{flex:1;min-width:250px}.compact{padding:8px 10px}.num{width:84px}
@@ -866,6 +866,15 @@ body{display:block!important;width:100%;min-width:0}
 /* COMPASS compact student profile • desktop/laptop/tablet: visually consistent with approved premium header */
 #page-student-profile .compass-premium-top{padding:12px 14px 10px;max-width:none}
 #page-student-profile .compass-premium-toolbar{margin-bottom:8px}
+/* Caseload-only student quick switch, matching compact COMPASS profile layout. */
+#page-student-profile .compass-quick-student-switch{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:0 0 14px;min-height:44px}
+#page-student-profile .compass-quick-student-switch label{color:#24486f;font-size:15px;font-weight:760;white-space:nowrap}
+#page-student-profile .compass-quick-student-switch select{width:min(390px,100%);min-width:220px;max-width:100%;height:44px;padding:9px 42px 9px 15px;border:1px solid #c5d6e9;border-radius:11px;background:#fff;color:#143656;font-size:15px;font-weight:690;box-shadow:0 2px 7px #10396c0d;cursor:pointer;text-overflow:ellipsis}
+#page-student-profile .compass-quick-student-switch select:focus-visible{outline:3px solid #94bfff;outline-offset:2px}
+#page-student-profile .compass-quick-student-switch select:disabled{cursor:not-allowed;background:#f3f6fa;color:#657b94}
+@media(max-width:680px){#page-student-profile .compass-quick-student-switch{align-items:stretch;flex-direction:column;gap:7px}#page-student-profile .compass-quick-student-switch select{width:100%;min-width:0}#compassProfileLoading{top:206px}}
+@media print{#page-student-profile .compass-quick-student-switch{display:none!important}}
+
 #page-student-profile .compass-premium-grid{grid-template-columns:minmax(0,1.72fr) minmax(305px,.95fr);gap:13px}
 #page-student-profile .compass-premium-left{gap:11px}
 #page-student-profile .compass-premium-identity,
@@ -1474,6 +1483,7 @@ body{display:block!important;width:100%;min-width:0}
  <section id="page-student-profile" class="page">
         <div class="profile-top compass-premium-top">
           <div class="panel-head compass-premium-toolbar"><div class="breadcrumb">Students <span>›</span> Student Profile</div><button id="printProfileBtn" class="btn" type="button">Print Profile</button></div>
+          <div class="compass-quick-student-switch"><label for="quickStudentSwitch">Quick Student Switch</label><select id="quickStudentSwitch" aria-label="Switch to another student on your caseload" disabled><option value="">Loading caseload students…</option></select></div>
           <div class="compass-premium-grid">
             <div class="compass-premium-left">
               <div class="compass-premium-identity">
@@ -2037,10 +2047,14 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     return packs.every(Boolean);
   }
   async function renderProgramLists(){
-    const box=$('studentProgramLists');if(!box)return;box.innerHTML='';
+    const box=$('studentProgramLists');if(!box)return;
+    const expectedStudentId=state.currentStudent?.id;
+    box.innerHTML='';
     for(const l of state.programLists){
       const items=listItems(l.id),names=items.map(i=>programById(state.studentPrograms.find(sp=>sp.id===i.student_compass_program_id)?.program_id)?.program_name||'Program');
-      const ready=await isListOfflineReady(l.id),auto=!!l.mirrors_assigned_programs,card=document.createElement('div');
+      const ready=await isListOfflineReady(l.id);
+      if(state.currentStudent?.id!==expectedStudentId)return;
+      const auto=!!l.mirrors_assigned_programs,card=document.createElement('div');
       card.className='program-list-card'+(ready?' offline-ready':'');
       card.innerHTML=`<div class="panel-head"><div><h3>${esc(l.name)}${auto?' · Auto-Synced':''}</h3><p>${items.length} active program${items.length===1?'':'s'}${auto?' · Matches Assigned Programs automatically':''}</p></div><span class="program-list-pill ${ready?'ready':''}">${ready?'✓ Offline Ready':'Online Only'}</span></div><div class="program-list-items-preview">${names.slice(0,6).map((n,i)=>`<div class="program-list-item-preview"><b>${i+1}.</b><span>${esc(n)}</span></div>`).join('')}${names.length>6?`<small class="muted">+ ${names.length-6} more</small>`:''}${!items.length?'<span class="muted">Assign an active program to populate this list.</span>':''}</div><div class="button-row"><button class="btn primary small" data-run-list="${esc(l.id)}"${items.length?'':' disabled'}>Run List</button><button class="btn small" data-download-list="${esc(l.id)}"${items.length?'':' disabled'}>${ready?'Refresh Offline Download':'↓ Download for Offline'}</button>${auto?`<button class="btn small" data-manage-daily-programs="${esc(l.id)}">Manage Assignments</button>`:`<button class="btn small" data-edit-list="${esc(l.id)}">Edit</button><button class="btn small danger" data-archive-list="${esc(l.id)}">Archive</button>`}</div>`;
       box.appendChild(card);
@@ -2114,7 +2128,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function bootstrap(){if(bootInFlight){bootAgain=true;return bootInFlight}bootInFlight=bootstrapInner().finally(()=>{bootInFlight=null;if(bootAgain){bootAgain=false;sb.auth.getSession().then(({data})=>{const id=data?.session?.user?.id||null;if(id&&id!==(state.user?.id||null))bootstrap()}).catch(()=>{})}});return bootInFlight}
   function takeAuthNotice(){try{const n=sessionStorage.getItem('compassAuthNotice');if(n)sessionStorage.removeItem('compassAuthNotice');return n||''}catch(e){return''}}
   async function bootstrapInner(){const authNotice=takeAuthNotice();await registerOfflineShell();updateConnectionUI();if(!navigator.onLine){await bootstrapOffline();return}const {data:{session}}=await sb.auth.getSession();if(!session?.user){if(authNotice)showLogin(authNotice);else showLanding();await renderOfflinePage();await updateOfflineBadges();return}state.user=session.user;const {data:p,error}=await sb.from('profiles').select('*').eq('id',state.user.id).maybeSingle();if(error&&!error.code&&/failed to fetch|load failed|networkerror|network request failed/i.test(String(error.message||''))){await bootstrapOffline();return}if(error||!p||p.active===false){showLogin('This account is not provisioned as an active COMPASS staff profile.');return}state.profile=p;state.offlineMode=false;await withTimeout(purgeOtherUsersDownloads(state.user.id),1500);showApp();renderIdentity();const [students,classrooms,schools,programs,behaviors,caseload]=await Promise.all([safe(()=>sb.from('students').select('*').order('display_label')),safe(()=>sb.from('classrooms').select('*').order('name')),safe(()=>sb.from('schools').select('*').order('name')),fetchProgramCatalog(),safe(()=>sb.from('behavior_definitions').select('*').order('display_order').order('name')),safe(()=>sb.from('provider_caseloads').select('*').eq('status','active'))]);Object.assign(state,{students,classrooms,schools,programCatalog:programs,behaviorDefinitions:behaviors,caseloadRows:caseload});deriveCaseload();renderDirectory();renderStudentSearch();renderProgramLibrary();await Promise.all([loadHome(),loadGlobalData(),loadCalendar(),renderOfflinePage()]);await updateOfflineBadges();const h=location.hash.replace('#','');showPage(h&&$('page-'+h)?h:'home',false)}
-  function deriveCaseload(){let rows=[...state.caseloadRows].filter(r=>r.provider_user_id===state.user.id);const seen=new Set(),list=[];for(const r of rows){if(seen.has(r.student_id))continue;const s=studentById(r.student_id);if(s){seen.add(r.student_id);list.push({...s,_caseloadRow:r})}}state.caseloadStudents=list;renderCaseload();renderHomeCaseload()}
+  function deriveCaseload(){let rows=[...state.caseloadRows].filter(r=>r.provider_user_id===state.user.id);const seen=new Set(),list=[];for(const r of rows){if(seen.has(r.student_id))continue;const s=studentById(r.student_id);if(s){seen.add(r.student_id);list.push({...s,_caseloadRow:r})}}state.caseloadStudents=list;renderCaseloadStudentSwitch();renderCaseload();renderHomeCaseload()}
   async function refreshReferences(){state.students=await safe(()=>sb.from('students').select('*').order('display_label'));state.caseloadRows=await safe(()=>sb.from('provider_caseloads').select('*').eq('status','active'));deriveCaseload();renderDirectory();renderStudentSearch();await loadHome()}
   async function loadHome(){const start=new Date();start.setDate(1);start.setHours(0,0,0,0);const end=new Date(start);end.setMonth(end.getMonth()+1);const [actions,reqs,logs,comp,todaySessions]=await Promise.all([safe(()=>sb.from('provider_action_items').select('*').in('status',['open','in_progress'])),safe(()=>sb.from('student_service_requirements').select('*').eq('active',true)),safe(()=>sb.from('service_delivery_logs').select('*').gte('service_date',localISO(start)).lt('service_date',localISO(end))),safe(()=>sb.from('provider_monthly_compliance').select('*').order('month_start',{ascending:false}).limit(1)),safe(()=>sb.from('compass_program_sessions').select('id,session_date').eq('session_date',todayISO()).is('deleted_at',null))]);$('homeCaseloadCount').textContent=state.caseloadStudents.length;const myStudentIds=homeScopeIds();$('homeActionCount').textContent=actions.filter(t=>String(t.provider_user_id||'')===String(state.user?.id||'')||(!t.provider_user_id&&myStudentIds.has(t.student_id))).length;const delivered=logs.reduce((a,x)=>a+Number(x.minutes_delivered||0),0),required=reqs.reduce((a,x)=>a+Number(x.monthly_required_minutes||0),0);$('homeServiceCount').textContent=delivered+' / '+required;$('homeCompliance').textContent=comp[0]?.compliance_percent!=null?Math.round(Number(comp[0].compliance_percent))+'%':'—';$('homeComplianceDesc').textContent=comp[0]?.status?roleName(comp[0].status):'Not calculated';await updateCaseloadInsights();renderHomeInsights();renderHomeCaseload();renderSchedules();await renderHomePerformance()}
   function renderHomeInsights(){
@@ -2417,6 +2431,29 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function selectProgram(id){const p=state.programCatalog.find(x=>x.id===id);if(!p)return;const c=programConfig(p);state.programSelected=p;$('programDetailsEmpty')?.classList.add('hidden');$('programDetailsForm')?.classList.add('hidden');if($('programDetailId'))$('programDetailId').value=p.id;if($('programDetailName'))$('programDetailName').value=p.program_name||'';if($('programDetailCode'))$('programDetailCode').value=p.program_code||'';if($('programDetailPrimary'))$('programDetailPrimary').value=programDomain(p);if($('programDetailSub'))$('programDetailSub').value=programSubDomain(p);if($('programDetailDescription'))$('programDetailDescription').value=p.description||c.description||'';if($('programDetailInstructions'))$('programDetailInstructions').value=c.instructions||c.teaching_procedure||'';if($('programDetailMastery'))$('programDetailMastery').value=c.mastery_criteria||((c.mastery_pct??'')!==''?String(c.mastery_pct)+'%':'');if($('programDetailActive'))$('programDetailActive').checked=p.active!==false}
   function openProgramDetails(id){const p=state.programCatalog.find(x=>x.id===id);if(!p)return;if(compassCatalogHeld(p)&&state.profile?.role!=='platform_admin')return;const c=programConfig(p);state.programSelected=p;const canEdit=canManagePrograms();const description=p.description||c.description||'',instructions=c.instructions||c.teaching_procedure||'',mastery=c.mastery_criteria||((c.mastery_pct??'')!==''?String(c.mastery_pct)+'%':'');const readonly=canEdit?'':' readonly';const disabled=canEdit?'':' disabled';openModal('Program Details',`<form id="programDetailModalForm" class="form-stack"><div class="program-detail-summary"><div><span>Program</span><strong>${esc(p.program_name||'Program')}</strong></div><div><span>Status</span><strong>${p.active!==false?'Active':'Inactive'}</strong></div></div><label>Program Name<input id="programModalName" value="${esc(p.program_name||'')}"${readonly}></label><div class="two-col"><label>Program Type / Skill<input id="programModalPrimary" value="${esc(programDomain(p))}"${readonly}></label><label>Sub Domain<input id="programModalSub" value="${esc(programSubDomain(p))}"${readonly}></label></div><label>Description<textarea id="programModalDescription" class="program-detail-copy"${readonly}>${esc(description)}</textarea></label><label>Instructions<textarea id="programModalInstructions" class="program-detail-copy"${readonly}>${esc(instructions)}</textarea></label><label>Mastery Criteria<textarea id="programModalMastery" class="program-detail-copy"${readonly}>${esc(mastery)}</textarea></label>${canEdit?`<label class="inline-check"><input id="programModalActive" type="checkbox"${p.active!==false?' checked':''}> Active</label>`:''}<div class="button-row">${canEdit?'<button class="btn primary" type="submit">Save Changes</button>':''}<button class="btn" type="button" data-open-library-program="${p.id}">Open Program</button><button class="btn" type="button" data-close-program-details>Close</button></div></form>`,()=>{document.querySelector('.modal')?.classList.add('program-detail-modal');$('programDetailModalForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!canEdit)return;const old=programConfig(p),primary=$('programModalPrimary').value.trim(),sub=$('programModalSub').value.trim(),masteryText=$('programModalMastery').value.trim(),m=masteryText.match(/\d+(?:\.\d+)?/),nextConfig={...old,skill_type:primary||old.skill_type||'General',sub_domain:sub||null,instructions:$('programModalInstructions').value.trim()||null,mastery_criteria:masteryText||null};if(m)nextConfig.mastery_pct=Math.max(0,Math.min(100,Number(m[0])));const patch={program_name:$('programModalName').value.trim(),description:$('programModalDescription').value.trim()||null,program_config:nextConfig,active:$('programModalActive').checked},{data,error}=await sb.from('compass_programming_programs').update(patch).eq('id',p.id).select('*').single();if(error){toast(error.message,'error');return}state.programCatalog=state.programCatalog.map(row=>row.id===data.id?data:row);state.programSelected=data;closeModal();renderProgramLibrary();toast('COMPASS program updated.','success')})})}
   async function openCatalogProgram(id){const p=state.programCatalog.find(x=>x.id===id);if(!p)return;if(compassCatalogHeld(p)&&state.profile?.role!=='platform_admin'){toast('On Hold — only Platform Admin can open this program.','error');return;}const win=window.open('about:blank','_blank');if(!win){toast('Allow pop-ups for COMPASS to open the program.','error');return}try{win.document.open();win.document.write('<!doctype html><html><head><title>Opening COMPASS Program…</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0;color:#10396c;background:#f2f7fb;font-weight:800}</style></head><body>Opening '+esc(p.program_name||'COMPASS Program')+'…</body></html>');win.document.close();const previewParam=p.program_code==='CP-1TO1-COUNT'?'&preview_version=25':'';const url=`${cfg.SUPABASE_URL}/functions/v1/compass-program-runner?program_code=${encodeURIComponent(p.program_code)}&format=json${previewParam}`;const {data:{session:catalogSession}}=await sb.auth.getSession();const response=await fetch(url,{cache:'no-store',headers:catalogSession?.access_token?{'Authorization':'Bearer '+catalogSession.access_token}:{}});const payload=await response.json().catch(()=>null);if(!response.ok||!payload?.ok||typeof payload.html!=='string')throw new Error(payload?.error||'Program HTML could not be loaded');win.document.open();win.document.write(await window.COMPASS_PAGE2_STANDARD.standardize(payload.html));win.document.close();try{win.document.title=p.program_name||'COMPASS Program'}catch(e){}}catch(error){try{win.document.open();win.document.write('<!doctype html><html><body style="font-family:system-ui;padding:28px"><h1>COMPASS program could not open</h1><p>'+esc(error.message||String(error))+'</p></body></html>');win.document.close()}catch(e){}toast(error.message||'Program could not open.','error')}}
+  // Only students already assigned to this provider's caseload are offered in the switch.
+  function renderCaseloadStudentSwitch(){
+    const select=$('quickStudentSwitch');if(!select)return;
+    const students=(Array.isArray(state.caseloadStudents)?state.caseloadStudents:[]).filter(s=>s&&s.id).slice()
+      .sort((a,b)=>studentLabel(a).localeCompare(studentLabel(b),undefined,{sensitivity:'base'})||String(a.id).localeCompare(String(b.id)));
+    const current=state.currentStudent,inCaseload=!!current&&students.some(s=>s.id===current.id);
+    const placeholder=document.createElement('option');placeholder.value='';
+    placeholder.textContent=!students.length?'No students assigned to your caseload':current&&!inCaseload?studentLabel(current)+' (outside your caseload)':'Select a caseload student';
+    select.replaceChildren(placeholder);
+    for(const student of students){
+      const option=document.createElement('option');option.value=student.id;
+      option.textContent=studentLabel(student)+(student.student_code?' · '+student.student_code:'');
+      select.appendChild(option);
+    }
+    select.disabled=!students.length;
+    select.value=inCaseload?current.id:'';
+  }
+  function switchCaseloadStudent(id){
+    const student=(state.caseloadStudents||[]).find(s=>s.id===id);
+    if(!student){renderCaseloadStudentSwitch();toast('Please select a student on your assigned caseload.','error');return}
+    if(state.currentStudent?.id===student.id)return;
+    void openStudent(student.id);
+  }
   // Keep the previous student's rendered profile out of view while loading the next.
   async function openStudent(id){
     const s=studentById(id);if(!s)return;
@@ -2428,7 +2465,11 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     }
     if(pending){pending.hidden=false;pending.textContent='Loading student profile…'}
     if(page){page.classList.add('compass-profile-loading');page.setAttribute('aria-busy','true')}
-    state.currentStudent=s;showPage('student-profile');
+    state.currentStudent=s;
+    state.programLists=[];state.programListItems=[];
+    const listBox=$('studentProgramLists');if(listBox)listBox.replaceChildren();
+    renderCaseloadStudentSwitch();
+    showPage('student-profile');
     try{
       await loadStudentProfile();
       if(state.currentStudent?.id===id){if(page){page.classList.remove('compass-profile-loading');page.removeAttribute('aria-busy')}if(pending)pending.hidden=true}
@@ -2497,7 +2538,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const linkRes=gids.length?await grab(()=>sb.from('student_iep_goal_compass_programs').select('*').in('goal_id',gids)):{data:[],error:null};
     if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
     state.goalLinks=take(linkRes,priorLinks,'IEP goal links');
-    await loadTeam();
+    await loadTeam(sid);
     if(seq!==studentProfileLoadSeq||state.currentStudent?.id!==sid)return;
     renderStudentProfile();
     // The student's own programs are rendered. Unmask now; calendar/list sync is ancillary.
@@ -2509,7 +2550,17 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const auxiliary=await Promise.allSettled([loadCalendar(),loadProgramLists()]);
     auxiliary.forEach((result,i)=>{if(result.status==='rejected')console.warn('COMPASS student auxiliary refresh failed',i,result.reason)});
   }
-  async function loadTeam(){const cid=state.currentStudent?.classroom_id;if(!cid){state.team=[];return}const staff=await safe(()=>sb.from('classroom_staff').select('*').eq('classroom_id',cid)),ids=staff.map(x=>x.user_id);if(!ids.length){state.team=[];return}const profiles=await safe(()=>sb.from('profiles').select('id,full_name,role,active').in('id',ids));state.team=staff.map(x=>({...x,profile:profiles.find(p=>p.id===x.user_id)}))}
+  async function loadTeam(expectedStudentId=state.currentStudent?.id){
+    const student=state.currentStudent?.id===expectedStudentId?state.currentStudent:null;
+    if(!student)return;
+    const cid=student.classroom_id;if(!cid){state.team=[];return}
+    const staff=await safe(()=>sb.from('classroom_staff').select('*').eq('classroom_id',cid));
+    if(state.currentStudent?.id!==expectedStudentId)return;
+    const ids=staff.map(x=>x.user_id);if(!ids.length){state.team=[];return}
+    const profiles=await safe(()=>sb.from('profiles').select('id,full_name,role,active').in('id',ids));
+    if(state.currentStudent?.id!==expectedStudentId)return;
+    state.team=staff.map(x=>({...x,profile:profiles.find(p=>p.id===x.user_id)}));
+  }
 
   function renderProfileAlerts(){
     const el=$('profileAlerts'),st=state.currentStudent;if(!el||!st)return;
@@ -2703,6 +2754,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   }
 
   function renderStudentProfile(){
+    renderCaseloadStudentSwitch();
     const st=state.currentStudent,r=schoolForStudent(st);
     $('profileAvatar').textContent=initials(studentLabel(st));
     $('profileName').textContent=studentLabel(st);
@@ -4083,6 +4135,7 @@ if(removed.length){
   $('profileSettingsForm').addEventListener('submit',async e=>{e.preventDefault();const {data,error}=await sb.from('profiles').update({full_name:$('settingsFullName').value.trim()}).eq('id',state.user.id).select('*').single();if(error){toast(error.message,'error');return}state.profile=data;renderIdentity();toast('Profile updated.')});
   $('passwordSettingsForm').addEventListener('submit',async e=>{e.preventDefault();const password=$('newPassword').value,confirm=$('confirmPassword').value;if(password.length<8){toast('Password must be at least 8 characters.','error');return}if(password!==confirm){toast('Passwords do not match.','error');return}const {error}=await sb.auth.updateUser({password});if(error){toast(error.message,'error');return}$('newPassword').value='';$('confirmPassword').value='';toast('Password updated. You can use email and password on your next sign-in.','success')});
   $('logoutBtn').addEventListener('click',async()=>{const q=await withTimeout(offlineQueue().catch(()=>[]),1500,[]);if(q.length&&!confirm(q.length+' offline session'+(q.length===1?' has':'s have')+' not synced yet. Sign out anyway? They stay on this device; sign in here again and press Sync Now to upload them.'))return;await withTimeout(clearOfflineDownloads(),2500);let failed=false;try{const r=await withTimeout(sb.auth.signOut(),4000,{error:new Error('timeout')});failed=!!(r&&r.error)}catch(e){failed=true}if(failed){try{Object.keys(localStorage).filter(k=>/^sb-.+-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}}try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}location.reload()});
+  $('quickStudentSwitch').addEventListener('change',e=>switchCaseloadStudent(e.target.value));
   window.addEventListener('hashchange',()=>{const h=location.hash.replace('#','');if(h&&$('page-'+h))showPage(h,false)});
   // Keep student calendar alerts date-current even when the profile stays open overnight.
   setInterval(()=>{if(state.currentStudent&&document.body.dataset.compassPage==='student-profile')renderProfileAlerts()},60000);
