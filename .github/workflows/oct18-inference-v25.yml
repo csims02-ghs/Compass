@@ -1,0 +1,28 @@
+name: October 18 Page 2 — Inference V25 stress
+on:
+  pull_request:
+    paths:
+      - 'scripts/test-oct18-inference-v25.cjs'
+      - '.github/workflows/oct18-inference-v25.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/test-oct18-inference-v25.cjs'
+      - '.github/workflows/oct18-inference-v25.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+      - name: Validate V25 native inference program, 38 structural markers, save and probe
+        run: node scripts/test-oct18-inference-v25.cjs
