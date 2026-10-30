@@ -1,0 +1,30 @@
+name: COMPASS six programs sequential smoke
+on:
+  pull_request:
+    paths:
+      - 'scripts/test-six-programs-sequential-20261030.cjs'
+      - '.github/workflows/six-programs-sequential-20261030.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/test-six-programs-sequential-20261030.cjs'
+      - '.github/workflows/six-programs-sequential-20261030.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked browser test dependency
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          google-chrome --version
+      - name: Test six live runners in stated order, never concurrently
+        run: node scripts/test-six-programs-sequential-20261030.cjs
