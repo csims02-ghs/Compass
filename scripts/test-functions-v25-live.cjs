@@ -29,10 +29,12 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    let errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
    await page.locator('#bpRun').waitFor({timeout:12000});
-   assert.equal(await page.locator('#funcBenchmark option').count(),4);
+   assert.equal(await page.locator('#funcBenchmark option').count(),5);
    assert.equal(await page.locator('#setupTarget option').count(),10);
    await page.locator('#funcBenchmark').selectOption('2');
    assert.equal(await page.locator('#setupTarget option').count(),10);
+   await page.locator('#funcBenchmark').selectOption('4');
+   assert.equal(await page.locator('#setupTarget option').count(),10,'Verbal benchmark needs 10 distinct targets');
    await page.locator('#funcBenchmark').selectOption('0');
    await page.locator('#bpRun').click();
    await page.locator('#bpPageTwo').waitFor({state:'visible'});
@@ -53,19 +55,40 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    assert(state.r.complete&&state.r.saved,'Final autosave failed');
    assert.equal(state.s.filter(x=>x.action==='save_session').length,len);
    await page.locator('#bpBack').click();
+   await page.locator('#funcBenchmark').selectOption('4');
+   assert.equal(await page.locator('#setupTarget option').count(),10);
    await page.locator('#funcCircuit').selectOption('probe');
    await page.locator('#bpRun').click();
    assert.equal(await page.evaluate(()=>plan.length),10);
+   const verbal=await page.evaluate(()=>{
+     const staff=document.querySelector('#funcStaffVerbalCue');
+     const target=document.querySelector('#funcVerbalDirection')?.textContent||'';
+     const material=document.querySelector('#bpMaterial')?.textContent||'';
+     const panel=document.querySelector('#funcPrompt')?.textContent||'';
+     const support=document.querySelector('#funcSupport')?.textContent||'';
+     return {staffVisible:!!staff&&!staff.hidden, target,material,panel,support,
+       stepsHidden:document.querySelector('#funcSteps')?.hidden};
+   });
+   assert(verbal.staffVisible,'Spoken SD not provided in staff panel');
+   assert(verbal.target.length>10,'Missing actual spoken direction');
+   assert(!verbal.material.includes(verbal.target),'Written answer must NOT appear in student-facing material');
+   assert.equal(verbal.panel,'🔊','Student-facing signal should be neutral');
+   assert(verbal.stepsHidden,'Do not show written multi-step SD to student');
+   assert(/Listen/.test(verbal.support),'Student-facing instruction should remain neutral');
    for(let i=0;i<10;i++){
     await page.locator('#correctBtn').click();
     if(i<9)await page.waitForFunction(n=>Number(trial)===n+1,i,{timeout:12000});
    }
    await page.waitForFunction(()=>window.__COMPASS_FUNCTIONS_V25__.getState().complete);
    const probe=await page.evaluate(()=>window.__QA_SAVES__.filter(x=>x.action==='save_probe'));
-   assert.equal(probe.length,1);assert.equal(probe[0].events.length,10);
+   assert.equal(probe.length,1);
+   assert.equal(probe[0].benchmark_key,'FUNC-B5');
+   assert.equal(probe[0].events.length,10);
    assert.equal(new Set(probe[0].events.map(x=>x.target_name)).size,10);
+   const all=await page.evaluate(()=>window.__COMPASS_FUNCTIONS_V25__.getState().events);
+   assert(all.every(x=>x.instruction_delivery==='verbal_only'),'Probe events must retain verbal-only modality');
    assert.deepEqual(errors,[]);
-   console.log('FUNCTIONS_V25_STRESS_PASS',JSON.stringify({view,metrics,teachingSteps:len,probeTargets:10}));
+   console.log('FUNCTIONS_VERBAL_B5_STRESS_PASS',JSON.stringify({view,metrics,teachingSteps:len,verbalProbeTargets:10,staffOnlyCue:true}));
    await page.close();
   }
  }finally{await browser.close()}
