@@ -63,11 +63,11 @@ const assert=require('node:assert/strict');
     const openModal=(_title,html,onReady)=>{area.innerHTML=html;onReady()};
     const fx=new Function('state','sb','activeStudentProgramsOrdered','programById','programDomain',
       'roleName','esc','openModal','$','toast','confirm','closeModal','loadStudentProfile',
-      'moveAssignedProgram','removeAssignedProgram','renderGoals','renderGoalAchievement','openStudentProgramHub',
+      'moveAssignedProgram','removeAssignedProgram','renderGoals','renderPrograms','renderGoalAchievement','openStudentProgramHub',
       main.slice(start,end)+';return {openEditPrograms};');
     const app=fx(state,db,()=>[sp],()=>({program_name:'Actions'}),()=> 'Communication',
       x=>x,x=>String(x).replace(/[&<>"']/g,''),openModal,find,()=>{},()=>false,
-      ()=>{},async()=>{},async()=>{},async()=>{},()=>{},()=>{graphRefreshes++},
+      ()=>{},async()=>{},async()=>{},async()=>{},()=>{},()=>{},()=>{graphRefreshes++},
       async(...args)=>openCalls.push(args));
     app.openEditPrograms();
     const row=area.querySelector('.program-edit-row');

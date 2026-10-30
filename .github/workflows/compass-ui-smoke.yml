@@ -23,6 +23,28 @@ on:
       - 'scripts/test-page2-standard.cjs'
       - 'scripts/test-page2-images-only.cjs'
       - 'scripts/test-daily-program-sync.cjs'
+  pull_request:
+    paths:
+      - '.github/workflows/compass-ui-smoke.yml'
+      - 'scripts/smoke-ui.cjs'
+      - 'scripts/test-bulk-edit.cjs'
+      - 'scripts/test-edit-program-goals.cjs'
+      - 'scripts/test-aac-auth-handoff.cjs'
+      - 'scripts/test-actions-v25-live.cjs'
+      - 'scripts/test-animal-v25-live.cjs'
+      - 'scripts/test-body-parts-v25-live.cjs'
+      - 'scripts/test-clothing-v25-live.cjs'
+      - 'compass-clothing-v25.js'
+      - 'compass-clothing-v25.css'
+      - 'compass-body-parts-v25.js'
+      - 'compass-body-parts-v25.css'
+      - 'index.html'
+      - 'program-hub.html'
+      - 'compass-page2-standard.css'
+      - 'compass-page2-standard.js'
+      - 'scripts/test-page2-standard.cjs'
+      - 'scripts/test-page2-images-only.cjs'
+      - 'scripts/test-daily-program-sync.cjs'
 permissions:
   contents: read
 jobs:
