@@ -36,7 +36,7 @@ const url='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program
    const options=await chain.locator('option').allTextContents();
    const iep=options.findIndex(x=>x.includes('IEP Chain')),short=options.findIndex(x=>x.includes('Short'));
    assert.equal(iep,short+1,'IEP Chain must appear directly after Short');
-   await chain.selectOption('IEP_TTTTT');
+   await chain.selectOption('iep');
    await page.locator('#runBtn').click();
    await page.locator('#runPage').waitFor({state:'visible',timeout:16000});
    const layout=await page.evaluate(()=>({
