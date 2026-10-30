@@ -53,7 +53,7 @@ const cases=[
         targetBank:Array.isArray(targets)?targets.length:null,
         setupVisible:!!document.querySelector('.program-setup')||
                      !!document.querySelector('#setupPage')||
-                     !!document.querySelector('#setup'),
+                     !!document.querySelector('#setup')||
                      !!(document.getElementById('setupBody')&&document.getElementById('target')&&document.getElementById('chain')),
         twoPage:!!document.getElementById('setupPage')&&!!document.getElementById('runPage'),
         behaviors:!!document.getElementById('behaviorBar')||
