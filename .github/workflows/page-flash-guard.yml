@@ -1,0 +1,29 @@
+name: COMPASS page transition / stale shell guard
+on:
+  pull_request:
+    paths:
+      - 'program-hub.html'
+      - 'sw.js'
+      - 'qa/test-page-flash-guard.cjs'
+      - '.github/workflows/page-flash-guard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'program-hub.html'
+      - 'sw.js'
+      - 'qa/test-page-flash-guard.cjs'
+      - '.github/workflows/page-flash-guard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  page-flash:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check fresh runner visibility and offline-safe caching
+        run: node qa/test-page-flash-guard.cjs
