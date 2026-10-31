@@ -72,3 +72,9 @@ html.materials-v25-active,html.materials-v25-active body{height:100%;overflow:hi
 #materialsV25Root #runPage:not([hidden])~*{display:none}
 @media(max-height:770px){#materialsV25Root .add-head{min-height:55px}#materialsV25Root .add-page{padding:7px}#materialsV25Root .add-panel{padding:9px}#materialsV25Root .score-card{gap:4px}#materialsV25Root #sdPrompt{font-size:clamp(38px,6vw,65px)}}
 @media(max-width:850px) and (orientation:portrait){#materialsV25Root #setupPage{display:block;overflow:auto}#materialsV25Root #runPage{overflow:auto}#materialsV25Root #runGrid{display:block}#materialsV25Root .material-card{min-height:400px}#materialsV25Root .score-card{min-height:500px}}
+
+#materialsV25Root #materialsAnswers{display:none!important}
+#materialsV25Root #sdPrompt{font-size:clamp(23px,3.2vw,43px);font-weight:850;line-height:1.3;max-width:950px;text-align:center;overflow-wrap:anywhere}
+#materialsV25Root #materialsWorkspace{font-size:clamp(13px,1.5vw,17px);line-height:1.5;max-width:790px}
+#materialsV25Root #behaviorList .add-behavior-row{grid-template-columns:minmax(0,1fr) 44px 29px 44px;min-height:47px}
+#materialsV25Root #behaviorList .add-behavior-row button{min-width:44px;min-height:44px}
