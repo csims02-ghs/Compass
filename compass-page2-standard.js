@@ -12,7 +12,7 @@
     if(!/id=["']workspace["']/.test(html)||!/id=["']behaviorBar["']/.test(html)||
        !/id=["']setupToggle["']/.test(html))throw Error('Handwashing runner markup missing');
     const load=async ext=>{
-      const url='./compass-handwashing-hygiene-v25.'+ext+'?v=20261031-v3';
+      const url='./compass-handwashing-hygiene-v25.'+ext+'?v=20261031-v4';
       const r=await fetch(url,{cache:'no-store'});
       if(!r.ok)throw Error('Handwashing V25 asset missing: '+url);
       return r.text();
@@ -139,5 +139,5 @@
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
     return withCountingSave(runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>'));
   }
-  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261031-v23-handwashing-release',isPage2Program,standardize});
+  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261031-v24-handwashing-final',isPage2Program,standardize});
 })(window);
