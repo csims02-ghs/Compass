@@ -1,0 +1,25 @@
+/* 1:1 Counting V25: visible, accessible Save Setup action, independent of scroll depth. */
+#setupPage #countingSaveToolbar{
+ display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px;
+ padding:10px 14px;margin:7px 0 12px;background:#f5f9ff;
+ border:1px solid #d8e8f7;border-radius:12px;position:sticky;top:0;z-index:15;
+ box-shadow:0 2px 5px rgba(20,55,100,.04);
+}
+#setupPage #countingSaveSetupBtn{
+ min-height:46px;min-width:132px;padding:10px 20px;border-radius:10px;
+ background:#176dde;color:white;border:1px solid #176dde;font-weight:800;font-size:14px;
+}
+#setupPage #countingRestoreSetupBtn{min-height:42px;padding:8px 12px;border:1px solid #b8d1eb;border-radius:9px;color:#1b5d9a;background:white;font-weight:750}
+#setupPage #countingSaveSetupStatus{
+ flex:1 1 210px;color:#365e86;font-size:12px;line-height:1.45;min-width:180px;
+}
+#setupPage #countingSaveSetupStatus[data-status="success"]{color:#117342;font-weight:800}
+#setupPage #countingSaveSetupStatus[data-status="error"]{color:#bd3242;font-weight:800}
+#setupPage #countingSaveSetupStatus[data-status="pending"]{color:#175daa;font-weight:750}
+#setupPage #countingSaveSetupBtn:disabled{opacity:.58;cursor:progress}
+#setupPage #countingSaveToolbar [hidden]{display:none!important}
+@media(max-width:780px){
+ #setupPage #countingSaveToolbar{position:sticky;top:0;justify-content:stretch;padding:9px}
+ #setupPage #countingSaveSetupBtn{flex:1;min-width:120px}
+ #setupPage #countingSaveSetupStatus{flex-basis:100%;min-width:0}
+}
