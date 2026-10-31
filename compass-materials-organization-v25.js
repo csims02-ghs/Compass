@@ -21,7 +21,7 @@ root.innerHTML=
 '<div class="add-help" id="probeTargetHelp">Probe Benchmark checks all ten organization tasks once and never counts toward teaching mastery.</div>'+
 '<div class="add-preview"><strong id="chainPreviewTitle"></strong><p id="chainPreviewText"></p><div id="chainPreviewSteps"></div></div>'+
 '<div class="add-save"><button id="saveSetupBtn" type="button">Save Setup</button><span id="saveSetupStatus" role="status"></span></div></details></div>'+
-'<aside class="add-panel add-guide"><details id="instructionsFold" open><summary>Program Instructions</summary><h3>Readiness</h3><p>Choose the benchmark, target, and chain. Student and IEP data come from Student Profile.</p><h3>Instruction</h3><p>Present the materials problem and say “Solve this materials problem.” Use counters or paper when appropriate; fade prompts.</p><h3>Scoring</h3><p>Staff may score Correct, Incorrect, or Prompted. On-screen answer choices can be N/A, 3, 4, or 5. Pen & Paper is staff-scored.</p><h3>Mastery</h3><p>Three distinct instructional days are required. Benchmark probes are stored separately from teaching mastery.</p></details><button id="runBtn" type="button" class="add-primary">Run Program →</button></aside></section>'+
+'<aside class="add-panel add-guide"><details id="instructionsFold" open><summary>Program Instructions</summary><h3>Prepare</h3><p>Choose the benchmark, target and DTI chain. Present real materials with accessible storage, picture lists, or labeled bins matched to the student.</p><h3>Instruction</h3><p>Give a brief natural direction such as “Put the supplies away” or “Get the items on this list.” Respect individualized motor, sensory and communication supports.</p><h3>Scoring</h3><p>Staff observe the action and score Independent Correct, Incorrect or Prompted. Familiar maintenance actions in distractor steps are scored separately.</p><h3>Mastery</h3><p>Require demonstrated independence across distinct instructional dates. Full benchmark probes cover ten targets and never count toward teaching mastery.</p></details><button id="runBtn" type="button" class="add-primary">Run Program →</button></aside></section>'+
 '<section class="add-page" id="runPage" hidden><div id="runGrid" class="add-grid"><section class="add-panel material-card"><div class="add-panel-head"><h2>Student Material</h2><button id="imagesOnlyBtn" type="button" aria-pressed="false">▣ Materials Only</button><button id="resetViewBtn" type="button" hidden>Exit Materials Only</button></div><div id="taskStage"></div><div class="add-equation"><div id="sdPrompt">Prepare materials for the organization task</div><div id="materialsAnswers"></div><div id="materialsWorkspace"></div></div><p id="materialsMaterialsNote"></p></section>'+
 '<aside class="add-panel score-card"><div class="add-panel-head"><h2>Trial &amp; Scoring</h2><b id="materialsProgress">0 / 0</b></div><div class="add-stat-grid"><div><b id="materialsCorrect">0</b><small>Correct</small></div><div><b id="materialsIncorrect">0</b><small>Incorrect</small></div><div><b id="materialsPrompted">0</b><small>Prompted</small></div></div><p id="materialsAccuracy">No opportunities scored</p><div class="add-score-buttons"><button data-score="correct" type="button">✓ Correct</button><button data-score="incorrect" type="button">✕ Incorrect</button><button data-score="prompted" type="button">⚑ Prompted</button></div><h3>Behavior Tracking</h3><div id="behaviorList"></div><p id="materialsStatus" role="status">Ready</p><button id="saveNextBtn" type="button" class="add-primary" disabled>Save &amp; Next Step</button><button id="nextProgramBtn" type="button" class="add-primary" hidden disabled>Next Program →</button></aside></div></section>';
 main.appendChild(root);
@@ -54,59 +54,41 @@ const state={stage:'setup',plan:[],events:[],idx:0,scored:false,answer:null,prob
 const behaviorCounts={};
 const setStatus=s=>{$('materialsStatus').textContent=s};
 function preview(){
- const chain=chainList.find(x=>x[0]===$('chainSelect').value)||chainList[0],isProbe=$('circuitSelect').value==='probe';
- $('selectedPill').textContent='Sum '+$('targetSelect').value+' · '+currRange().name;
- $('chainPreviewTitle').textContent=isProbe?'Benchmark Probe · 5 sums':chain[1]+' · DTI Chain';
- $('chainPreviewText').textContent=isProbe?'Five sums, each presented once. No teaching mastery credit.':$('trialsSelect').value+' materials problems · '+$('modeSelect').value+' · one completed chain per run';
+ const chain=chainList.find(x=>x[0]===$('chainSelect').value)||chainList[0];
+ const probe=$('circuitSelect').value==='probe',task=targetFor($('targetSelect').value);
+ $('selectedPill').textContent='Benchmark '+currRange().id+' · '+(task?.name||'Target');
+ $('chainPreviewTitle').textContent=probe?'Full Benchmark Probe · 10 tasks':'DTI Chain · '+chain[1];
+ $('chainPreviewText').textContent=probe?'All 10 tasks once · no teaching mastery credit':'One completed instructional chain · staff observes organization using real materials';
+ const steps=probe?Array.from({length:10},()=>'T'):chain[2].split(',');
  $('chainPreviewSteps').replaceChildren();
- (isProbe?['T','T','T','T','T']:chain[2].split(',')).forEach((v,i)=>{const s=document.createElement('span');s.textContent=(i+1)+' · '+v;$('chainPreviewSteps').appendChild(s)});
- $('probeTargetHelp').hidden=!isProbe;
- $('scoringSelect').disabled=$('modeSelect').value==='Pen & Paper';
- $('arraySize').disabled=$('modeSelect').value==='Pen & Paper';
+ steps.forEach((kind,i)=>{const p=document.createElement('span');p.textContent=(i+1)+' · '+kind;$('chainPreviewSteps').appendChild(p)});
+ $('probeTargetHelp').hidden=!probe;
+ $('skillSelect').value=currRange().id===4?'Generalization':'Application';
 }
 function syncTargets(){
- const previous=$('targetSelect').value;
- opt('targetSelect',currRange().members.map(n=>[String(n),'Sum '+n]));
- if(currRange().members.includes(Number(previous)))$('targetSelect').value=previous;
+ const g=currRange(),previous=$('targetSelect').value;
+ opt('targetSelect',g.members.map(n=>[String(n),String(n).padStart(2,'0')+' · '+(targetFor(n)?.name||'Target '+n)]));
+ if(g.members.includes(Number(previous)))$('targetSelect').value=previous;
  preview();
 }
 function setup(){
- opt('benchmarkSelect',ranges.map((r,i)=>[String(i),'Benchmark '+(i+1)+' · Sums '+r.name]));
+ opt('benchmarkSelect',ranges.map((r,i)=>[String(i),'Benchmark '+r.id+' · '+r.name]));
  const goals=context().iep_goals||context().goals||[];
  goals.forEach((g,i)=>$('goalSelect').add(new Option('IEP Goal '+(g.goal_number||i+1)+' · '+(g.title||g.domain||'Goal'),String(g.id||g.goal_id||''))));
  $('masterySelect').value=String(C.mastery_pct||80);
- $('trialsSelect').value=String(C.default_problem_total||5);
- $('modeSelect').value=C.default_response_mode||'On Screen';
- $('scoringSelect').value=C.scoring_mode==='device'?'device':'staff';
- $('arraySize').value=String(C.default_answer_choices??0);
  syncTargets();
  const saved=context().instance_config?.programSetup||{};
- const keys={targetSelect:'setupTarget',chainSelect:'chainSelect',skillSelect:'skillSelect',modeSelect:'modeSelect',scoringSelect:'scoringSelect',arraySize:'arraySize',goalSelect:'goalSelect',masterySelect:'masterySelect',materialSelect:'materialSelect',trialsSelect:'trialsSelect',masteryTrialsSelect:'masteryTrialsSelect',circuitSelect:'circuitSelect'};
- if(saved.setupBenchmark){const i=ranges.findIndex(x=>x.name===saved.setupBenchmark);if(i>=0){$('benchmarkSelect').value=String(i);syncTargets()}}
- for(const [id,key]of Object.entries(keys)){if(saved[key]!==undefined&&[...$(id).options].some(x=>x.value===String(saved[key])))$(id).value=String(saved[key])}
- for(const [id]of specs)$(id).addEventListener('change',()=>{if(id==='benchmarkSelect')syncTargets();if(id==='modeSelect'&&$('modeSelect').value==='Pen & Paper')$('scoringSelect').value='staff';preview()});
+ if(saved.setupBenchmark){const idx=ranges.findIndex(x=>String(x.id)===String(saved.setupBenchmark));if(idx>=0){$('benchmarkSelect').value=String(idx);syncTargets()}}
+ const savedMap={targetSelect:'setupTarget',chainSelect:'setupChain',skillSelect:'setupSkillType',scoringSelect:'setupScoring',arraySize:'arraySize',goalSelect:'setupIepGoal',masterySelect:'setupMastery',materialSelect:'materialSelect',modeSelect:'mode',masteryTrialsSelect:'masteryTrialsSelect',minOpportunitiesSelect:'minOpportunitiesSelect',circuitSelect:'circuitSelect',distractorSelect:'customDistractor'};
+ for(const [id,key]of Object.entries(savedMap))if(saved[key]!==undefined&&[...$(id).options].some(o=>o.value===String(saved[key])))$(id).value=String(saved[key]);
+ for(const [id]of specs)$(id).addEventListener('change',()=>{if(id==='benchmarkSelect')syncTargets();preview()});
  preview();behaviors();
 }
-function parameters(n,index){
- const stored=targetFor(n)?.metadata?.example_variations?.filter(x=>Array.isArray(x)&&x.length===2&&Number(x[0])+Number(x[1])===n)||[];
- if(stored.length)return stored[index%stored.length].map(Number);
- const a=Math.floor(n/2);return index%2?[n-a,a]:[a,n-a];
-}
 function build(){
- const g=currRange(),selected=Number($('targetSelect').value),probe=$('circuitSelect').value==='probe';
- const chain=(chainList.find(c=>c[0]===$('chainSelect').value)||chainList[0])[2].split(',');
- const count=Number($('trialsSelect').value)||5;
- const src=probe?g.members.map(n=>({sum:n,type:'T'})):Array.from({length:count},(_,i)=>{
-  const type=chain[i%chain.length],others=g.members.filter(n=>n!==selected);
-  return{type,sum:type==='D'?others[i%others.length]:selected};
- });
- return src.map((x,i)=>({...x,parts:parameters(x.sum,i)}));
-}
-function options(sum,index){
- const n=Number($('arraySize').value)||0;if(n<1||$('modeSelect').value!=='On Screen')return [];
- const list=[sum];for(let distance=1;list.length<n&&distance<=100;distance++)for(const x of [sum-distance,sum+distance])if(x>=0&&x<=100&&!list.includes(x)&&list.length<n)list.push(x);
- for(let i=list.length-1;i>0;i--){const j=(i*17+index*11)%(i+1);[list[i],list[j]]=[list[j],list[i]]}
- return list;
+ const range=currRange(),selected=Number($('targetSelect').value),probe=$('circuitSelect').value==='probe';
+ const chain=(chainList.find(x=>x[0]===$('chainSelect').value)||chainList[0])[2].split(',');
+ return probe?range.members.map(id=>({type:'T',targetId:id})):
+  chain.map(type=>({type,targetId:selected,action:$('distractorSelect').selectedOptions[0]?.textContent||'Wave'}));
 }
 const step=()=>state.plan[state.idx];
 function tally(){
@@ -117,28 +99,26 @@ function tally(){
 }
 function show(){
  const q=step();if(!q)return;
- $('taskStage').textContent='Step '+(state.idx+1)+' / '+state.plan.length+' · '+(q.type==='T'?'Target':'Distractor Review')+' · '+(state.probe?'Probe':'Teaching');
- $('sdPrompt').textContent=q.parts[0]+' + '+q.parts[1]+' = ?';
+ const t=targetFor(q.targetId);
+ $('taskStage').textContent='Step '+(state.idx+1)+' / '+state.plan.length+' · '+(q.type==='D'?'Familiar Distractor / Maintenance':'Organization Target')+' · '+(state.probe?'Benchmark Probe':'Teaching');
+ $('sdPrompt').textContent=q.type==='D'?'Do this: '+q.action:(t?.name||'Organize the selected materials');
  $('materialsProgress').textContent=(state.idx+1)+' / '+state.plan.length;
  $('materialsAnswers').replaceChildren();
- for(const n of options(q.sum,state.idx)){
-  const b=document.createElement('button');b.type='button';b.textContent=n;b.className='add-answer';b.disabled=state.scored;
-  b.setAttribute('aria-pressed',String(n===state.answer));
-  b.addEventListener('click',()=>{if(state.scored)return;state.answer=n;[...$('materialsAnswers').children].forEach(x=>x.setAttribute('aria-pressed',String(Number(x.textContent)===n)));if($('scoringSelect').value==='device')score(n===q.sum?'independent_correct':'incorrect')});
-  $('materialsAnswers').appendChild(b);
- }
- $('materialsWorkspace').textContent=$('materialsAnswers').childElementCount?'Select an answer; staff can also score a prompted response.':'Staff observes the response and records the score.';
- $('materialsMaterialsNote').textContent=$('modeSelect').value==='Pen & Paper'?'Staff: present and observe the written answer.':$('materialSelect').value==='counters'?'Staff: provide actual accessible counters or number tiles.':'Show the equation; use the student’s approved supports.';
- root.querySelectorAll('[data-score]').forEach(b=>b.disabled=state.scored);
+ $('materialsWorkspace').textContent=q.type==='D'?'Staff: model the familiar action if needed. Score maintenance separately.':
+   'Present the actual materials in the selected setting. Observe the learner’s response before prompting.';
+ $('materialsMaterialsNote').textContent='Accessible storage and student preferences take priority. Use visual or AAC supports when indicated.';
+ root.querySelectorAll('[data-score]').forEach(button=>button.disabled=state.scored);
  $('saveNextBtn').disabled=!state.scored||state.save==='saving';
  $('saveNextBtn').textContent=state.idx===state.plan.length-1?'Save & Finish Run':'Save & Next Step';
  tally();
 }
 function score(result){
  if(state.stage!=='run'||state.scored||state.finished)return;
- const q=step(),t=targetFor(q.sum);if(!q||!t)return;
- state.events.push({trial_number:state.idx+1,trial_type:q.type,result,target_name:t.name,target_key:t.key,occurred_at:new Date().toISOString(),problem:q.parts.join(' + '),expected_sum:q.sum,selected_answer:state.answer});
- state.scored=true;setStatus('Step '+(state.idx+1)+' recorded.');show();
+ const q=step(),t=targetFor(q?.targetId);if(!q||!t)return;
+ state.events.push({trial_number:state.idx+1,trial_type:q.type,result,
+  target_name:t.name,target_key:t.key,occurred_at:new Date().toISOString(),
+  presented_action:q.type==='D'?q.action:t.name});
+ state.scored=true;setStatus('Step '+(state.idx+1)+' scored.');show();
 }
 function behaviorNames(){
  const c=context(),all=[...(Array.isArray(c.primary_behaviors)?c.primary_behaviors:[]),...(Array.isArray(c.secondary_behaviors)?c.secondary_behaviors:[]),...(Array.isArray(c.behaviors)?c.behaviors:[])];
