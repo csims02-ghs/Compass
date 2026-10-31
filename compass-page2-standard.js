@@ -32,6 +32,8 @@
        html.includes('"code": "CP-DIR-VISUAL-087"')||
        html.includes('"code":"CP-READ-INFER-095"')||
        html.includes('"code": "CP-READ-INFER-095"')||
+       html.includes('"code":"CP-WH-CONCEPTS"')||
+       html.includes('"code": "CP-WH-CONCEPTS"')||
        html.includes('"code":"CP-126-GROSS-MOTOR-IMITATION"')||
        html.includes('"code": "CP-126-GROSS-MOTOR-IMITATION"')||
        html.includes('"code":"CP-LETTER-TRACING"')||
