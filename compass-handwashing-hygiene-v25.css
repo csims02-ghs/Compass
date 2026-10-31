@@ -56,3 +56,10 @@ html.hw-v25-active,html.hw-v25-active body{height:100%;overflow:hidden!important
 #hwV25Root [hidden]{display:none!important}
 @media(max-height:780px){#hwV25Root .hv-page{padding:7px;gap:7px}#hwV25Root .hv-panel{padding:8px}#hwV25Root .hv-scoring{gap:4px}#hwV25Root #trialTitle{font-size:24px}}
 @media(max-width:800px) and (orientation:portrait){#hwV25Root .hv-page,#hwV25Root #runGrid{display:block;overflow:auto}#hwV25Root .hv-panel{min-height:400px}}
+
+#hwV25Root .hv-teaching-tools{display:flex;gap:7px;flex-wrap:wrap;margin:6px 0 9px}
+#hwV25Root .hv-teaching-tools button{min-height:40px;font-size:12px}
+#hwV25Root .hv-exports{display:flex;gap:5px;flex-wrap:wrap;border-top:1px solid #d9e6f4;padding-top:8px}
+#hwV25Root .hv-exports button{min-height:39px;font-size:11px;flex:1 1 100px}
+#hwV25Root .hv-save-actions #printBlank{background:#fff;border:1px solid #c6d9ed;color:#205e96;min-height:44px}
+@media print{html.hw-v25-active,html.hw-v25-active body{height:auto!important;overflow:visible!important}html.hw-v25-active body>main.main{display:block!important}#hwV25Root{display:none!important}}
