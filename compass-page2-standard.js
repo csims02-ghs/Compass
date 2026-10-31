@@ -4,6 +4,24 @@
   'use strict';
   const STYLE_URL='./compass-page2-standard.css?v=20261027-v3';
   let stylePromise=null;
+  // Handwashing and Hygiene is a specialist 65-target legacy runner.
+  // Preserve the recognition and application engine, add the V25 38-marker UI.
+  async function withHandwashing(html){
+    if(!html.includes("const PROGRAM_CODE='CP-132-HANDWASHING-AND-HYGIENE'"))return null;
+    if(html.includes('id="compass-handwashing-hygiene-v25-logic"'))return html;
+    if(!/id=["']workspace["']/.test(html)||!/id=["']behaviorBar["']/.test(html)||
+       !/id=["']setupToggle["']/.test(html))throw Error('Handwashing runner markup missing');
+    const load=async ext=>{
+      const url='./compass-handwashing-hygiene-v25.'+ext+'?v=20261031-v1';
+      const r=await fetch(url,{cache:'no-store'});
+      if(!r.ok)throw Error('Handwashing V25 asset missing: '+url);
+      return r.text();
+    };
+    const [css,js]=await Promise.all([load('css'),load('js')]);
+    return html.replace(/<\/head>/i,'<style id="compass-handwashing-hygiene-v25-ui">'+css+'</style></head>')
+      .replace(/<\/body>/i,'<script id="compass-handwashing-hygiene-v25-logic">'+js+'<'+'/script></body>');
+  }
+
   // Native 1:1 Counting uses the V25 two-screen runner. Add only the missing
   // setup-save toolbar; never substitute a legacy runner or change trial logic.
   async function withCountingSave(html){
@@ -30,6 +48,8 @@
   }
   async function standardize(html){
     if(typeof html!=='string')return html;
+    const handwashing=await withHandwashing(html);
+    if(handwashing!==null)return handwashing;
     // Community Identification uses its own native V25 two-page runner.
     // Its rendered config is stored under the "code" key, not "program_code".
     // Do not overlay generic Page 2 CSS or an old community-specific runner.
@@ -119,5 +139,5 @@
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
     return withCountingSave(runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>'));
   }
-  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261031-v21-counting-setup-save',isPage2Program,standardize});
+  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261031-v22-handwashing-v25',isPage2Program,standardize});
 })(window);
