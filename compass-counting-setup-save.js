@@ -17,21 +17,26 @@ if(banner)banner.insertAdjacentElement('afterend',toolbar);
 else fold.insertAdjacentElement('beforebegin',toolbar);
 const saveBtn=$('countingSaveSetupBtn'),restoreBtn=$('countingRestoreSetupBtn'),status=$('countingSaveSetupStatus');
 const fields=['benchmarkSelect','targetSelect','chainSelect','skillSelect','scoringSelect','arraySize','distractorSelect',
- 'doThisSelect','goalSelect','masterySelect','materialSelect','modeSelect','trialsSelect','masteryTrialsSelect',
+ 'goalSelect','masterySelect','materialSelect','modeSelect','trialsSelect','masteryTrialsSelect',
  'minOpportunitiesSelect','circuitSelect'];
-const state={assignmentId:'',studentId:'',parentOrigin:'',cloud:null,pending:null,dirty:false,loaded:false};
+const state={assignmentId:'',studentId:'',parentOrigin:'',cloud:null,pending:null,dirty:false,loaded:false,linkedGoals:[]};
 const uuidRE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const updateStatus=(message,kind)=>{
  status.textContent=message;
  status.dataset.status=kind||'info';
 };
 function setupSnapshot(){
- const values={countingV25SetupVersion:1,program_code:'CP-1TO1-COUNT'};
+ const values={};
  for(const id of fields){
   const node=$(id);if(node)values[id]=node.value;
  }
  const nums=['arraySize','masterySelect','masteryTrialsSelect','minOpportunitiesSelect','targetSelect'];
  for(const id of nums)if(values[id]!==undefined)values[id]=Number(values[id]);
+ values.customDistractor=$('doThisSelect')?.value||'rotate';
+ if(values.goalSelect){
+  const found=state.linkedGoals.find(g=>g.id===values.goalSelect||g.title===values.goalSelect);
+  values.goalSelect=found?.id||values.goalSelect;
+ }
  return values;
 }
 function validateSave(data){
@@ -40,12 +45,14 @@ function validateSave(data){
  if(!Number.isInteger(data.minOpportunitiesSelect)||data.minOpportunitiesSelect<1||data.minOpportunitiesSelect>50)return 'Enter 1–50 minimum opportunities per day.';
  if(!Number.isInteger(data.arraySize)||data.arraySize<3||data.arraySize>100)return 'Array Size must be 3–100.';
  if(!Number.isInteger(data.targetSelect)||data.targetSelect<1||data.targetSelect>100)return 'Choose a valid number target.';
+ if(data.goalSelect&&!state.linkedGoals.some(g=>g.id===data.goalSelect))return 'Choose a linked IEP Goal from Student Profile.';
  return null;
 }
 function readCloud(raw){
  if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
- if(raw.countingV25SetupVersion!==1||raw.program_code!=='CP-1TO1-COUNT')return null;
+ if(!Object.prototype.hasOwnProperty.call(raw,'benchmarkSelect')||!Object.prototype.hasOwnProperty.call(raw,'targetSelect'))return null;
  const out={};for(const id of fields)if(Object.prototype.hasOwnProperty.call(raw,id))out[id]=raw[id];
+ if(Object.prototype.hasOwnProperty.call(raw,'customDistractor'))out.doThisSelect=raw.customDistractor;
  return out;
 }
 function setSavedAvailable(raw){
@@ -109,7 +116,7 @@ function restore(){
   const control=$(id),raw=cloud[id];
   if(!control||raw===undefined)return;
   if(control.tagName==='SELECT'){
-   const value=String(raw);
+   const value=id==='goalSelect'?(state.linkedGoals.find(g=>g.id===raw)?.title||String(raw)):String(raw);
    if(![...control.options].some(o=>o.value===value))return;
    control.value=value;
   }else control.value=String(raw);
@@ -134,6 +141,9 @@ window.addEventListener('message',ev=>{
  if(!m.student?.id||typeof m.student.id!=='string')return;
  if(state.assignmentId&&state.assignmentId!==m.assignment_id){state.cloud=null;restoreBtn.hidden=true;}
  state.assignmentId=m.assignment_id;state.studentId=m.student.id;state.parentOrigin=ev.origin;
+ state.linkedGoals=(Array.isArray(m.linkedGoalOptions)?m.linkedGoalOptions:[])
+  .filter(g=>g&&uuidRE.test(String(g.id||''))&&typeof g.title==='string'&&g.title.trim())
+  .map(g=>({id:String(g.id),title:g.title.trim()}));
  setSavedAvailable(m.programSetup);
  state.loaded=true;
 });
