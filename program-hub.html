@@ -172,6 +172,7 @@ async function sendV25Context(sp){
   student:{id:sp.student_id,name:S.student?.display_label||S.student?.student_code||'Student',
    schoolTimeZone:'America/New_York',goals:goals.map(x=>x.title),behaviors},
   assignment_id:sp.id,programSetup:sp.instance_config?.programSetup||null,
+  linkedGoalOptions:goals.map(g=>({id:g.id,title:g.title})),
   sessionId:null
  },location.origin);
 }
