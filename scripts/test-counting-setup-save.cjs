@@ -4,6 +4,7 @@ const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),read=n=>fs.readFileSync(path.join(root,n),'utf8');
 const endpoint='https://ykkexfsbnnxgncnyaksr.supabase.co/functions/v1/compass-program-runner?program_code=CP-1TO1-COUNT&preview_version=25&format=html';
 const assignment='aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
+const goalId='bbbbbbbb-2222-4222-8222-bbbbbbbbbbbb';
 (async()=>{
  const response=await fetch(endpoint,{signal:AbortSignal.timeout(35000)});
  assert.equal(response.status,200,'Native Counting V25 unavailable');
@@ -25,14 +26,17 @@ const assignment='aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
    '<script>window.requests=[];window.failSaves=false;window.cloudSaved=null;',
    'window.addEventListener("message",event=>{',
    'const m=event.data||{};if(m.type!=="compass-save-setup-request")return;window.requests.push(m);',
-   'const outcome=window.failSaves?{ok:false,saved:false,error:"Synthetic cloud failure"}:{ok:true,saved:true,programSetup:m.setup};',
-   'if(!window.failSaves)window.cloudSaved=m.setup;',
+   'const allowed=new Set(["setupTarget","setupBenchmark","setupArray","setupChain","setupScoring","setupSkillType","setupMastery","setupIepGoal","setupShowLabels","useCustomDistractor","customDistractor","level","trialCount","mastery","mode","benchmarkSelect","targetSelect","skillSelect","chainSelect","scoringSelect","arraySize","distractorSelect","materialSelect","modeSelect","masterySelect","masteryTrialsSelect","minOpportunitiesSelect","circuitSelect","goalSelect","compassBenchmark","compassProbeMode"]);',
+   'const unknown=Object.keys(m.setup||{}).filter(k=>!allowed.has(k));',
+   'const denied=window.failSaves||unknown.length||!/^[0-9a-f-]{36}$/i.test(m.setup.goalSelect);',
+   'const outcome=denied?{ok:false,saved:false,error:"Rejected by synthetic backend: invalid setup fields"}:{ok:true,saved:true,programSetup:{...m.setup,setupVersion:"v25.1",updatedAt:"2026-10-31"}};',
+   'if(!denied)window.cloudSaved=outcome.programSetup;',
    'event.source.postMessage({type:"compass-save-setup-response",nonce:m.nonce,assignment_id:m.assignment_id,...outcome},location.origin);',
    '});',
    'document.querySelector("#runner").addEventListener("load",function(){this.contentWindow.postMessage({',
    'type:"COMPASS_DEMO_V18_CONTEXT",assignment_id:"'+assignment+'",',
    'student:{id:"synthetic-student",name:"Counting QA",goals:["Math"],behaviors:["Elopement"],schoolTimeZone:"America/New_York"},',
-   'programSetup:window.cloudSaved,sessionId:null},location.origin)});',
+   'programSetup:window.cloudSaved,linkedGoalOptions:[{id:"'+goalId+'",title:"Math"}],sessionId:null},location.origin)});',
    '<\/script></body></html>'
    ].join('');
    await page.route('https://compass-qa.example/**',route=>route.fulfill({status:200,contentType:'text/html',body:route.request().url().endsWith('/counting')?html:parent}));
@@ -46,6 +50,7 @@ const assignment='aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
    await frame.locator('#targetSelect').selectOption('5');
    await frame.locator('#chainSelect').selectOption('iep');
    await frame.locator('#materialSelect').selectOption('block');
+   await frame.locator('#goalSelect').selectOption('Math');
    await frame.locator('#countingSaveSetupBtn').click();
    await frame.locator('#countingSaveSetupStatus[data-status="success"]').waitFor({timeout:12000});
    const saved=await page.evaluate(()=>({requests:window.requests,saved:window.cloudSaved}));
@@ -54,6 +59,7 @@ const assignment='aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
    assert.equal(saved.saved.targetSelect,5);
    assert.equal(saved.saved.chainSelect,'iep');
    assert.equal(saved.saved.materialSelect,'block');
+   assert.equal(saved.saved.goalSelect,goalId);
    assert(!JSON.stringify(saved.requests).includes('access_token'));
    await page.evaluate(()=>window.failSaves=true);
    await frame.locator('#materialSelect').selectOption('car');
@@ -65,10 +71,12 @@ const assignment='aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa';
    await frame.locator('#countingSaveSetupStatus[data-status="success"]').waitFor({timeout:12000});
    await frame.locator('#benchmarkSelect').selectOption('0');
    await frame.locator('#materialSelect').selectOption('apple');
+   await frame.locator('#goalSelect').selectOption('');
    await frame.locator('#countingRestoreSetupBtn').click();
    assert.equal(await frame.locator('#benchmarkSelect').inputValue(),'1');
    assert.equal(await frame.locator('#targetSelect').inputValue(),'5');
    assert.equal(await frame.locator('#materialSelect').inputValue(),'car');
+   assert.equal(await frame.locator('#goalSelect').inputValue(),'Math');
    assert.deepEqual(errors,[],'Page errors: '+errors.join(' / '));
    console.log('COUNTING_SAVE_VIEWPORT_PASS '+JSON.stringify({viewport,buttonTop:baseline.rect.top,saveAndRestore:true}));
    await page.close();
