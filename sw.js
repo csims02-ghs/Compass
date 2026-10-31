@@ -1,16 +1,18 @@
 /* COMPASS service worker: online navigation is authoritative; caches are offline fallbacks only. */
-const CACHE='compass-shell-v51';
+const CACHE='compass-shell-v52-addition';
 // Cache the canonical application and current program adapters; never prefetch archived loaders.
 const CORE=[
   "./",
   "./index.html",
   "./program-hub.html",
   "./manifest.webmanifest",
-  "./compass-page2-standard.js?v=20261028-v23",
+  "./compass-page2-standard.js?v=20261031-addition-v25-1",
   "./compass-page2-standard.css?v=20261027-v3",
   "./compass-session-save-bridge.js?v=20261029-v1",
   "./compass-body-parts-v25.js",
   "./compass-body-parts-v25.css",
+  "./compass-addition-v25.js?v=20261031-v1",
+  "./compass-addition-v25.css?v=20261031-v1",
   "./compass-functions-v25.js",
   "./compass-functions-v25.css",
   "./compass-fine-motor-imitation-v25.js?v=20261027-v1",
