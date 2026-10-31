@@ -39,6 +39,7 @@ const ids='appTitle backBtn resetViewBtn runBtn endBtn nextProgramBtn storageBan
    }),ids);
    assert.deepEqual(meta.missing,[]);assert.deepEqual(meta.duplicate,[]);
    assert.equal(meta.count,65);assert.deepEqual(meta.stages,[25,10,10,10,10]);assert(meta.setup);
+   assert(await page.locator('#printBlank').isVisible(),'Blank printable hygiene checklist must remain available');
    await page.evaluate(()=>{
     window.__COMPASS_STUDENT_RUNTIME__.context.targets=BANK.map(t=>({target_name:t.name,target_key:String(t.id)}));
     window.__COMPASS_STUDENT_RUNTIME__.context.behaviors=Array.from({length:8},(_,i)=>'Assigned Behavior '+(i+1));
@@ -54,6 +55,9 @@ const ids='appTitle backBtn resetViewBtn runBtn endBtn nextProgramBtn storageBan
    assert(first.ratio>.61&&first.ratio<.76,'70/30 ratio '+JSON.stringify(first));
    assert(first.count===8&&first.steps===8&&first.choices>=2,'Initial B1 layout '+JSON.stringify(first));
    assert(first.sd.includes('wash your hands'));
+   assert(await page.locator('#showSD').isVisible()&&await page.locator('#showProcedure').isVisible(),'SD and Teaching Cue must remain visible');
+   await page.locator('#showProcedure').click();assert(await page.locator('#cue').isVisible(),'Teaching explanation unavailable');
+   await page.locator('#showProcedure').click();
    await page.locator('#imagesOnlyBtn').click();assert(await page.locator('.hv-scoring').isHidden());
    await page.locator('#imagesOnlyBtn').click();assert(await page.locator('.hv-scoring').isVisible());
    for(let i=0;i<8;i++){
@@ -63,6 +67,7 @@ const ids='appTitle backBtn resetViewBtn runBtn endBtn nextProgramBtn storageBan
    await page.waitForFunction(()=>window.COMPASS_HANDWASH_V25.getState().saveStatus==='saved',null,{timeout:8500});
    const done=await page.evaluate(()=>({calls:window.__HW_TEST_CALLS__,next:!document.querySelector('#nextProgramBtn').disabled,state:window.COMPASS_HANDWASH_V25.getState()}));
    assert(done.next&&done.calls.length===1&&done.calls[0].action==='session');
+   assert(await page.locator('#exportCsv').isVisible()&&await page.locator('#exportJson').isVisible()&&await page.locator('#printCompleted').isVisible(),'Completed session controls not present');
    assert(done.calls[0].data.trial_events.length===8);
    assert.equal(done.calls[0].data.counts.independent_correct,5);
    await page.locator('#backBtn').click();await page.locator('#setupPage').waitFor({state:'visible'});
