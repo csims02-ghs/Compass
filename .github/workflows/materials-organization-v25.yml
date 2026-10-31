@@ -1,0 +1,24 @@
+name: Materials Organization V25 38 markers
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'compass-materials-organization-v25.js'
+      - 'compass-materials-organization-v25.css'
+      - 'compass-page2-standard.js'
+      - 'scripts/test-materials-organization-v25.cjs'
+      - '.github/workflows/materials-organization-v25.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  materials:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright@1.56.1
+      - run: node scripts/test-materials-organization-v25.cjs
