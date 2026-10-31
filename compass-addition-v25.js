@@ -154,8 +154,17 @@ function behaviors(){
  });
 }
 function eventMap(e){
- const t=(context().targets||[]).find(x=>String(x.target_name).toLowerCase()===String(e.target_name).toLowerCase());
- return {...e,target_key:t?.target_key||e.target_key};
+ const assigned=context().targets||[];
+ const t=assigned.find(x=>String(x.target_name).toLowerCase()===String(e.target_name).toLowerCase());
+ if(t)return {...e,target_key:t.target_key||e.target_key};
+ // Distractors are review stimuli, not independently assigned acquisition targets.
+ // Map the review step to its assigned primary target for the authenticated save bridge,
+ // while explicitly retaining the presented sum for historical reporting.
+ if(e.trial_type==='D'){
+  const primary=assigned.find(x=>String(x.target_name).toLowerCase()==='sum '+$('targetSelect').value);
+  if(primary)return {...e,target_name:primary.target_name,target_key:primary.target_key,distractor_target_name:e.target_name};
+ }
+ return e;
 }
 function payload(){
  const events=state.events.map(eventMap),target=events.find(x=>x.trial_type==='T')||events[0],t=events.filter(x=>x.trial_type==='T');
@@ -192,6 +201,19 @@ function advance(){
 function run(){
  if(state.stage!=='setup')return;
  if($('modeSelect').value==='Pen & Paper')$('scoringSelect').value='staff';
+ const assigned=Array.isArray(context().targets)?context().targets:[];
+ if(assigned.length){
+  const chosen='sum '+$('targetSelect').value;
+  const names=new Set(assigned.map(t=>String(t.target_name||'').trim().toLowerCase()));
+  if(!names.has(chosen)&&$('circuitSelect').value!=='probe'){
+   $('saveSetupStatus').textContent='Assign this sum target to the student before running.';
+   return;
+  }
+  if($('circuitSelect').value==='probe'&&currRange().members.some(n=>!names.has('sum '+n))){
+   $('saveSetupStatus').textContent='To run a complete benchmark probe, assign all five sums to this student.';
+   return;
+  }
+ }
  state.plan=build();if(!state.plan.length||state.plan.length>50)return;
  state.events=[];state.idx=0;state.scored=false;state.finished=false;state.save='idle';state.saving=null;state.answer=null;state.started=new Date().toISOString();state.probe=$('circuitSelect').value==='probe';
  state.key='V25:run-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);
