@@ -68,6 +68,32 @@ assert.equal(markers.length,38);assert.equal(new Set(markers).size,38);assert.do
   assert.equal(teaching.call.payload.counts.incorrect,1);assert(teaching.call.payload.counts.independent_correct===3);
   assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false);
   await page.locator('#backBtn').click();await page.locator('#setupPage').waitFor({state:'visible'});
+  if(viewport.width===1024){
+   // Guard the failed-save path and the N/A Pen & Paper mode without touching student records.
+   await page.locator('#arraySize').selectOption('0');
+   await page.locator('#modeSelect').selectOption('Pen & Paper');
+   assert.equal(await page.locator('#scoringSelect').inputValue(),'staff');
+   await page.locator('#runBtn').click();
+   assert.equal(await page.locator('#additionAnswers button').count(),0);
+   assert.equal(await page.locator('.add-behavior-row').count(),8,'All eight assigned behaviors must appear');
+   const behaviorScroll=await page.evaluate(()=>{
+     const node=document.querySelector('#behaviorList');return node.scrollHeight>node.clientHeight+2;
+   });
+   assert(behaviorScroll,'Six to eight behaviors should scroll');
+   for(let i=0;i<4;i++){await page.locator('[data-score="correct"]').click();await page.locator('#saveNextBtn').click()}
+   await page.evaluate(()=>{window.__QA_FAILURE__=true});
+   await page.locator('[data-score="prompted"]').click();await page.locator('#saveNextBtn').click();
+   await page.waitForFunction(()=>window.COMPASS_ADDITION_V25.getState().saveStatus==='failed');
+   assert.equal(await page.locator('#nextProgramBtn').isHidden(),true,'Next Program must be blocked after failed cloud save');
+   await page.locator('#backBtn').click();
+   assert.equal(await page.locator('#runPage').isVisible(),true,'Unsaved data must not be discarded by back navigation');
+   await page.evaluate(()=>{window.__QA_FAILURE__=false});
+   await page.locator('#saveNextBtn').click();
+   await page.waitForFunction(()=>window.COMPASS_ADDITION_V25.getState().saveStatus==='saved');
+   await page.locator('#backBtn').click();
+   await page.locator('#setupPage').waitFor({state:'visible'});
+   await page.locator('#modeSelect').selectOption('On Screen');
+  }
   await page.locator('#circuitSelect').selectOption('probe');await page.locator('#runBtn').click();
   assert.equal(await page.locator('#additionProgress').textContent(),'1 / 5');
   for(let i=0;i<5;i++){await page.locator('[data-score="correct"]').click();await page.locator('#saveNextBtn').click()}
