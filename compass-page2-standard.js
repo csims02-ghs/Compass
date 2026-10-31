@@ -86,7 +86,7 @@
       {code:'CP-127-FINE-MOTOR-IMITATION',slug:'fine-motor-imitation',tag:'compass-fine-motor-imitation-v25',version:'20261027-v1'},
       {code:'CP-DIR-VISUAL-087',slug:'functions',tag:'compass-functions-v25',version:'20261027-v1'},
       {code:'CP-ADDITION',slug:'addition',tag:'compass-addition-v25',version:'20261031-v1'},
-      {code:'CP-153-MATERIALS-ORGANIZATION',slug:'materials-organization',tag:'compass-materials-organization-v25',version:'20261031-v1'}
+      {code:'CP-153-MATERIALS-ORGANIZATION',slug:'materials-organization',tag:'compass-materials-organization-v25',version:'20261031-v2'}
     ];
     const updated=adapters.find(a=>html.includes('"program_code":"'+a.code+'"')||
       html.includes('"program_code": "'+a.code+'"')||
@@ -140,5 +140,5 @@
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
     return withCountingSave(runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>'));
   }
-  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261031-v25-materials-organization',isPage2Program,standardize});
+  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261031-v26-materials-release',isPage2Program,standardize});
 })(window);
