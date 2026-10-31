@@ -20,7 +20,7 @@ function mark(old,id){
  field.parentElement.insertBefore(wrapper,field);wrapper.appendChild(field);
 }
 for(const [a,b] of [['benchmark','benchmarkSelect'],['target','targetSelect'],['chain','chainSelect'],['skillType','skillSelect'],['scoringMode','scoringSelect'],['distractor','distractorSelect'],['mastery','masterySelect']])mark(a,b);
-$('setupPreview').id='hvSetupPreview';
+// Preserve original setupPreview ID: the handwashing benchmark engine updates it.
 $('applySetup').closest('.actions').style.display='none';
 const x=document.createElement('div');x.className='hv-extra';x.innerHTML=
  '<label id="goalSelect">IEP Goal<select id="hvGoal"><option value="">No linked goal</option></select></label>'+
