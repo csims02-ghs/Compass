@@ -80,6 +80,7 @@ const initial=rt()?.context;behaviors(initial?.behaviors||initial?.primary_behav
 function visible(which){
  page=which;$('setupPage').hidden=which!=='setup';$('runPage').hidden=which!=='run';
  $('backBtn').hidden=which==='setup';$('endBtn').hidden=which==='setup';$('runBtn').hidden=which==='run';
+ if(which==='setup'){$('setupBody').hidden=false;$('instructionsBody').hidden=false;}
 }
 function update(){
  if(page!=='run')return;
