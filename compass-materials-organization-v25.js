@@ -5,36 +5,40 @@ if((C.program_code||C.code)!=='CP-153-MATERIALS-ORGANIZATION'||window.COMPASS_MA
 const main=document.querySelector('.app .main');
 if(!main)throw Error('Materials Organization V25 runner missing');
 const $=id=>document.getElementById(id);
-const targets=(C.targets||[]).filter(t=>t&&Number(t.metadata?.answer??t.id)>0);
-const ranges=(C.compass_v25_standard?.benchmarks||[]).map((b,i)=>({name:String(b.range||b.label||'1-5'),members:(b.members||[]).map(Number)}));
-if(targets.length!==100||ranges.length!==20||ranges.some(r=>r.members.length!==5))throw Error('Materials Organization 100-target benchmark integrity failure');
+const targets=(C.targets||[]).filter(t=>t&&Number.isInteger(Number(t.id))&&Number(t.id)>=1&&Number(t.id)<=40);
+const ranges=(C.compass_v25_standard?.benchmarks||[]).map((b,i)=>({
+ id:Number(b.id||i+1),name:String(b.label||b.title||'Benchmark '+(i+1)),members:(b.members||[]).map(Number)
+}));
+if(targets.length!==40||ranges.length!==4||ranges.some(r=>r.members.length!==10)||
+   new Set(ranges.flatMap(r=>r.members)).size!==40)
+ throw Error('Materials Organization requires 40 original targets and four verified 10-target benchmarks');
 const chainList=[['default','Default','T,T,D,T,D,D,T,T'],['momentum','Momentum','T,T,T,T'],['short','Short','T,T,D'],['iep','IEP Chain','T,T,T,T,T'],['alternative','Alternative','T,D,T,D,T,T'],['single','Single','T']];
 const root=document.createElement('div');root.id='materialsV25Root';
 root.innerHTML=
 '<header class="add-head"><div><h1 id="appTitle">Materials Organization</h1><small>COMPASS V25 · Instructional Program</small></div><nav><button id="backBtn" type="button" hidden>← Setup</button><button id="endBtn" type="button">End Session</button></nav></header>'+
 '<div class="add-banner" id="storageBanner" role="status">Only authenticated, verified saves are marked complete.</div>'+
-'<section class="add-page" id="setupPage"><div class="add-panel add-setup"><div class="add-heading"><h2>Program Setup</h2><span id="selectedPill">Select target</span></div><details id="setupFold" open><summary>Program Setup</summary><div class="add-fields" id="addFields"></div>'+
-'<div class="add-help" id="probeTargetHelp">Probe Benchmark presents all five target sums once and does not count toward teaching mastery.</div>'+
+'<section class="add-page" id="setupPage"><div class="add-panel add-setup"><div class="add-heading"><h2>Program Setup</h2><span id="selectedPill">Choose a task</span></div><details id="setupFold" open><summary>Program Setup</summary><div class="add-fields" id="addFields"></div>'+
+'<div class="add-help" id="probeTargetHelp">Probe Benchmark checks all ten organization tasks once and never counts toward teaching mastery.</div>'+
 '<div class="add-preview"><strong id="chainPreviewTitle"></strong><p id="chainPreviewText"></p><div id="chainPreviewSteps"></div></div>'+
 '<div class="add-save"><button id="saveSetupBtn" type="button">Save Setup</button><span id="saveSetupStatus" role="status"></span></div></details></div>'+
 '<aside class="add-panel add-guide"><details id="instructionsFold" open><summary>Program Instructions</summary><h3>Readiness</h3><p>Choose the benchmark, target, and chain. Student and IEP data come from Student Profile.</p><h3>Instruction</h3><p>Present the materials problem and say “Solve this materials problem.” Use counters or paper when appropriate; fade prompts.</p><h3>Scoring</h3><p>Staff may score Correct, Incorrect, or Prompted. On-screen answer choices can be N/A, 3, 4, or 5. Pen & Paper is staff-scored.</p><h3>Mastery</h3><p>Three distinct instructional days are required. Benchmark probes are stored separately from teaching mastery.</p></details><button id="runBtn" type="button" class="add-primary">Run Program →</button></aside></section>'+
-'<section class="add-page" id="runPage" hidden><div id="runGrid" class="add-grid"><section class="add-panel material-card"><div class="add-panel-head"><h2>Student Material</h2><button id="imagesOnlyBtn" type="button" aria-pressed="false">▣ Materials Only</button><button id="resetViewBtn" type="button" hidden>Exit Materials Only</button></div><div id="taskStage"></div><div class="add-equation"><div id="sdPrompt">0 + 0 = ?</div><div id="materialsAnswers"></div><div id="materialsWorkspace"></div></div><p id="materialsMaterialsNote"></p></section>'+
+'<section class="add-page" id="runPage" hidden><div id="runGrid" class="add-grid"><section class="add-panel material-card"><div class="add-panel-head"><h2>Student Material</h2><button id="imagesOnlyBtn" type="button" aria-pressed="false">▣ Materials Only</button><button id="resetViewBtn" type="button" hidden>Exit Materials Only</button></div><div id="taskStage"></div><div class="add-equation"><div id="sdPrompt">Prepare materials for the organization task</div><div id="materialsAnswers"></div><div id="materialsWorkspace"></div></div><p id="materialsMaterialsNote"></p></section>'+
 '<aside class="add-panel score-card"><div class="add-panel-head"><h2>Trial &amp; Scoring</h2><b id="materialsProgress">0 / 0</b></div><div class="add-stat-grid"><div><b id="materialsCorrect">0</b><small>Correct</small></div><div><b id="materialsIncorrect">0</b><small>Incorrect</small></div><div><b id="materialsPrompted">0</b><small>Prompted</small></div></div><p id="materialsAccuracy">No opportunities scored</p><div class="add-score-buttons"><button data-score="correct" type="button">✓ Correct</button><button data-score="incorrect" type="button">✕ Incorrect</button><button data-score="prompted" type="button">⚑ Prompted</button></div><h3>Behavior Tracking</h3><div id="behaviorList"></div><p id="materialsStatus" role="status">Ready</p><button id="saveNextBtn" type="button" class="add-primary" disabled>Save &amp; Next Step</button><button id="nextProgramBtn" type="button" class="add-primary" hidden disabled>Next Program →</button></aside></div></section>';
 main.appendChild(root);
 document.documentElement.classList.add('materials-v25-active');
 const specs=[
  ['benchmarkSelect','Benchmark',[]],['targetSelect','Target',[]],['chainSelect','DTI Chain',chainList.map(x=>[x[0],x[1]+' — '+x[2]])],
- ['skillSelect','Skill Type',[['Academic','Academic'],['Pre-Academic','Pre-Academic']]],
- ['modeSelect','Response Mode',[['On Screen','On Screen'],['Pen & Paper','Pen & Paper']]],
- ['scoringSelect','Scoring',[['staff','Staff Scored'],['device','Device Scored']]],
- ['arraySize','Answer Choices',[['0','N/A — No choices'],['3','3 choices'],['4','4 choices'],['5','5 choices']]],
- ['distractorSelect','Distractor',[['na','N/A — Other sums in benchmark'],['review','Review other mastered sums']]],
+ ['skillSelect','Skill Type',[['Application','Application'],['Generalization','Generalization']]],
+ ['modeSelect','Teaching Mode',[['Hands-on','Hands-on / real materials'],['Visual Schedule','Visual schedule / AAC support']]],
+ ['scoringSelect','Scoring',[['staff','Staff Scored']]],
+ ['arraySize','Answer Choices',[['0','N/A — staff observes real materials']]],
+ ['distractorSelect','Custom Distractor / Do This',[['wave','Wave'],['clap','Clap'],['tap','Tap the table'],['hands','Hands in lap']]],
  ['goalSelect','IEP Goal',[['','No linked goal']]],
- ['masterySelect','Mastery %',[50,60,70,75,80,85,90,95,100].map(x=>[String(x),x+'%'])],
- ['materialSelect','Materials',[['equation','On-screen number equation'],['counters','Counters / number tiles'],['paper','Paper / pencil']]],
- ['trialsSelect','Problems Per Run',(C.problem_totals||[5,8,10,12,15,20,25]).map(x=>[String(x),x+' problems'])],
- ['masteryTrialsSelect','Trials to Mastery',[['3','3 separate days'],['4','4 separate days'],['5','5 separate days']]],
- ['minOpportunitiesSelect','Trials Per Run',[['1','1 completed chain']]],
+ ['masterySelect','Mastery %',[50,60,70,75,80,85,90,95,100].map(n=>[String(n),n+'%'])],
+ ['materialSelect','Materials',[['bins','Labeled bins or organizers'],['folders','Folders and school supplies'],['visual','Visual checklist / AAC'],['adapted','Accessible / adapted organizer']]],
+ ['trialsSelect','Trials Per Run',[['1','1 complete DTI chain']]],
+ ['masteryTrialsSelect','Trials to Mastery',[['3','3 separate dates'],['4','4 separate dates'],['5','5 separate dates']]],
+ ['minOpportunitiesSelect','Min. Opportunities / Day',[['1','1'],['3','3'],['4','4'],['5','5']]],
  ['circuitSelect','Circuit',[['teach','N/A — Teaching'],['probe','Probe Benchmark']]]
 ];
 for(const [id,title,options] of specs){
@@ -43,7 +47,7 @@ for(const [id,title,options] of specs){
 }
 const opt=(id,items)=>{$(id).replaceChildren();items.forEach(x=>$(id).add(new Option(x[1],x[0])))};
 const currRange=()=>ranges[Number($('benchmarkSelect').value)||0]||ranges[0];
-const targetFor=n=>targets.find(t=>Number(t.metadata?.answer??t.id)===Number(n));
+const targetFor=n=>targets.find(t=>Number(t.id)===Number(n));
 const runtime=()=>window.__COMPASS_STUDENT_RUNTIME__;
 const context=()=>runtime()?.context||{};
 const state={stage:'setup',plan:[],events:[],idx:0,scored:false,answer:null,probe:false,finished:false,save:'idle',saving:null,started:'',key:'',only:false};
