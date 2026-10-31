@@ -27,3 +27,5 @@ jobs:
           npm install --no-save playwright@1.56.1
       - name: Verify WH mixed and focused V25 story questions and synthetic saves
         run: node scripts/test-wh-multi-question-v25.cjs
+      - name: Re-run existing WH N/A and three-choice regression test
+        run: node scripts/test-wh-smooth-array-v25.cjs
