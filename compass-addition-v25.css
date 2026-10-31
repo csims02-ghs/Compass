@@ -1,0 +1,74 @@
+/* Addition V25 locked instructional interface: 38 marker parity, two-page 70/30 design */
+html.addition-v25-active,html.addition-v25-active body{height:100%;overflow:hidden;background:#f1f6fc}
+.addition-v25-active .app,.addition-v25-active .app .main{height:100%;min-height:0!important;max-width:none!important;margin:0!important;padding:0!important;overflow:hidden!important}
+.addition-v25-active .app .main>:not(#additionV25Root){display:none!important}
+#additionV25Root{display:flex;flex-direction:column;box-sizing:border-box;height:100%;width:100%;overflow:hidden;color:#15385e;font:600 14px/1.4 Arial,sans-serif}
+#additionV25Root *{box-sizing:border-box}
+#additionV25Root button,#additionV25Root select{font:inherit;cursor:pointer}
+#additionV25Root button{border:1px solid #c7d8ed;border-radius:10px;background:#fff;color:#135aa8;padding:9px 11px;min-height:42px;font-weight:800}
+#additionV25Root button:disabled{opacity:.48;cursor:not-allowed}
+#additionV25Root button.add-primary{background:#176bdb;color:#fff;border-color:#176bdb}
+#additionV25Root .add-head{flex:0 0 auto;background:#fff;padding:9px 17px;min-height:65px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #dce5f1}
+#additionV25Root .add-head h1{font-size:22px;line-height:1.15;margin:0;font-weight:900}
+#additionV25Root .add-head small{color:#627c9e}
+#additionV25Root .add-head nav{display:flex;gap:9px}
+#additionV25Root .add-banner{font-size:12px;color:#315d8e;background:#eaf3ff;flex:0 0 auto;padding:4px 15px;min-height:23px}
+#additionV25Root .add-page{flex:1 1 auto;min-height:0;padding:11px 14px;gap:12px;overflow:hidden}
+#additionV25Root #setupPage{display:grid;grid-template-columns:minmax(0,1fr) minmax(295px,.83fr)}
+#additionV25Root .add-panel{min-height:0;min-width:0;overflow:auto;background:#fff;border:1px solid #d5e3f4;border-radius:15px;box-shadow:0 2px 8px #234c7b10;padding:13px}
+#additionV25Root .add-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+#additionV25Root .add-heading h2{font-size:17px;margin:0;font-weight:900}
+#additionV25Root #selectedPill{font-size:12px;border-radius:999px;background:#eaf3ff;padding:5px 11px;color:#155ba6}
+#additionV25Root details>summary{cursor:pointer;color:#12579e;font-weight:900;font-size:15px;padding:7px 2px}
+#additionV25Root .add-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:9px 0}
+#additionV25Root .add-fields label{display:flex;flex-direction:column;gap:5px;color:#204774;font-size:12px;font-weight:850;min-width:0}
+#additionV25Root .add-fields select{width:100%;min-width:0;height:43px;border:1px solid #c8dbee;border-radius:8px;padding:7px 9px;background:white;color:#173b64}
+#additionV25Root .add-help{font-size:12px;color:#42668d;padding:8px;border-radius:9px;background:#f3f8ff}
+#additionV25Root .add-preview{margin-top:8px;padding:9px;border:1px solid #dce6f4;border-radius:9px}
+#additionV25Root .add-preview p{font-size:12px;margin:4px 0}
+#additionV25Root #chainPreviewSteps{display:flex;flex-wrap:wrap;gap:5px}
+#additionV25Root #chainPreviewSteps span{background:#e6f1fd;padding:4px 7px;border-radius:7px;font-size:12px}
+#additionV25Root .add-save{display:flex;align-items:center;gap:9px;margin-top:10px}
+#additionV25Root #saveSetupStatus{font-size:12px;color:#46698c}
+#additionV25Root .add-guide{display:flex;flex-direction:column;gap:8px}
+#additionV25Root .add-guide h3{font-size:15px;margin:13px 0 4px}
+#additionV25Root .add-guide p{font-size:13px;font-weight:500;line-height:1.55;color:#496a8b;margin:3px 0 8px}
+#additionV25Root .add-guide #runBtn{margin-top:auto;min-height:52px;font-size:16px}
+#additionV25Root #runPage{display:block}
+#additionV25Root #runGrid{display:grid;grid-template-columns:minmax(0,7fr) minmax(300px,3fr);gap:12px;height:100%;min-width:0}
+#additionV25Root .material-card{display:flex;flex-direction:column;overflow:hidden}
+#additionV25Root .add-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#additionV25Root .add-panel-head h2{font-size:15px;color:#165eaa;margin:0}
+#additionV25Root #taskStage{text-align:center;padding:9px;background:#eef5ff;border-radius:9px;color:#305e8b;font-size:12px;margin:9px 0 5px}
+#additionV25Root .add-equation{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;overflow:auto}
+#additionV25Root #sdPrompt{font-size:clamp(42px,7vw,95px);font-weight:900;letter-spacing:.02em;line-height:1.15}
+#additionV25Root #additionAnswers{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;width:100%}
+#additionV25Root #additionAnswers button{font-size:clamp(22px,2.7vw,33px);padding:12px 22px;min-width:78px;min-height:65px}
+#additionV25Root #additionAnswers button[aria-pressed="true"]{border:3px solid #176bdb;background:#e4efff}
+#additionV25Root #additionWorkspace{font-size:13px;color:#526f8f;text-align:center}
+#additionV25Root #additionMaterialsNote{font-size:12px;color:#557397;flex:0 0 auto;padding:8px;margin:0;background:#f6faff;border-radius:8px}
+#additionV25Root .score-card{display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+#additionV25Root .add-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+#additionV25Root .add-stat-grid>div{text-align:center;border:1px solid #dde8f4;border-radius:9px;padding:5px 2px}
+#additionV25Root .add-stat-grid b{display:block;font-size:20px}
+#additionV25Root .add-stat-grid small{display:block;font-size:11px;color:#627d9b}
+#additionV25Root #additionAccuracy{margin:0;font-size:12px;text-align:center;color:#1e629f}
+#additionV25Root .add-score-buttons{display:flex;flex-direction:column;gap:6px}
+#additionV25Root .add-score-buttons button{min-height:42px!important;font-size:13px}
+#additionV25Root .score-card h3{margin:4px 0 0;font-size:14px;color:#165eaa}
+#additionV25Root #behaviorList{display:flex;flex-direction:column;gap:5px;min-height:0}
+#additionV25Root #behaviorList:has(.add-behavior-row:nth-child(6)){max-height:252px;overflow:auto}
+#additionV25Root .add-behavior-row{display:grid;grid-template-columns:minmax(0,1fr) 39px 29px 39px;gap:5px;min-height:44px;align-items:center}
+#additionV25Root .add-behavior-row span{overflow-wrap:anywhere;font-size:12px;line-height:1.15}
+#additionV25Root .add-behavior-row strong{text-align:center;font-size:15px}
+#additionV25Root .add-behavior-row button{height:39px;min-height:39px;min-width:39px;font-size:20px;padding:2px}
+#additionV25Root #additionStatus{font-size:12px;color:#40678e;margin:4px 0 0}
+#additionV25Root #saveNextBtn,#additionV25Root #nextProgramBtn{width:100%;position:sticky;bottom:0;margin-top:auto;min-height:46px}
+#additionV25Root.add-materials-only #runGrid{grid-template-columns:minmax(0,1fr)}
+#additionV25Root.add-materials-only #runGrid .score-card{display:none!important}
+#additionV25Root.add-materials-only #taskStage,#additionV25Root.add-materials-only #additionMaterialsNote{display:none}
+#additionV25Root.add-materials-only #resetViewBtn{position:absolute;right:20px;top:68px;z-index:10}
+#additionV25Root [hidden]{display:none!important}
+#additionV25Root #runPage:not([hidden])~*{display:none}
+@media(max-height:770px){#additionV25Root .add-head{min-height:55px}#additionV25Root .add-page{padding:7px}#additionV25Root .add-panel{padding:9px}#additionV25Root .score-card{gap:4px}#additionV25Root #sdPrompt{font-size:clamp(38px,6vw,65px)}}
+@media(max-width:850px) and (orientation:portrait){#additionV25Root #setupPage{display:block;overflow:auto}#additionV25Root #runPage{overflow:auto}#additionV25Root #runGrid{display:block}#additionV25Root .material-card{min-height:400px}#additionV25Root .score-card{min-height:500px}}
