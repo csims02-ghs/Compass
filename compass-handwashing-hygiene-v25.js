@@ -35,7 +35,7 @@ $('hvWorkspaceMount').appendChild($('workspace'));$('workspace').hidden=false;
 const scores=$('workspace').querySelector('.scorebar'),notes=$('promptLevel').closest('.grid2');
 $('hvScoreMount').append(notes,scores);$('behaviorList').appendChild($('behaviorBar'));
 $('sdPrompt').appendChild($('sdBlock'));$('taskStage').append($('trialTag'),$('trialContext'));
-$('workspace').querySelector('.statrow').style.display='none';$('nextBtn').style.display='none';
+$('workspace').querySelector('.statrow').style.display='none';$('nextBtn').style.display='none';$('skipBtn').style.display='none';
 const stat=(id,value)=>{$(id).textContent=String(value)};
 let page='setup',complete=false,only=false,saving=null,saveStatus='idle',submission='',selectedGoal='',linkedGoals=[];
 const rt=()=>window.__COMPASS_STUDENT_RUNTIME__;
@@ -194,6 +194,7 @@ window.addEventListener('message',e=>{
  el.replaceChildren(new Option('No linked goal',''));
  choices.forEach(g=>{if(g?.id&&g.title)el.add(new Option(g.title,String(g.id)))});
  behaviors(m.student?.behaviors||[]);
+ if(typeof m.student?.name==='string'&&m.student.name.trim())$('headerStudent').textContent=m.student.name.trim().slice(0,120);
  if(m.programSetup){
   const v=m.programSetup,matches={benchmark:'setupBenchmark',chain:'setupChain',target:'setupTarget',skillType:'setupSkillType',
    scoringMode:'setupScoring',mastery:'setupMastery',arraySize:'arraySize',distractor:'customDistractor'};
