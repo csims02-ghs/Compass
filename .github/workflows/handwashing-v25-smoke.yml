@@ -1,0 +1,19 @@
+name: Handwashing V25 smoke
+on:
+  push:
+    branches: [main]
+    paths: ['compass-handwashing-hygiene-v25.js','compass-handwashing-hygiene-v25.css','compass-page2-standard.js','scripts/test-handwashing-hygiene-v25-live.cjs','.github/workflows/handwashing-v25-smoke.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save playwright@1.56.1
+      - run: node scripts/test-handwashing-hygiene-v25-live.cjs
