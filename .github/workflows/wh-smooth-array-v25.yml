@@ -1,0 +1,31 @@
+name: WH Concepts V25 — smooth questions and arrays
+on:
+  pull_request:
+    paths:
+      - 'scripts/test-wh-smooth-array-v25.cjs'
+      - 'compass-page2-standard.js'
+      - '.github/workflows/wh-smooth-array-v25.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/test-wh-smooth-array-v25.cjs'
+      - 'compass-page2-standard.js'
+      - '.github/workflows/wh-smooth-array-v25.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wh-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser testing tools
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+      - name: Test native WH V25 array and markers without real student writes
+        run: node scripts/test-wh-smooth-array-v25.cjs
