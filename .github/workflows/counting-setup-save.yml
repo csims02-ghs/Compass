@@ -1,0 +1,29 @@
+name: Counting V25 setup save QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'compass-counting-setup-save.js'
+      - 'compass-counting-setup-save.css'
+      - 'compass-page2-standard.js'
+      - 'scripts/test-counting-setup-save.cjs'
+      - '.github/workflows/counting-setup-save.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  setup-save:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          google-chrome --version
+      - name: Verify counting save, cloud confirmation and restore
+        run: node scripts/test-counting-setup-save.cjs
