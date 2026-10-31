@@ -73,7 +73,9 @@ const ids='appTitle backBtn resetViewBtn runBtn endBtn nextProgramBtn storageBan
   const completed=await page.evaluate(()=>({state:window.COMPASS_MATERIALS_V25.getState(),cloud:window.__MATERIALS_CLOUD__}));
   const session=completed.cloud.find(x=>x.type==='session');
   assert(session&&session.payload.trial_events.length===8&&session.payload.counts.prompted_correct===1);
-  assert.equal(session.payload.counts.independent_correct,3,'Default chain has five target opportunities: 3 correct, 1 prompted, 1 incorrect');
+  assert.equal(session.payload.counts.independent_correct,4,'Default chain has four independent targets and one prompted target; distractors excluded');
+  assert.equal(session.payload.counts.incorrect,0,'Incorrect maintenance must not lower target accuracy');
+  assert.equal(session.payload.trial_events.filter(e=>e.trial_type==='D'&&e.result==='incorrect').length,1);
   assert.equal(await page.locator('#nextProgramBtn').isDisabled(),false);
   await page.locator('#backBtn').click();await page.locator('#circuitSelect').selectOption('probe');
   await page.locator('#runBtn').click();assert.equal(await page.locator('#materialsProgress').textContent(),'1 / 10');
