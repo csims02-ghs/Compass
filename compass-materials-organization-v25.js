@@ -138,17 +138,9 @@ function behaviors(){
  });
 }
 function eventMap(e){
- const assigned=context().targets||[];
- const t=assigned.find(x=>String(x.target_name).toLowerCase()===String(e.target_name).toLowerCase());
- if(t)return {...e,target_key:t.target_key||e.target_key};
- // Distractors are review stimuli, not independently assigned acquisition targets.
- // Map the review step to its assigned primary target for the authenticated save bridge,
- // while explicitly retaining the presented sum for historical reporting.
- if(e.trial_type==='D'){
-  const primary=assigned.find(x=>String(x.target_name).toLowerCase()==='sum '+$('targetSelect').value);
-  if(primary)return {...e,target_name:primary.target_name,target_key:primary.target_key,distractor_target_name:e.target_name};
- }
- return e;
+ const t=(context().targets||[]).find(x=>String(x.target_name||'').trim().toLowerCase()===String(e.target_name||'').trim().toLowerCase());
+ if(!t)throw Error('This organizational target is not assigned to the student.');
+ return {...e,target_name:t.target_name,target_key:t.target_key};
 }
 function payload(){
  const events=state.events.map(eventMap),target=events.find(x=>x.trial_type==='T')||events[0],t=events.filter(x=>x.trial_type==='T');
@@ -159,13 +151,13 @@ function payload(){
 }
 async function finish(){
  if(state.saving)return state.saving;
- const rt=window.__COMPASS_STUDENT_RUNTIME__,data=payload();state.save='saving';
+ const rt=window.__COMPASS_STUDENT_RUNTIME__;state.save='saving';
  setStatus('Saving completed run to COMPASS…');$('saveNextBtn').disabled=true;
  state.saving=(async()=>{try{
-  let out;
+  const data=payload();let out;
   if(state.probe){
    if(typeof rt?.securePost!=='function')throw Error('Authenticated probe connection unavailable');
-   out=await rt.securePost({action:'save_probe',submission_key:state.key,benchmark_key:currRange().name,benchmark_name:'Sums '+currRange().name,events:data.trial_events.map(x=>({trial_number:x.trial_number,target_key:x.target_key,target_name:x.target_name,result:x.result}))});
+   out=await rt.securePost({action:'save_probe',submission_key:state.key,benchmark_key:String(currRange().id),benchmark_name:currRange().name,events:data.trial_events.map(x=>({target_key:x.target_key,target_name:x.target_name,result:x.result}))});
    if(out?.ok!==true||out?.probe_saved!==true)throw Error('Probe save not confirmed');
   }else{
    if(typeof rt?.saveSession!=='function')throw Error('Authenticated V25 save bridge unavailable');
@@ -180,37 +172,44 @@ async function finish(){
 function advance(){
  if(!state.scored)return;
  if(state.idx===state.plan.length-1){void finish();return}
- state.idx++;state.answer=null;state.scored=false;show();setStatus('Score the next materials problem.');
+ state.idx++;state.answer=null;state.scored=false;show();setStatus('Observe and score the next organization task.');
 }
 function run(){
  if(state.stage!=='setup')return;
- if($('modeSelect').value==='Pen & Paper')$('scoringSelect').value='staff';
  const assigned=Array.isArray(context().targets)?context().targets:[];
  if(assigned.length){
-  const chosen='sum '+$('targetSelect').value;
   const names=new Set(assigned.map(t=>String(t.target_name||'').trim().toLowerCase()));
-  if(!names.has(chosen)&&$('circuitSelect').value!=='probe'){
-   $('saveSetupStatus').textContent='Assign this sum target to the student before running.';
-   return;
-  }
-  if($('circuitSelect').value==='probe'&&currRange().members.some(n=>!names.has('sum '+n))){
-   $('saveSetupStatus').textContent='To run a complete benchmark probe, assign all five sums to this student.';
+  const needed=$('circuitSelect').value==='probe'?currRange().members:[Number($('targetSelect').value)];
+  if(needed.some(n=>!names.has(String(targetFor(n)?.name||'').toLowerCase()))){
+   $('saveSetupStatus').textContent='Assign all selected target(s) to this student before starting.';
    return;
   }
  }
  state.plan=build();if(!state.plan.length||state.plan.length>50)return;
- state.events=[];state.idx=0;state.scored=false;state.finished=false;state.save='idle';state.saving=null;state.answer=null;state.started=new Date().toISOString();state.probe=$('circuitSelect').value==='probe';
+ state.events=[];state.idx=0;state.scored=false;state.finished=false;state.save='idle';state.saving=null;
+ state.answer=null;state.started=new Date().toISOString();state.probe=$('circuitSelect').value==='probe';
  state.key='V25:run-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);
- state.stage='run';$('setupPage').hidden=true;$('runPage').hidden=false;$('backBtn').hidden=false;$('saveNextBtn').hidden=false;$('nextProgramBtn').hidden=true;
- $('storageBanner').textContent='COMPASS Materials Organization · '+(state.probe?'Benchmark Probe':'Teaching')+' · cloud confirmation required.';
- behaviors();show();setStatus('Present the problem and score the response.');
+ state.stage='run';$('setupPage').hidden=true;$('runPage').hidden=false;$('backBtn').hidden=false;
+ $('saveNextBtn').hidden=false;$('nextProgramBtn').hidden=true;
+ $('storageBanner').textContent='COMPASS Materials Organization · '+(state.probe?'Probe · not teaching mastery':'Teaching')+' · confirmed cloud save required.';
+ behaviors();show();setStatus('Present the materials and score the functional response.');
 }
 async function saveSetup(){
- const setup={setupBenchmark:currRange().name,setupTarget:$('targetSelect').value};
- for(const [id]of specs)if(id!=='benchmarkSelect'&&id!=='targetSelect')setup[id]=$(id).value;
- $('saveSetupStatus').textContent='Saving…';
- const rt=runtime();if(typeof rt?.securePost!=='function'){$('saveSetupStatus').textContent='Sign in to save setup to COMPASS.';return}
- try{const response=await rt.securePost({action:'save_setup',setup});if(response?.ok!==true)throw Error('Not confirmed');$('saveSetupStatus').textContent='Setup saved to COMPASS.'}catch(err){$('saveSetupStatus').textContent='Setup not confirmed: '+String(err.message||err).slice(0,100)}
+ const saved={setupBenchmark:String(currRange().id),setupTarget:$('targetSelect').value,
+  setupChain:$('chainSelect').value,setupScoring:'staff',setupSkillType:$('skillSelect').value,
+  setupMastery:$('masterySelect').value,setupIepGoal:$('goalSelect').value,
+  arraySize:'0',customDistractor:$('distractorSelect').value,
+  mode:$('modeSelect').value,masteryTrialsSelect:$('masteryTrialsSelect').value,
+  minOpportunitiesSelect:$('minOpportunitiesSelect').value,circuitSelect:$('circuitSelect').value,
+  trialCount:'1',materialSelect:$('materialSelect').value};
+ $('saveSetupStatus').textContent='Saving…';$('saveSetupBtn').disabled=true;
+ try{
+  const rt=runtime();if(typeof rt?.securePost!=='function')throw Error('Open from a signed-in student Program Hub.');
+  const response=await rt.securePost({action:'save_setup',setup:saved});
+  if(response?.ok!==true||response?.saved!==true)throw Error('Save not confirmed');
+  $('saveSetupStatus').textContent='Saved to COMPASS for this student.';
+ }catch(e){$('saveSetupStatus').textContent='Not saved: '+String(e.message||e).slice(0,160)}
+ finally{$('saveSetupBtn').disabled=false}
 }
 function toggleView(on){
  state.only=!!on;root.classList.toggle('add-materials-only',state.only);
