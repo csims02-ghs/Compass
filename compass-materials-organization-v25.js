@@ -109,7 +109,7 @@ function show(){
  $('materialsMaterialsNote').textContent='Accessible storage and student preferences take priority. Use visual or AAC supports when indicated.';
  root.querySelectorAll('[data-score]').forEach(button=>button.disabled=state.scored);
  $('saveNextBtn').disabled=!state.scored||state.save==='saving';
- $('saveNextBtn').textContent=state.idx===state.plan.length-1?'Save & Finish Run':'Save & Next Step';
+ $('saveNextBtn').textContent=state.idx===state.plan.length-1?'Saving after final score…':'Save & Next Step';
  tally();
 }
 function score(result){
@@ -119,6 +119,7 @@ function score(result){
   target_name:t.name,target_key:t.key,occurred_at:new Date().toISOString(),
   presented_action:q.type==='D'?q.action:t.name});
  state.scored=true;setStatus('Step '+(state.idx+1)+' scored.');show();
+ if(state.idx===state.plan.length-1)void finish();
 }
 function behaviorNames(){
  const c=context(),all=[...(Array.isArray(c.primary_behaviors)?c.primary_behaviors:[]),...(Array.isArray(c.secondary_behaviors)?c.secondary_behaviors:[]),...(Array.isArray(c.behaviors)?c.behaviors:[])];
@@ -222,7 +223,31 @@ $('imagesOnlyBtn').addEventListener('click',()=>toggleView(!state.only));$('rese
 $('backBtn').addEventListener('click',()=>{if(state.events.length&&state.save!=='saved'){setStatus('Finish or retry saving before returning to Setup.');return}state.stage='setup';$('setupPage').hidden=false;$('runPage').hidden=true;$('backBtn').hidden=true;toggleView(false)});
 $('endBtn').addEventListener('click',()=>{if(state.stage==='run'&&state.events.length&&state.save!=='saved'){setStatus('Unsaved data: finish the run before ending.');return}if(typeof window.endSession==='function')window.endSession();setStatus('Session ended.')});
 $('nextProgramBtn').addEventListener('click',()=>{if(state.save!=='saved'||window.parent===window)return;let origin=location.origin;try{origin=new URL(document.referrer).origin||origin}catch(_){}window.parent.postMessage({type:'compass-next-program'},origin)});
-window.addEventListener('message',ev=>{if(ev.source!==window.parent||window.parent===window)return;let o='';try{o=new URL(document.referrer).origin}catch(_){}if(ev.origin!==o)return;if(ev.data?.type==='COMPASS_DEMO_V18_CONTEXT'&&Array.isArray(ev.data.student?.behaviors)){if(context().assignment_id){context().primary_behaviors=ev.data.student.behaviors;behaviors()}}});
-window.COMPASS_MATERIALS_V25={ready:true,version:'25.6',getState:()=>({phase:state.stage,benchmarks:ranges.length,targets:targets.length,steps:state.plan.length,events:state.events.slice(),probe:state.probe,saveStatus:state.save,behaviorCounts:{...behaviorCounts}})};
+window.addEventListener('message',ev=>{
+ if(ev.source!==window.parent||window.parent===window)return;
+ let origin='';try{origin=new URL(document.referrer).origin}catch(_){}
+ if(ev.origin!==origin||ev.data?.type!=='COMPASS_DEMO_V18_CONTEXT')return;
+ if(Array.isArray(ev.data.student?.behaviors)){
+  const ctx=context();ctx.primary_behaviors=ev.data.student.behaviors;behaviors();
+ }
+ if(Array.isArray(ev.data.linkedGoalOptions)){
+  const current=$('goalSelect').value;$('goalSelect').replaceChildren(new Option('No linked goal',''));
+  ev.data.linkedGoalOptions.filter(g=>g?.id&&g.title).forEach(g=>$('goalSelect').add(new Option(g.title,String(g.id))));
+  if([...$('goalSelect').options].some(x=>x.value===current))$('goalSelect').value=current;
+ }
+ const saved=ev.data.programSetup;
+ if(saved&&typeof saved==='object'&&state.stage==='setup'){
+  const mapping={chainSelect:'setupChain',targetSelect:'setupTarget',scoringSelect:'setupScoring',
+   skillSelect:'setupSkillType',goalSelect:'setupIepGoal',masterySelect:'setupMastery',
+   materialSelect:'materialSelect',distractorSelect:'customDistractor',
+   modeSelect:'mode',masteryTrialsSelect:'masteryTrialsSelect',
+   minOpportunitiesSelect:'minOpportunitiesSelect',circuitSelect:'circuitSelect'};
+  const at=ranges.findIndex(x=>String(x.id)===String(saved.setupBenchmark));
+  if(at>=0){$('benchmarkSelect').value=String(at);syncTargets()}
+  for(const [id,key]of Object.entries(mapping))if(saved[key]!==undefined&&[...$(id).options].some(x=>x.value===String(saved[key])))$(id).value=String(saved[key]);
+  preview();
+ }
+});
+window.COMPASS_MATERIALS_V25={ready:true,version:'25.7',getState:()=>({phase:state.stage,benchmarks:ranges.length,targets:targets.length,steps:state.plan.length,events:state.events.slice(),probe:state.probe,saveStatus:state.save,behaviorCounts:{...behaviorCounts}})};
 setup();
 })();
