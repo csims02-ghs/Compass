@@ -1,0 +1,29 @@
+name: Addition V25 38-marker parity and stress
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'compass-addition-v25.js'
+      - 'compass-addition-v25.css'
+      - 'compass-page2-standard.js'
+      - 'scripts/test-addition-v25-38-markers.cjs'
+      - '.github/workflows/addition-v25-parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  addition-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser tooling
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          google-chrome --version
+      - name: Validate Addition V25 marker parity, scoring, layout, and probes
+        run: node scripts/test-addition-v25-38-markers.cjs
