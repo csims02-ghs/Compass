@@ -17,7 +17,7 @@ if(banner)banner.insertAdjacentElement('afterend',toolbar);
 else fold.insertAdjacentElement('beforebegin',toolbar);
 const saveBtn=$('countingSaveSetupBtn'),restoreBtn=$('countingRestoreSetupBtn'),status=$('countingSaveSetupStatus');
 const fields=['benchmarkSelect','targetSelect','chainSelect','skillSelect','scoringSelect','arraySize','distractorSelect',
- 'goalSelect','masterySelect','materialSelect','modeSelect','trialsSelect','masteryTrialsSelect',
+ 'goalSelect','masterySelect','materialSelect','modeSelect','masteryTrialsSelect',
  'minOpportunitiesSelect','circuitSelect'];
 const state={assignmentId:'',studentId:'',parentOrigin:'',cloud:null,pending:null,dirty:false,loaded:false,linkedGoals:[]};
 const uuidRE=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -33,6 +33,7 @@ function setupSnapshot(){
  const nums=['arraySize','masterySelect','masteryTrialsSelect','minOpportunitiesSelect','targetSelect'];
  for(const id of nums)if(values[id]!==undefined)values[id]=Number(values[id]);
  values.customDistractor=$('doThisSelect')?.value||'rotate';
+ values.trialCount=$('trialsSelect')?.value||'1';
  if(values.goalSelect){
   const found=state.linkedGoals.find(g=>g.id===values.goalSelect||g.title===values.goalSelect);
   values.goalSelect=found?.id||values.goalSelect;
@@ -53,6 +54,7 @@ function readCloud(raw){
  if(!Object.prototype.hasOwnProperty.call(raw,'benchmarkSelect')||!Object.prototype.hasOwnProperty.call(raw,'targetSelect'))return null;
  const out={};for(const id of fields)if(Object.prototype.hasOwnProperty.call(raw,id))out[id]=raw[id];
  if(Object.prototype.hasOwnProperty.call(raw,'customDistractor'))out.doThisSelect=raw.customDistractor;
+ if(Object.prototype.hasOwnProperty.call(raw,'trialCount'))out.trialsSelect=raw.trialCount;
  return out;
 }
 function setSavedAvailable(raw){
@@ -126,6 +128,7 @@ function restore(){
  select('benchmarkSelect');select('targetSelect');
  for(const id of fields.filter(x=>x!=='benchmarkSelect'&&x!=='targetSelect'))select(id);
  if(cloud.doThisSelect!==undefined)select('doThisSelect');
+ if(cloud.trialsSelect!==undefined)select('trialsSelect');
  updateStatus('Saved setup restored. Review mastery rules and press Save Setup to confirm.','info');
  state.dirty=true;
 }
