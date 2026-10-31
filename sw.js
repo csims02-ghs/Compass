@@ -1,18 +1,18 @@
 /* COMPASS service worker: online navigation is authoritative; caches are offline fallbacks only. */
-const CACHE='compass-shell-handwash-v25-20261031';
+const CACHE='compass-shell-handwash-v25-20261031-final';
 // Cache the canonical application and current program adapters; never prefetch archived loaders.
 const CORE=[
   "./",
   "./index.html",
   "./program-hub.html",
   "./manifest.webmanifest",
-  "./compass-page2-standard.js?v=20261031-handwash-v25-3",
+  "./compass-page2-standard.js?v=20261031-handwash-v25-4",
   "./compass-page2-standard.css?v=20261027-v3",
   "./compass-session-save-bridge.js?v=20261029-v1",
   "./compass-body-parts-v25.js",
   "./compass-body-parts-v25.css",
-  "./compass-handwashing-hygiene-v25.js?v=20261031-v3",
-  "./compass-handwashing-hygiene-v25.css?v=20261031-v3",
+  "./compass-handwashing-hygiene-v25.js?v=20261031-v4",
+  "./compass-handwashing-hygiene-v25.css?v=20261031-v4",
   "./compass-counting-setup-save.js?v=20261031-v2",
   "./compass-counting-setup-save.css?v=20261031-v2",
   "./compass-addition-v25.js?v=20261031-v1",
