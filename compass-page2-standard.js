@@ -46,7 +46,8 @@
       {code:'CP-CLOTHING-IDENTIFICATION',slug:'clothing',tag:'compass-clothing-v25',version:'20261027-v5'},
       {code:'CP-107-COPYING-SHAPES-AND-VISUAL-MOTOR-INTEGRATION',slug:'copying-shapes',tag:'compass-copying-shapes-v25',version:'20261027-v2'},
       {code:'CP-127-FINE-MOTOR-IMITATION',slug:'fine-motor-imitation',tag:'compass-fine-motor-imitation-v25',version:'20261027-v1'},
-      {code:'CP-DIR-VISUAL-087',slug:'functions',tag:'compass-functions-v25',version:'20261027-v1'}
+      {code:'CP-DIR-VISUAL-087',slug:'functions',tag:'compass-functions-v25',version:'20261027-v1'},
+      {code:'CP-ADDITION',slug:'addition',tag:'compass-addition-v25',version:'20261031-v1'}
     ];
     const updated=adapters.find(a=>html.includes('"program_code":"'+a.code+'"')||
       html.includes('"program_code": "'+a.code+'"')||
