@@ -125,6 +125,7 @@ function restore(){
  // Native benchmark handler rebuilds target options. Select target immediately afterwards.
  select('benchmarkSelect');select('targetSelect');
  for(const id of fields.filter(x=>x!=='benchmarkSelect'&&x!=='targetSelect'))select(id);
+ if(cloud.doThisSelect!==undefined)select('doThisSelect');
  updateStatus('Saved setup restored. Review mastery rules and press Save Setup to confirm.','info');
  state.dirty=true;
 }
