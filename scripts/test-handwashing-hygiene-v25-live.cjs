@@ -20,11 +20,11 @@ const ids='appTitle backBtn resetViewBtn runBtn endBtn nextProgramBtn storageBan
    const page=await browser.newPage({viewport});const errors=[];page.on('pageerror',err=>errors.push(err.message));
    page.on('dialog',d=>d.accept());
    await page.addInitScript(()=>{
-    window.__HW_TEST_CALLS__=[];
+    window.__HW_TEST_CALLS__=[];window.__HW_FAIL_PROBE__=false;
     window.__COMPASS_STUDENT_RUNTIME__={
       context:{assignment_id:'synthetic',targets:[],behaviors:[]},
       saveSession:async data=>{window.__HW_TEST_CALLS__.push({action:'session',data});return {ok:true,session_id:'synthetic-hw',saved_trial_events:data.trial_events.length};},
-      securePost:async data=>{window.__HW_TEST_CALLS__.push({action:data.action,data});return data.action==='save_probe'?{ok:true,probe_saved:true}:{ok:true,saved:true,programSetup:data.setup};}
+      securePost:async data=>{window.__HW_TEST_CALLS__.push({action:data.action,data});if(data.action==='save_probe'&&window.__HW_FAIL_PROBE__)throw Error('Synthetic probe failure');return data.action==='save_probe'?{ok:true,probe_saved:true}:{ok:true,saved:true,programSetup:data.setup};}
     };
    });
    await page.route('**/compass-program-runner?*',r=>r.fulfill({status:200,contentType:'text/html',body:html}));
@@ -73,6 +73,28 @@ const ids='appTitle backBtn resetViewBtn runBtn endBtn nextProgramBtn storageBan
    assert.equal(b3.bench,3);assert(b3.count>=1);
    for(let i=0;i<b3.count;i++){await page.locator('#correctBtn').click();if(i<b3.count-1)await page.locator('#saveNextBtn').click()}
    await page.waitForFunction(()=>window.COMPASS_HANDWASH_V25.getState().saveStatus==='saved',null,{timeout:8500});
+   if(viewport.width===1024){
+    await page.locator('#backBtn').click();
+    await page.locator('#benchmark').selectOption('5');
+    await page.locator('#hvCircuit').selectOption('probe');
+    await page.locator('#runBtn').click();
+    assert.equal(await page.locator('#choices button').count(),0,'Benchmark 5 is staff-scored only');
+    assert.equal(await page.evaluate(()=>state.plan.length),10,'B5 full benchmark should have ten targets');
+    await page.evaluate(()=>window.__HW_FAIL_PROBE__=true);
+    for(let i=0;i<10;i++){
+      await page.locator('#correctBtn').click();
+      if(i<9)await page.locator('#saveNextBtn').click();
+    }
+    await page.waitForFunction(()=>window.COMPASS_HANDWASH_V25.getState().saveStatus==='failed',null,{timeout:7500});
+    assert.equal(await page.locator('#nextProgramBtn').isHidden(),true,'Blocked after failed probe');
+    await page.evaluate(()=>window.__HW_FAIL_PROBE__=false);
+    await page.locator('#saveNextBtn').click();
+    await page.waitForFunction(()=>window.COMPASS_HANDWASH_V25.getState().saveStatus==='saved',null,{timeout:7500});
+    const probe=await page.evaluate(()=>window.__HW_TEST_CALLS__.findLast(x=>x.action==='save_probe'));
+    assert.equal(probe.data.events.length,10);
+    assert.equal(new Set(probe.data.events.map(e=>e.target_name)).size,10);
+    assert.equal(probe.data.benchmark_key,'5');
+   }
    assert.deepEqual(errors,[],'Script errors '+errors.join(' ; '));
    console.log('HANDWASHING_38_MARKERS_PASS '+JSON.stringify({viewport,ratio:first.ratio,benchmarks:meta.stages,scenarios:25,teachingSteps:done.calls[0].data.trial_events.length,behaviors:8}));
    await page.close();
