@@ -64,7 +64,7 @@ const ids='appTitle backBtn resetViewBtn runBtn endBtn nextProgramBtn storageBan
    const done=await page.evaluate(()=>({calls:window.__HW_TEST_CALLS__,next:!document.querySelector('#nextProgramBtn').disabled,state:window.COMPASS_HANDWASH_V25.getState()}));
    assert(done.next&&done.calls.length===1&&done.calls[0].action==='session');
    assert(done.calls[0].data.trial_events.length===8);
-   assert.equal(done.calls[0].data.counts.independent_correct,4);
+   assert.equal(done.calls[0].data.counts.independent_correct,5);
    await page.locator('#backBtn').click();await page.locator('#setupPage').waitFor({state:'visible'});
    await page.locator('#benchmark').selectOption('3');
    await page.locator('#runBtn').click();await page.locator('#runPage').waitFor({state:'visible'});
