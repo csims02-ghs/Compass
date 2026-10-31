@@ -36,6 +36,13 @@ const scores=$('workspace').querySelector('.scorebar'),notes=$('promptLevel').cl
 $('hvScoreMount').append(notes,scores);$('behaviorList').appendChild($('behaviorBar'));
 $('sdPrompt').appendChild($('sdBlock'));$('taskStage').append($('trialTag'),$('trialContext'));
 $('workspace').querySelector('.statrow').style.display='none';$('nextBtn').style.display='none';$('skipBtn').style.display='none';
+const teachingTools=document.createElement('div');teachingTools.className='hv-teaching-tools';
+teachingTools.append($('showSD'),$('showProcedure'));
+$('hvWorkspaceMount').insertBefore(teachingTools,$('workspace'));
+$('saveSetupBtn').insertAdjacentElement('afterend',$('printBlank'));
+const exports=document.createElement('div');exports.className='hv-exports';exports.hidden=true;
+exports.append($('exportCsv'),$('exportJson'),$('printCompleted'));
+$('hvSaveStatus').insertAdjacentElement('afterend',exports);
 const stat=(id,value)=>{$(id).textContent=String(value)};
 let page='setup',complete=false,only=false,saving=null,saveStatus='idle',submission='',selectedGoal='',linkedGoals=[];
 const rt=()=>window.__COMPASS_STUDENT_RUNTIME__;
@@ -145,7 +152,7 @@ async function saveRun(){
       v25_run:{benchmark_key:state.settings.benchmark,recognition:state.settings.benchmark===1,source:'handwashing_hygiene_v25'}});
     if(result?.ok!==true||!result?.session_id||Number(result.saved_trial_events)!==events.length)throw Error('Incomplete COMPASS save acknowledgement.');
    }
-   saveStatus='saved';stat('hvSaveStatus','Saved to COMPASS · '+events.length+' steps.');$('saveNextBtn').hidden=true;
+   saveStatus='saved';stat('hvSaveStatus','Saved to COMPASS · '+events.length+' steps.');$('saveNextBtn').hidden=true;exports.hidden=false;
    $('nextProgramBtn').hidden=false;$('nextProgramBtn').disabled=false;
   }catch(e){saveStatus='failed';saving=null;stat('hvSaveStatus','Not saved: '+String(e.message||e).slice(0,150)+'. Retry Save.');$('saveNextBtn').hidden=false;$('saveNextBtn').disabled=false;$('saveNextBtn').textContent='Retry Save';}
  })();return saving;
@@ -153,7 +160,8 @@ async function saveRun(){
 function run(){
  if($('hvCircuit').value==='probe')$('chain').value='CIRCUIT';
  if(!apply())return;
- complete=false;saveStatus='idle';saving=null;selectedGoal=$('hvGoal').value;
+ complete=false;saveStatus='idle';saving=null;selectedGoal=$('hvGoal').value;exports.hidden=true;
+ $('showProcedure').hidden=state.settings?.chain==='CIRCUIT';
  submission='V25:run-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);
  $('nextProgramBtn').hidden=true;$('saveNextBtn').hidden=false;
  behaviors(rt()?.context?.behaviors||rt()?.context?.primary_behaviors||[]);
