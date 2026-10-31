@@ -13,7 +13,7 @@
        !html.includes('1:1 Counting'))return html;
     if(html.includes('id="compass-counting-setup-save-addon"'))return html;
     const [css,js]=await Promise.all(['css','js'].map(async ext=>{
-      const response=await fetch('./compass-counting-setup-save.'+ext+'?v=20261031-v1',{cache:'no-store'});
+      const response=await fetch('./compass-counting-setup-save.'+ext+'?v=20261031-v2',{cache:'no-store'});
       if(!response.ok)throw Error('1:1 Counting Save Setup asset unavailable ('+ext+')');
       return response.text();
     }));
@@ -119,5 +119,5 @@
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
     return withCountingSave(runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>'));
   }
-  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261030-v20',isPage2Program,standardize});
+  global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261031-v21-counting-setup-save',isPage2Program,standardize});
 })(window);
