@@ -4,6 +4,24 @@
   'use strict';
   const STYLE_URL='./compass-page2-standard.css?v=20261027-v3';
   let stylePromise=null;
+  // Native 1:1 Counting uses the V25 two-screen runner. Add only the missing
+  // setup-save toolbar; never substitute a legacy runner or change trial logic.
+  async function withCountingSave(html){
+    if(!/id=["']setupPage["']/.test(html)||
+       !/id=["']benchmarkSelect["']/.test(html)||
+       !/id=["']chainSelect["']/.test(html)||
+       !html.includes('1:1 Counting'))return html;
+    if(html.includes('id="compass-counting-setup-save-addon"'))return html;
+    const [css,js]=await Promise.all(['css','js'].map(async ext=>{
+      const response=await fetch('./compass-counting-setup-save.'+ext+'?v=20261031-v1',{cache:'no-store'});
+      if(!response.ok)throw Error('1:1 Counting Save Setup asset unavailable ('+ext+')');
+      return response.text();
+    }));
+    if(!/<\/head>/i.test(html)||!/<\/body>/i.test(html))throw Error('1:1 Counting document is incomplete');
+    return html.replace(/<\/head>/i,'<style id="compass-counting-setup-save-style">'+css+'</style></head>')
+      .replace(/<\/body>/i,'<script id="compass-counting-setup-save-addon">'+js+'<'+'/script></body>');
+  }
+
   function isPage2Program(html){
     return typeof html==='string' &&
       /id=["']runPage["']/.test(html) &&
@@ -81,8 +99,8 @@
       return html.replace(/<\/head>/i,'<style id="'+marker+'">'+shared+'\n'+css+'</style></head>')
         .replace(/<\/body>/i,'<script id="'+scriptId+'">'+js+'<'+'/script></body>');
     }
-    if(!isPage2Program(html))return html;
-    if(html.includes('id="compass-definitive-page2-v3"'))return html;
+    if(!isPage2Program(html))return withCountingSave(html);
+    if(html.includes('id="compass-definitive-page2-v3"'))return withCountingSave(html);
     // Existing offline packs may carry the previous injected style.
     // Replace it once, instead of stacking competing layout patches.
     const current=html.replace(/<style id="compass-definitive-page2-v[12]">[\s\S]*?<\/style>/gi,'');
@@ -99,7 +117,7 @@
     const legacyImageToggle="$('imagesOnlyBtn').addEventListener('click',()=>{imagesOnly=true;$('runGrid').classList.add('no-controls');$('resetViewBtn').hidden=false;});\n$('resetViewBtn').addEventListener('click',()=>{imagesOnly=false;$('runGrid').classList.remove('no-controls');$('resetViewBtn').hidden=true;});";
     const improvedImageToggle="// Images Only presents student materials full-width. The SAME control exits this view.\nconst imageOnlyToggleButton=$('imagesOnlyBtn');\nconst imageOnlyScoreHead=imageOnlyToggleButton.parentElement;\nconst imageOnlyStudentHeader=document.querySelector('#runPage .material-top');\nfunction setImagesOnlyView(enabled){\n  imagesOnly=!!enabled;\n  $('runGrid').classList.toggle('no-controls',imagesOnly);\n  if(imagesOnly && imageOnlyStudentHeader)imageOnlyStudentHeader.appendChild(imageOnlyToggleButton);\n  else imageOnlyScoreHead.appendChild(imageOnlyToggleButton);\n  imageOnlyToggleButton.textContent=imagesOnly?'← Exit Images Only':'▣ Images Only';\n  imageOnlyToggleButton.setAttribute('aria-pressed',String(imagesOnly));\n  $('resetViewBtn').hidden=true;\n}\nimageOnlyToggleButton.addEventListener('click',()=>setImagesOnlyView(!imagesOnly));\n$('resetViewBtn').addEventListener('click',()=>setImagesOnlyView(false));";
     const runner=cleaned.includes(legacyImageToggle)?cleaned.replace(legacyImageToggle,improvedImageToggle):cleaned;
-    return runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>');
+    return withCountingSave(runner.replace(/<\/head>/i,'<style id="compass-definitive-page2-v3">\n'+style+'\n</style></head>'));
   }
   global.COMPASS_PAGE2_STANDARD=Object.freeze({version:'20261030-v20',isPage2Program,standardize});
 })(window);
