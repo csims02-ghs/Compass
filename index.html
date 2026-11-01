@@ -1597,8 +1597,9 @@ body{display:block!important;width:100%;min-width:0}
      <div class="mi-field"><label for="miTarget">Target <span class="required">*</span></label><select id="miTarget" required><option value="">Select target</option></select></div>
      <div class="mi-field"><label for="miGoal">IEP Goal</label><select id="miGoal"><option value="">Not linked</option></select></div>
      <div class="mi-field"><label for="miTrial">Trial #</label><input id="miTrial" type="number" min="1" max="10000" value="1" required></div>
-     <div class="mi-field"><label for="miTrialType">Trial Type</label><select id="miTrialType"><option value="T">T — Target</option><option value="D">D — Distractor</option></select></div>
-     <div>
+     <div class="mi-field"><label for="miTrialType">Trial Type</label><select id="miTrialType"><option value="chain">Full Trial Chain (V25)</option><option value="T">T — Target (single)</option><option value="D">D — Distractor (single)</option></select></div>
+     <div id="miChainScoring" class="mi-chain-scoring" hidden><div class="mi-section-label">Full Trial Chain · Step-by-Step Scoring</div><p class="mi-description">Select Correct, Prompted, Incorrect or No Response for every target and distractor. Only targets determine the program accuracy.</p><div id="miChainPreview" role="group" aria-label="Trial chain response scoring"></div><div id="miChainSummary" aria-live="polite"></div></div>
+     <div id="miSingleResponse">
       <div class="mi-section-label">Student Response <span style="color:#b8293a">*</span></div>
       <div class="mi-response-buttons" role="group" aria-label="Student response">
        <button type="button" class="mi-response" data-response="independent" aria-pressed="false">✓ Independent</button>
@@ -1635,7 +1636,7 @@ body{display:block!important;width:100%;min-width:0}
     </article>
     <section class="mi-card mi-summary"><h3 id="miSummaryTitle">Selected Range Summary</h3><div id="miStats" class="mi-stat-grid"></div></section>
     <section class="mi-card mi-summary"><h3>Behavior Summary (Selected Range)</h3><div id="miBehaviorStats" class="mi-behavior-stat-grid"></div></section>
-    <p id="miScopeNote" class="mi-source-note">One row represents one saved program session. Targets and Accuracy summarize its scored target opportunities; behaviors are the recorded session totals. Authorized staff can archive a session with its linked trials (audit retained), or manage individual manual entries and behavior observations.</p>
+    <p id="miScopeNote" class="mi-source-note">Each COMPASS session and each complete manual trial chain appears as one history row. Targets and Accuracy count target opportunities only; distractors are scored separately. Manual records retain their step-by-step evidence and audit history.</p>
    </div>
   </div>
  </section>
@@ -4174,7 +4175,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <script defer src="./student-profile-print.js?v=20261025-portrait"></script>
 <script src="./session-notes-tabs.js?v=1" defer></script>
-<script src="./manual-input-workspace.js?v=20261029-session-summary-v1" defer></script>
+<script src="./manual-input-workspace.js?v=20261101-full-chain-v1" defer></script>
 <script src="./compass-date-display.js?v=20261029-1" defer></script>
 <script src="./manual-progress-sync.js?v=1" defer></script>
 <script src="./workspace-fullscreen.js?v=20261029-sidebar-v1" defer></script>
