@@ -2941,13 +2941,14 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       if(btn)nav.appendChild(btn);
     });
   }
+  let compassGraphMode='program',compassGraphData=null;
   function compassEnsureGraphsChartsTab(){
     const root=compassProfileRoot();if(!root)return null;
     const buttons=Array.from(root.querySelectorAll('button,[role="tab"]'));
     const overviewButton=buttons.find(function(b){return String(b.textContent||'').replace(/\s+/g,' ').trim().toLowerCase()==='overview'});
     let tab=root.querySelector('[data-compass-graphs-tab="1"]'),pane=document.getElementById('compassGraphsChartsPane');
     const overviewPanel=compassOverviewPanel(root,overviewButton);
-    if(!pane){pane=document.createElement('section');pane.id='compassGraphsChartsPane';pane.className='compass-graphs-charts-pane';pane.hidden=true;pane.style.setProperty('display','none','important');pane.innerHTML='<div class="card compass-program-chart-card" style="max-width:none;width:100%;margin-left:0;margin-right:0"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 style="margin:0 0 4px">Program Performance & Behavior Rate</h2><div id="compassProgramChartLabel" style="color:#637b98;font-size:13px">Loading program graph…</div></div></div><div id="compassProgramChart" style="margin-top:12px"></div></div>';
+    if(!pane){pane=document.createElement('section');pane.id='compassGraphsChartsPane';pane.className='compass-graphs-charts-pane';pane.hidden=true;pane.style.setProperty('display','none','important');pane.innerHTML='<div class="card compass-program-chart-card" style="max-width:none;width:100%;margin-left:0;margin-right:0"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 id="compassGraphModeHeading" style="margin:0 0 4px">Program Performance & Behavior Rate</h2><div id="compassProgramChartLabel" style="color:#637b98;font-size:13px">Loading program graph…</div></div></div><div id="compassProgramChart" style="margin-top:12px"></div></div>';
       if(overviewPanel&&overviewPanel.parentElement)overviewPanel.insertAdjacentElement('afterend',pane);else root.appendChild(pane);
     }
     if(!tab){
@@ -2955,21 +2956,19 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       else{tab=document.createElement('button');tab.type='button';tab.textContent='Graphs and Charts';tab.dataset.compassGraphsTab='1';tab.id='compassGraphsChartsTab';tab.className='compass-graphs-tab-fallback';const chartCard=$('overviewChart')&&$('overviewChart').closest('.card,.panel,[class*=card],[class*=panel]');if(chartCard&&chartCard.parentElement)chartCard.parentElement.insertBefore(tab,chartCard);else root.insertBefore(tab,root.firstChild)}
     }
     function leaveGraphs(){pane.hidden=true;pane.style.setProperty('display','none','important');tab.classList.remove('active');tab.setAttribute('aria-selected','false');if(overviewPanel){overviewPanel.hidden=false;overviewPanel.style.removeProperty('display')}}
-    // Keep the existing native Program Progress view reachable from the Graphs section.
-    if(pane&&!pane.querySelector('#compassGraphsProgressButton')){
-      const progressLink=document.createElement('button');
-      progressLink.id='compassGraphsProgressButton';
-      progressLink.type='button';
-      progressLink.className='btn small';
-      progressLink.textContent='Program Progress';
-      progressLink.addEventListener('click',function(){
-        leaveGraphs();
-        showProfileTab('progress');
-        tab.classList.add('active');
-        tab.setAttribute('aria-selected','true');
+    if(pane&&!pane.querySelector('#compassGraphsModeSelect')){
+      const selector=document.createElement('select');
+      selector.id='compassGraphsModeSelect';
+      selector.className='control compass-graph-mode-select';
+      selector.setAttribute('aria-label','Select graph view');
+      selector.style.cssText='width:auto;min-width:185px;min-height:42px;padding:9px 32px 9px 13px;border:1px solid #d3dfeb;border-radius:14px;background-color:#fff;color:#10396c;font-size:14px;font-weight:750;cursor:pointer;flex-shrink:0';
+      [{id:'program',label:'Program Progress'},{id:'iep',label:'IEP Goal Progress'}].forEach(function(x){
+        const option=document.createElement('option');option.value=x.id;option.textContent=x.label;selector.appendChild(option);
       });
-      const chartHeader=pane.querySelector('.compass-program-chart-card > div');
-      if(chartHeader)chartHeader.appendChild(progressLink);else pane.prepend(progressLink);
+      selector.value=compassGraphMode;
+      selector.addEventListener('change',function(){compassGraphMode=selector.value==='iep'?'iep':'program';compassRenderGraphSelection()});
+      const header=pane.querySelector('.compass-program-chart-card > div');
+      if(header)header.appendChild(selector);else pane.prepend(selector);
     }
     if(!tab.dataset.compassBound){tab.dataset.compassBound='1';tab.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();if(overviewButton)overviewButton.click();setTimeout(function(){if(overviewPanel){overviewPanel.hidden=true;overviewPanel.style.setProperty('display','none','important')}pane.hidden=false;pane.style.setProperty('display','block','important');if(overviewButton){overviewButton.classList.remove('active');overviewButton.setAttribute('aria-selected','false')}tab.classList.add('active');tab.setAttribute('aria-selected','true');window.scrollTo({top:Math.max(0,(pane.getBoundingClientRect().top+window.scrollY)-120),behavior:'smooth'})},0)});
       if(overviewButton)Array.from(overviewButton.parentElement?overviewButton.parentElement.querySelectorAll('button,[role="tab"]'):[]).filter(function(b){return b!==tab}).forEach(function(b){b.addEventListener('click',leaveGraphs)});
@@ -3074,6 +3073,47 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const legend='<div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;align-items:center;margin:4px 0 12px;font-size:14px;font-weight:700;color:'+ink+'"><span style="display:inline-flex;align-items:center;gap:7px"><i style="display:inline-block;width:13px;height:13px;background:'+blue+';border-radius:2px"></i>IEP Goal</span><span style="display:inline-flex;align-items:center;gap:7px"><i style="display:inline-block;width:13px;height:13px;background:'+red+';border-radius:2px"></i>Achieved</span><span style="display:inline-flex;align-items:center;gap:7px"><i style="display:inline-block;width:24px;height:5px;background:'+yellow+';border-radius:3px"></i>Behavior Rate (events / trial)</span></div>';
     el.innerHTML='<div style="width:100%;max-width:none"><div style="text-align:center;font-weight:800;font-size:20px;color:'+ink+';margin-bottom:8px">IEP Goal Achievement</div>'+legend+'<div class="compass-chart-scroll"><svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" role="img" aria-label="IEP Goal Achievement with behavior rate and each IEP goal shown once">'+gridLines+rightTicks+'<line x1="'+left+'" y1="'+plotBottom+'" x2="'+(w-right)+'" y2="'+plotBottom+'" stroke="#7a8ea6"/><text x="20" y="'+(top+plotH/2)+'" text-anchor="middle" fill="'+ink+'" font-size="14" font-weight="700" transform="rotate(-90 20 '+(top+plotH/2)+')">IEP Goal / Achievement %</text><text x="'+(w-20)+'" y="'+(top+plotH/2)+'" text-anchor="middle" fill="'+ink+'" font-size="14" font-weight="700" transform="rotate(-90 '+(w-20)+' '+(top+plotH/2)+')">Behavior Rate (events / trial)</text>'+bars+behaviorPath+behaviorDots+'<text x="'+(w/2)+'" y="'+(h-8)+'" text-anchor="middle" fill="'+ink+'" font-size="13" font-weight="700">IEP Goals</text></svg></div><div class="compass-chart-note">Each IEP goal appears once. Achievement and behavior rate are calculated across all Compass programs linked to that IEP goal and weighted by recorded trials. Behavior Rate = total behavior events ÷ total trials for those linked programs.</div></div>';
   }
+  function compassBuildIepGraphStats(goals,programs){
+    const num=function(g){const n=Number(g.annual_goal_number);return Number.isFinite(n)&&n>0?n:compassGoalNumber(g)};
+    return (Array.isArray(goals)?goals:[]).filter(function(g){return g&&g.status!=='discontinued'}).slice()
+    .sort(function(a,b){return num(a)-num(b)||String(a.title||'').localeCompare(String(b.title||''))})
+    .map(function(g,index){
+      const linked=(Array.isArray(programs)?programs:[]).filter(function(p){return p&&Array.isArray(p.goals)&&p.goals.some(function(v){return v.id===g.id})});
+      const sum=function(k){return linked.reduce(function(v,p){return v+Number(p[k]||0)},0)};
+      const trials=sum('trials'),correct=sum('correct'),prompted=sum('prompted'),behaviors=sum('behaviors'),breakdown={};
+      linked.forEach(function(p){Object.entries(p.behaviorBreakdown||{}).forEach(function(pair){const value=Number(pair[1]||0);if(Number.isFinite(value)&&value>0)breakdown[pair[0]]=(breakdown[pair[0]]||0)+value})});
+      const current=Number(g.current_percent),pct=Number(g.target_percent),n=num(g);
+      return {sp:{id:g.id,program_id:g.id},programName:'Goal '+(n===999?index+1:n)+' · '+compassShortGoal(g),
+        goals:[g],target:Number.isFinite(pct)?Math.max(0,Math.min(100,pct)):80,
+        trials:trials,correct:correct,prompted:prompted,
+        achieved:trials?Math.round(correct/trials*1000)/10:(g.current_percent!=null&&Number.isFinite(current)?Math.round(current*10)/10:null),
+        achievedWithPrompt:trials?Math.round((correct+prompted)/trials*1000)/10:null,
+        behaviors:behaviors,behaviorRate:trials?Math.round(behaviors/trials*100)/100:null,
+        behaviorBreakdown:breakdown,sessionCount:sum('sessionCount'),linkedProgramNames:linked.map(function(p){return p.programName}),programCount:linked.length};
+    });
+  }
+  function compassRenderGraphSelection(){
+    const element=$('compassProgramChart'),label=$('compassProgramChartLabel');
+    if(!element||!label)return;
+    const select=$('compassGraphsModeSelect'),heading=$('compassGraphModeHeading'),iep=compassGraphMode==='iep';
+    if(select)select.value=compassGraphMode;
+    if(heading)heading.textContent=iep?'IEP Goal Performance & Behavior Rate':'Program Performance & Behavior Rate';
+    if(!compassGraphData||!state.currentStudent||compassGraphData.studentId!==state.currentStudent.id){
+      label.textContent='Loading student graph…';element.innerHTML='<div class="chart-empty">Loading graph for selected student…</div>';return;
+    }
+    const rows=iep?compassBuildIepGraphStats(compassGraphData.goals,compassGraphData.stats):compassGraphData.stats;
+    compassRenderProgramChart(element,label,rows);
+    if(iep){
+      // Preserve the exact existing chart's visual/scales; update labels for IEP mode.
+      element.innerHTML=element.innerHTML
+        .replace('Program Goal / Achievement %','IEP Goal / Achievement %')
+        .replace('Linked Student Programs','IEP Goals')
+        .replace('Student Program / IEP Goal','IEP Goal / Linked Programs')
+        .replace('This detailed chart is intentionally program-based.','Each IEP goal appears once. Programs linked to multiple goals contribute to each relevant goal.')
+        .replace('>Program Goal</span>','>IEP Goal</span>');
+      label.textContent=label.textContent.replace('linked programs','IEP goals');
+    }
+  }
   function compassRenderProgramChart(el,label,entries){
     if(!el||!label)return;if(!entries.length){label.textContent='No programs linked to IEP goals';el.innerHTML='<div class="chart-empty">No IEP-linked student programs are available.</div>';return}
     const dataEntries=entries.filter(function(e){return e.trials>0}),totalTrials=dataEntries.reduce(function(t,e){return t+e.trials},0),totalCorrect=dataEntries.reduce(function(t,e){return t+e.correct},0),totalBehaviors=dataEntries.reduce(function(t,e){return t+e.behaviors},0),overallAch=totalTrials?Math.round((100*totalCorrect/totalTrials)*10)/10:null,overallBeh=totalTrials?Math.round((totalBehaviors/totalTrials)*100)/100:null;
@@ -3096,10 +3136,10 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
       window.__compassProgressSnapshot={studentId:sid,studentName:state.currentStudent&&(state.currentStudent.display_label||state.currentStudent.student_code||'')||'',programs:progs.map(function(x){return {assignment:x,definition:programById(x.program_id)||null}}),sessions:sessions.slice(),goals:goals.slice(),goalLinks:(Array.isArray(state.goalLinks)?state.goalLinks:[]).slice(),trialEvents:(Array.isArray(state.trialEvents)?state.trialEvents:[]).filter(function(ev){return progs.some(function(p){return p.id===ev.student_compass_program_id})})};
       window.dispatchEvent(new Event('compass-progress-data'));
     } catch(progressError) { console.warn('COMPASS optional progress view unavailable',progressError); }
-    if(!goals.length){label.textContent='No IEP goals entered';el.innerHTML='<div class="chart-empty">No IEP goals have been added for this student yet.</div>';return}label.textContent='Loading IEP goal achievement…';let metricRows=[];
+    if(!goals.length){compassGraphData={studentId:sid,goals:[],stats:[]};compassRenderGraphSelection();label.textContent='No IEP goals entered';el.innerHTML='<div class="chart-empty">No IEP goals have been added for this student yet.</div>';return}label.textContent='Loading IEP goal achievement…';let metricRows=[];
     try{const r=await sb.from('student_program_goal_behavior_graph_view').select('goal_id,student_compass_program_id,program_name,data_date,session_count,trials_total,targets_correct,prompted_correct,total_behaviors,behavior_counts').eq('student_id',sid).order('data_date',{ascending:true});if(!r.error&&Array.isArray(r.data))metricRows=r.data;else if(r&&r.error)console.warn('COMPASS graph metrics view unavailable; using loaded sessions',r.error)}catch(error){console.warn('COMPASS graph metrics view unavailable; using loaded sessions',error)}
     if(state.currentStudent&&state.currentStudent.id!==sid)return;const stats=compassBuildProgramStats(goals,links,progs,sessions,metricRows);compassRenderIepGoalChart(el,label,goals,stats);
-    const programEl=$('compassProgramChart'),programLabel=$('compassProgramChartLabel');if(programEl&&programLabel)compassRenderProgramChart(programEl,programLabel,stats);setTimeout(function(){compassFitProfileSummaryCards();compassExpandOverviewChart();compassEnsureGraphsChartsTab()},0);
+    const programEl=$('compassProgramChart'),programLabel=$('compassProgramChartLabel');if(programEl&&programLabel){compassGraphData={studentId:sid,goals:goals,stats:stats};compassRenderGraphSelection();}setTimeout(function(){compassFitProfileSummaryCards();compassExpandOverviewChart();compassEnsureGraphsChartsTab()},0);
   }
   function renderChart(el,sessions){const pts=sessions.map(s=>({date:s.session_date||s.created_at,value:accuracy(s)})).filter(x=>x.value!=null).sort((a,b)=>new Date(a.date)-new Date(b.date));if(!pts.length){el.innerHTML='<div class="chart-empty">No accuracy data recorded yet.</div>';return}const w=900,h=300,pad=42,min=new Date(pts[0].date).getTime(),max=new Date(pts[pts.length-1].date).getTime(),x=i=>pts.length===1?w/2:pad+(w-2*pad)*((new Date(pts[i].date).getTime()-min)/Math.max(1,max-min)),y=v=>h-pad-(h-2*pad)*(v/100),poly=pts.map((p,i)=>`${x(i)},${y(p.value)}`).join(' '),grid=[0,25,50,75,100].map(v=>`<line x1="${pad}" y1="${y(v)}" x2="${w-pad}" y2="${y(v)}" stroke="#dbe5ef"/><text x="4" y="${y(v)+5}" fill="#637b98" font-size="13">${v}%</text>`).join(''),circles=pts.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p.value)}" r="4" fill="#2366d5"><title>${fmtDate(p.date)}: ${p.value}%</title></circle>`).join('');el.innerHTML=`<svg class="chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${grid}<polyline points="${poly}" fill="none" stroke="#2366d5" stroke-width="3" vector-effect="non-scaling-stroke"/>${circles}</svg>`}
 
