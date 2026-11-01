@@ -156,3 +156,23 @@
   #sessionPanelManual .mi-data-table{min-width:920px}
   #sessionPanelManual .mi-behavior-pills{max-width:220px}
 }
+
+/* V25 full manual DTI-chain scorer: separate target (blue) and distractor (amber) steps. */
+#sessionPanelManual #miChainScoring[hidden],#sessionPanelManual #miSingleResponse[hidden]{display:none!important}
+#sessionPanelManual .mi-chain-scoring{border:1px solid #cbdff5;background:#f9fcff;padding:11px;border-radius:12px;min-width:0}
+#sessionPanelManual #miChainPreview{display:grid;gap:8px}
+#sessionPanelManual .mi-chain-step{border:1px solid #c8def9;border-left:4px solid #2774df;border-radius:9px;background:#fff;padding:9px;min-width:0}
+#sessionPanelManual .mi-chain-step.distractor{border-color:#f4dab0;border-left-color:#d68b21;background:#fffdfa}
+#sessionPanelManual .mi-chain-step-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;color:#194779;font-size:12px}
+#sessionPanelManual .mi-chain-step-head strong{font-size:13px}
+#sessionPanelManual .mi-chain-tile{display:inline-grid;place-items:center;min-width:27px;min-height:27px;border:1px solid #8eb9eb;border-radius:6px;color:#145fbb;background:#e8f2ff;font-weight:850}
+#sessionPanelManual .mi-chain-step.distractor .mi-chain-tile{background:#fff0d6;border-color:#e8ba76;color:#986014}
+#sessionPanelManual .mi-chain-scoring-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+#sessionPanelManual .mi-chain-result{min-width:0;border:1px solid #cbdcf0;border-radius:7px;background:#fff;color:#22578c;min-height:31px;padding:6px;font-size:11px;font-weight:750;cursor:pointer}
+#sessionPanelManual .mi-chain-result[aria-pressed="true"]{outline:2px solid #1e70d8;outline-offset:0;background:#e8f3ff}
+#sessionPanelManual .mi-chain-result[data-chain-response="independent"][aria-pressed="true"]{background:#e1f9e9;color:#116c39;outline-color:#1a8b49}
+#sessionPanelManual .mi-chain-result[data-chain-response="incorrect"][aria-pressed="true"]{background:#ffeded;color:#b82929;outline-color:#d94b4b}
+#sessionPanelManual .mi-chain-step select{width:100%;margin-top:7px}
+#sessionPanelManual #miChainSummary{margin-top:10px;border-top:1px solid #d9e7f6;padding-top:10px;color:#214f82;font-size:12px;font-weight:750;line-height:1.5}
+#sessionPanelManual .mi-chain-score{display:inline-block;background:#e8f6ee;color:#12693c;border-radius:6px;padding:3px 7px;margin-right:6px}
+#sessionPanelManual .mi-chain-incomplete{color:#a86021}
