@@ -1218,7 +1218,7 @@ body{display:block!important;width:100%;min-width:0}
 </style>
 <script src="./compass-page2-standard.js?v=20261031-materials-v25-2" defer></script>
 <link rel="stylesheet" href="./session-notes-tabs.css?v=1">
-<link rel="stylesheet" href="./manual-input-workspace.css?v=20261101-full-chain-v1">
+<link rel="stylesheet" href="./manual-input-workspace.css?v=20261101-behavior-frequency-v2">
 <link rel="stylesheet" href="./workspace-fullscreen.css?v=20261029-nav-v2">
 </head>
 <body>
@@ -1598,18 +1598,18 @@ body{display:block!important;width:100%;min-width:0}
      <div class="mi-field"><label for="miGoal">IEP Goal</label><select id="miGoal"><option value="">Not linked</option></select></div>
      <div class="mi-field"><label for="miTrial">Trial #</label><input id="miTrial" type="number" min="1" max="10000" value="1" required></div>
      <div class="mi-field"><label for="miTrialType">Trial Type</label><select id="miTrialType"><option value="chain">Full Trial Chain (V25)</option><option value="T">T — Target (single)</option><option value="D">D — Distractor (single)</option></select></div>
-     <div id="miChainScoring" class="mi-chain-scoring" hidden><div class="mi-section-label">Full Trial Chain · Step-by-Step Scoring</div><p class="mi-description">Select Correct, Prompted, Incorrect or No Response for every target and distractor. Only targets determine the program accuracy.</p><div id="miChainPreview" role="group" aria-label="Trial chain response scoring"></div><div id="miChainSummary" aria-live="polite"></div></div>
+     <div id="miChainScoring" class="mi-chain-scoring" hidden><div class="mi-section-label">Full Trial Chain · Step-by-Step Scoring</div><p class="mi-description">Select Correct, Prompted (scored incorrect), Incorrect or No Response for every target and distractor. Target accuracy counts independent responses only.</p><div id="miChainPreview" role="group" aria-label="Trial chain response scoring"></div><div id="miChainSummary" aria-live="polite"></div></div>
      <div id="miSingleResponse">
       <div class="mi-section-label">Student Response <span style="color:#b8293a">*</span></div>
       <div class="mi-response-buttons" role="group" aria-label="Student response">
        <button type="button" class="mi-response" data-response="independent" aria-pressed="false">✓ Independent</button>
-       <button type="button" class="mi-response" data-response="prompted" aria-pressed="false">◉ Prompted</button>
+       <button type="button" class="mi-response" data-response="prompted" aria-pressed="false">◉ Prompted (Incorrect)</button>
        <button type="button" class="mi-response" data-response="incorrect" aria-pressed="false">✕ Incorrect</button>
       </div>
       <div style="display:flex;gap:10px;margin-top:6px;font-size:12px"><label><input id="miNoResponse" type="checkbox"> No Response</label><label><input id="miNa" type="checkbox"> No Valid Opportunity</label></div>
      </div>
      <div class="mi-field"><label for="miPrompt">Prompt Level (if prompted)</label><select id="miPrompt"><option>None</option><option>Gestural</option><option>Verbal</option><option>Model</option><option>Visual</option><option>Partial Physical</option><option>Full Physical</option><option>Other</option></select></div>
-     <div><div class="mi-section-label">Behavior Tracking <span style="font-size:11px;font-weight:500">(select all that occurred during this trial)</span> <button id="miClearBehaviors" type="button" class="mi-link-action" style="float:right;padding:2px 7px">× Clear</button></div><div id="miBehaviors" class="mi-behavior-grid"><span class="mi-description">Choose a student to see assigned behaviors.</span></div></div>
+     <div><div class="mi-section-label">Behavior Tracking <span style="font-size:11px;font-weight:500">(use + / − to record the number of occurrences of each behavior)</span> <button id="miClearBehaviors" type="button" class="mi-link-action" style="float:right;padding:2px 7px">× Clear</button></div><div id="miBehaviors" class="mi-behavior-grid"><span class="mi-description">Choose a student to see assigned behaviors.</span></div></div>
      <div><label for="miNotes" class="mi-section-label" style="display:block">Notes (optional)</label><textarea id="miNotes" maxlength="5000" placeholder="Staff observations and session details..."></textarea></div>
      <p id="miFeedback" class="mi-feedback" role="status" aria-live="polite"></p>
      <div class="mi-actions"><button id="miClear" class="mi-btn" type="button">Clear</button><button id="miSave" class="mi-btn primary" type="submit">Add Entry</button></div>
@@ -4175,7 +4175,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <script defer src="./student-profile-print.js?v=20261025-portrait"></script>
 <script src="./session-notes-tabs.js?v=1" defer></script>
-<script src="./manual-input-workspace.js?v=20261101-full-chain-v1" defer></script>
+<script src="./manual-input-workspace.js?v=20261101-behavior-frequency-v2" defer></script>
 <script src="./compass-date-display.js?v=20261029-1" defer></script>
 <script src="./manual-progress-sync.js?v=20261101-full-chain-v1" defer></script>
 <script src="./workspace-fullscreen.js?v=20261029-sidebar-v1" defer></script>
