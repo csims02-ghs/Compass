@@ -2982,17 +2982,72 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function compassShortGoal(g){return String(g&&g.title||g&&g.goal_area||'IEP Goal').replace(/^goal\s*\d+\s*[—–:-]?\s*/i,'').trim()||String(g&&g.goal_area||'IEP Goal')}
   function compassWrapWords(text,max){const words=String(text||'').replace(/\s+/g,' ').trim().split(' '),lines=[];let line='';words.forEach(function(word){const next=line?line+' '+word:word;if(next.length>max&&line){lines.push(line);line=word}else line=next});if(line)lines.push(line);return lines.slice(0,4)}
   function compassBuildProgramStats(goals,links,progs,sessions,metricRows){
-    const linkedMap=new Map();
-    links.forEach(function(link){const sp=progs.find(function(p){return p.id===link.student_compass_program_id}),goal=goals.find(function(g){return g.id===link.goal_id});if(!sp||!goal)return;const cur=linkedMap.get(sp.id)||{sp:sp,goals:[]};if(!cur.goals.some(function(g){return g.id===goal.id}))cur.goals.push(goal);linkedMap.set(sp.id,cur)});
-    return Array.from(linkedMap.values()).map(function(item){
-      const sp=item.sp,p=programById(sp.program_id),programName=(p&&p.program_name)||'Program';let rows=metricRows.filter(function(r){return r.student_compass_program_id===sp.id});const uniqueByDay=new Map();rows.forEach(function(r){const key=String(r.data_date||'');if(!uniqueByDay.has(key))uniqueByDay.set(key,r)});rows=Array.from(uniqueByDay.values());
+    // Group the graph and detailed table by the program definition, not by
+    // each historical assignment. Preserve active and archived session history.
+    const groups=new Map(),byAssignment=new Map(),byGoal=new Map();
+    (Array.isArray(goals)?goals:[]).forEach(function(g){if(g&&g.id)byGoal.set(String(g.id),g)});
+    (Array.isArray(progs)?progs:[]).forEach(function(sp){
+      if(!sp||!sp.id||!sp.program_id)return;
+      const id=String(sp.program_id),assignedId=String(sp.id);
+      let group=groups.get(id);
+      if(!group){group={programId:id,assignments:[],goalIds:new Set(),activeGoalIds:new Set()};groups.set(id,group)}
+      if(group.assignments.some(function(a){return String(a.id)===assignedId}))return;
+      group.assignments.push(sp);byAssignment.set(assignedId,group);
+    });
+    (Array.isArray(links)?links:[]).forEach(function(link){
+      if(!link)return;const group=byAssignment.get(String(link.student_compass_program_id||'')),goal=byGoal.get(String(link.goal_id||''));
+      if(!group||!goal)return;
+      group.goalIds.add(String(goal.id));
+      const matching=group.assignments.find(function(a){return String(a.id)===String(link.student_compass_program_id)});
+      if(matching&&matching.status==='active')group.activeGoalIds.add(String(goal.id));
+    });
+    return Array.from(groups.values()).filter(function(group){return group.goalIds.size>0}).map(function(group){
+      const active=group.assignments.filter(function(a){return a.status==='active'});
+      const priority=(active.length?active:group.assignments).slice().sort(function(a,b){
+        const da=Number(a.display_order),db=Number(b.display_order);
+        const aa=Number.isFinite(da)?da:999,bb=Number.isFinite(db)?db:999;
+        if(aa!==bb)return aa-bb;
+        return String(b.updated_at||b.assigned_date||'').localeCompare(String(a.updated_at||a.assigned_date||''));
+      });
+      const sp=priority[0],definition=programById(sp.program_id);
+      const programName=(definition&&definition.program_name)||'Program';
+      const ids=new Set(group.assignments.map(function(a){return String(a.id)}));
+      // Current IEP goal links take precedence over archived links.
+      const displayGoalIds=group.activeGoalIds.size?group.activeGoalIds:group.goalIds;
+      const goalsForProgram=Array.from(displayGoalIds).map(function(id){return byGoal.get(id)}).filter(Boolean);
+      const keyedRows=new Map();
+      (Array.isArray(metricRows)?metricRows:[]).forEach(function(r){
+        if(!r||!ids.has(String(r.student_compass_program_id)))return;
+        const key=[r.student_compass_program_id,r.data_date||'',r.goal_id||''].join('|');
+        if(!keyedRows.has(key))keyedRows.set(key,r);
+      });
       let trials=0,correct=0,prompted=0,behaviors=0,sessionCount=0,behaviorBreakdown={};
-      if(rows.length)rows.forEach(function(r){trials+=Number(r.trials_total||0);correct+=Number(r.targets_correct||0);prompted+=Number(r.prompted_correct||0);behaviors+=Number(r.total_behaviors||0);sessionCount+=Number(r.session_count||0);const bc=r.behavior_counts&&typeof r.behavior_counts==='object'?r.behavior_counts:{};Object.keys(bc).forEach(function(name){behaviorBreakdown[name]=(behaviorBreakdown[name]||0)+Number(bc[name]||0)})});
-      else sessions.filter(function(s){return s.student_compass_program_id===sp.id}).forEach(function(s){trials+=Number(s.trials_total||0);correct+=Number(s.targets_correct||0);prompted+=Number(s.prompted_correct||0);behaviors+=Number(s.total_behaviors||0);sessionCount+=1;const bc=s.behavior_counts&&typeof s.behavior_counts==='object'?s.behavior_counts:{};Object.keys(bc).forEach(function(name){behaviorBreakdown[name]=(behaviorBreakdown[name]||0)+Number(bc[name]||0)})});
-      const achieved=trials?Math.round((100*correct/trials)*10)/10:null,achievedWithPrompt=trials?Math.round((100*(correct+prompted)/trials)*10)/10:null,behaviorRate=trials?Math.round((behaviors/trials)*100)/100:null;
-      const target=Number.isFinite(Number(sp.goal_percentage))?Math.max(0,Math.min(100,Number(sp.goal_percentage))):80;
-      return {sp:sp,programName:programName,goals:item.goals,target:target,trials:trials,correct:correct,prompted:prompted,achieved:achieved,achievedWithPrompt:achievedWithPrompt,behaviors:behaviors,behaviorRate:behaviorRate,behaviorBreakdown:behaviorBreakdown,sessionCount:sessionCount};
-    }).sort(function(a,b){const ao=Number(a.sp.display_order||999),bo=Number(b.sp.display_order||999);return ao-bo||a.programName.localeCompare(b.programName)})
+      const add=function(r){
+        const tr=Number(r.trials_total||0),bc=r.behavior_counts&&typeof r.behavior_counts==='object'&&!Array.isArray(r.behavior_counts)?r.behavior_counts:{};
+        const events=Number(r.total_behaviors||0);
+        if(tr<=0&&events<=0&&!Object.keys(bc).some(function(k){return Number(bc[k])>0}))return;
+        trials+=tr;correct+=Number(r.targets_correct||0);prompted+=Number(r.prompted_correct||0);
+        behaviors+=events;sessionCount+=Number(r.session_count||1);
+        Object.keys(bc).forEach(function(name){
+          const count=Number(bc[name]||0);
+          if(Number.isFinite(count)&&count>0)behaviorBreakdown[name]=(behaviorBreakdown[name]||0)+count;
+        });
+      };
+      if(keyedRows.size)keyedRows.forEach(add);
+      else (Array.isArray(sessions)?sessions:[]).forEach(function(s){
+        if(!s||!ids.has(String(s.student_compass_program_id))||s.deleted_at)return;
+        add(Object.assign({session_count:1},s));
+      });
+      const achieved=trials?Math.round((100*correct/trials)*10)/10:null;
+      const achievedWithPrompt=trials?Math.round((100*(correct+prompted)/trials)*10)/10:null;
+      const behaviorRate=trials?Math.round((behaviors/trials)*100)/100:null;
+      const percentage=Number(sp.goal_percentage);
+      const target=Number.isFinite(percentage)?Math.max(0,Math.min(100,percentage)):80;
+      return {sp:sp,programName:programName,goals:goalsForProgram,target:target,trials:trials,correct:correct,prompted:prompted,achieved:achieved,achievedWithPrompt:achievedWithPrompt,behaviors:behaviors,behaviorRate:behaviorRate,behaviorBreakdown:behaviorBreakdown,sessionCount:sessionCount};
+    }).sort(function(a,b){
+      const ao=Number(a.sp.display_order),bo=Number(b.sp.display_order);
+      return (Number.isFinite(ao)?ao:999)-(Number.isFinite(bo)?bo:999)||a.programName.localeCompare(b.programName);
+    });
   }
   function compassRenderIepGoalChart(el,label,goals,programStats){
     const ordered=goals.slice().sort(function(a,b){return compassGoalNumber(a)-compassGoalNumber(b)||String(a.title||'').localeCompare(String(b.title||''))});
