@@ -88,11 +88,11 @@ function renderChain(){
   return;
  }
  const prompts=['None','Gestural','Verbal','Model','Visual','Partial Physical','Full Physical','Other'];
- const choices=[['independent','✓ Correct'],['prompted','◉ Prompted'],['incorrect','✕ Incorrect'],['no_response','— No Response']];
+ const choices=[['independent','✓ Correct'],['prompted','◉ Prompted (Incorrect)'],['incorrect','✕ Incorrect'],['no_response','— No Response']];
  by('miChainPreview').innerHTML=st.chainScores.map((step,i)=>{
   const buttons=choices.map(([value,label])=>'<button type="button" class="mi-chain-result" data-chain-step="'+i+'" data-chain-response="'+value+'" aria-pressed="'+(step.response===value)+'">'+label+'</button>').join('');
   const prompt=step.response==='prompted'?'<select aria-label="Prompt level for step '+(i+1)+'" data-chain-prompt="'+i+'">'+prompts.map(p=>'<option value="'+esc(p)+'" '+(step.prompt===p?'selected':'')+'>'+esc(p)+'</option>').join('')+'</select>':'';
-  return '<div class="mi-chain-step '+(step.type==='D'?'distractor':'target')+'"><div class="mi-chain-step-head"><span class="mi-chain-tile">'+step.type+'</span><strong>Step '+(i+1)+' · '+(step.type==='T'?'Target':'Distractor')+'</strong><span>'+esc(step.response?({'independent':'Correct','prompted':'Prompted','incorrect':'Incorrect','no_response':'No Response'}[step.response]||step.response):'Awaiting score')+'</span></div><div class="mi-chain-scoring-buttons">'+buttons+'</div>'+prompt+'</div>';
+  return '<div class="mi-chain-step '+(step.type==='D'?'distractor':'target')+'"><div class="mi-chain-step-head"><span class="mi-chain-tile">'+step.type+'</span><strong>Step '+(i+1)+' · '+(step.type==='T'?'Target':'Distractor')+'</strong><span>'+esc(step.response?({'independent':'Correct','prompted':'Prompted · Incorrect','incorrect':'Incorrect','no_response':'No Response'}[step.response]||step.response):'Awaiting score')+'</span></div><div class="mi-chain-scoring-buttons">'+buttons+'</div>'+prompt+'</div>';
  }).join('');
  const targets=st.chainScores.filter(x=>x.type==='T'),distractors=st.chainScores.filter(x=>x.type==='D');
  const correct=targets.filter(x=>x.response==='independent').length;
@@ -131,9 +131,39 @@ const valid=targets.filter((t,i)=>{
 fillSelect('miTarget',valid.map(t=>[t.key,t.name]),'Select target');
 by('miTarget').required=true;
 }
-function renderBehaviors(){
-const s=student(st.selectedStudent),names=uniq([...(s?.selected_behaviors||[]),...(s?.secondary_behaviors||[])]).slice(0,8);
-by('miBehaviors').innerHTML=names.length?names.map(n=>'<label class="mi-behavior"><input type="checkbox" value="'+esc(n)+'"><span>'+esc(n)+'</span></label>').join(''):'<span class="mi-description">No behaviors assigned to this student.</span>';
+/* Behavior frequency counters are independent of target/distractor scoring.
+   Keep historical behavior names when editing so an old record cannot silently lose data. */
+function renderBehaviors(previous={}){
+ const s=student(st.selectedStudent);
+ const assigned=uniq([...(s?.selected_behaviors||[]),...(s?.secondary_behaviors||[])]).slice(0,8);
+ const counts=countBehaviors(previous);
+ const names=uniq([...assigned,...Object.keys(counts)]);
+ by('miBehaviors').innerHTML=names.length?names.map(name=>{
+  const n=Math.min(9999,Math.max(0,Math.floor(Number(counts[name])||0)));
+  return '<div class="mi-behavior" data-mi-behavior-name="'+esc(name)+'">'+
+   '<span class="mi-behavior-name">'+esc(name)+'</span>'+
+   '<div class="mi-behavior-counter" role="group" aria-label="'+esc(name)+' frequency">'+
+   '<button type="button" class="mi-behavior-adjust" data-mi-behavior-delta="-1" aria-label="Decrease '+esc(name)+' frequency" '+(n===0?'disabled':'')+'>−</button>'+
+   '<output class="mi-behavior-count" aria-label="'+esc(name)+' occurrences" aria-live="polite">'+n+'</output>'+
+   '<button type="button" class="mi-behavior-adjust" data-mi-behavior-delta="1" aria-label="Increase '+esc(name)+' frequency" '+(n===9999?'disabled':'')+'>+</button>'+
+   '</div></div>';
+ }).join(''):'<span class="mi-description">No behaviors assigned to this student.</span>';
+}
+function behaviorCountsFromForm(){
+ return Object.fromEntries([...by('miBehaviors').querySelectorAll('[data-mi-behavior-name]')]
+  .map(row=>[row.dataset.miBehaviorName,Number(row.querySelector('output')?.textContent)||0])
+  .filter(([name,n])=>name&&Number.isInteger(n)&&n>0&&n<=9999));
+}
+function adjustBehavior(e){
+ const button=e.target.closest('[data-mi-behavior-delta]');
+ if(!button||!by('miBehaviors').contains(button))return;
+ const row=button.closest('[data-mi-behavior-name]'),out=row?.querySelector('output');
+ if(!out)return;
+ const next=Math.min(9999,Math.max(0,Number(out.textContent||0)+Number(button.dataset.miBehaviorDelta)));
+ out.textContent=String(next);
+ row.classList.toggle('recorded',next>0);
+ row.querySelector('[data-mi-behavior-delta="-1"]').disabled=next===0;
+ row.querySelector('[data-mi-behavior-delta="1"]').disabled=next===9999;
 }
 function syncProvider(){
  const sel=by('miProvider'),manual=sel.value==='manual',input=by('miProviderManual');
@@ -331,11 +361,14 @@ function metricTotals(rows){
 }
 function renderSummary(rows){
  const t=metricTotals(rows);
- const stats=[['Total Trials',t.trials,'▥',''],['Independent',t.independent,'✓',t.trials?Math.round(t.independent/t.trials*100)+'%':'0%'],['Prompted',t.prompted,'◉',t.trials?Math.round(t.prompted/t.trials*100)+'%':'0%'],['Incorrect',t.incorrect,'✕',t.trials?Math.round(t.incorrect/t.trials*100)+'%':'0%']];
+ // Clinical scoring: any prompted response counts as incorrect, but remains
+ // identifiable as prompted so staff can review the level of assistance.
+ const incorrect=t.incorrect+t.prompted;
+ const stats=[['Total Targets',t.trials,'▥',''],['Independent',t.independent,'✓',t.trials?Math.round(t.independent/t.trials*100)+'%':'0%'],['Prompted (Incorrect)',t.prompted,'◉',t.trials?Math.round(t.prompted/t.trials*100)+'%':'0%'],['Incorrect (incl. Prompted)',incorrect,'✕',t.trials?Math.round(incorrect/t.trials*100)+'%':'0%']];
  by('miStats').innerHTML=stats.map(([name,count,icon,pct])=>'<div class="mi-stat"><span class="mi-stat-icon">'+icon+'</span><div><div class="mi-stat-label">'+esc(name)+'</div><div class="mi-stat-count">'+count+'</div><div class="mi-stat-pct">'+esc(pct)+'</div></div></div>').join('');
  const s=student(st.selectedStudent),assigned=uniq([...(s?.selected_behaviors||[]),...(s?.secondary_behaviors||[])]);
  const names=uniq([...assigned,...Object.keys(t.behaviors)]);if(!names.length)names.push('No behavior targets');
- by('miBehaviorStats').innerHTML=names.map(name=>{const count=t.behaviors[name]||0;const pct=t.trials?Math.round(count/t.trials*100):0;return '<div class="mi-behavior-stat"><span class="mi-name">'+esc(name)+'</span><strong>'+count+'</strong> <span>'+pct+'% of trials</span></div>'}).join('');
+ by('miBehaviorStats').innerHTML=names.map(name=>{const count=t.behaviors[name]||0;return '<div class="mi-behavior-stat"><span class="mi-name">'+esc(name)+'</span><strong>'+count+'</strong> <span>occurrences</span></div>'}).join('');
  const selectedProgram=by('miFilterProgram').value;
  const prog=selectedProgram?program(selectedProgram)?.program_name:'All Programs';
  by('miSummaryTitle').textContent='Selected Range Summary ('+studentName(s)+' · '+(prog||'All Programs')+')';
@@ -375,7 +408,7 @@ function clearForm(keepContext=true){
  by('miSave').textContent='Add Entry';by('miDate').value=keepContext?date:dateNow();by('miTime').value=timeNow();
  if(keepContext){by('miStudent').value=sid;by('miProgram').value=pid;by('miProvider').value=provider;syncProvider();if(provider==='manual')by('miProviderManual').value=providerManual;}
  document.querySelectorAll('#miForm [data-response]').forEach(b=>{b.classList.remove('selected');b.setAttribute('aria-pressed','false')});
- document.querySelectorAll('#miBehaviors input[type=checkbox]').forEach(i=>i.checked=false);
+ renderBehaviors();
  by('miTrial').value='1';st.chainScores=[];renderChain();status('');
 }
 async function saveEntry(){
@@ -396,7 +429,7 @@ async function saveEntry(){
  const prompt=by('miPrompt').value;if(!fullChain&&response==='prompted'&&prompt==='None')return status('Select the prompt level used.',true);
  if(!by('miDate').value)return status('Select the data collection date.',true);
  const goals=st.goals;const gid=by('miGoal').value;if(gid&&!goals.some(g=>g.id===gid))return status('Choose an IEP goal for the selected student.',true);
- const counts=Object.fromEntries([...by('miBehaviors').querySelectorAll('input[type=checkbox]:checked')].map(i=>[i.value,1]));
+ const counts=behaviorCountsFromForm();
  const values={event_date:by('miDate').value,event_time:by('miTime').value||null,provider_user_id:!isManual&&providerChoice?providerChoice:null,provider_name:providerName,provider_entry_type:isManual?'manual':'directory',location_setting:by('miLocation').value.trim(),service_type:by('miService').value,chain_type:by('miChain').value,benchmark_key:by('miBenchmark').value,target_key:target.value,target_name:targetName,goal_id:gid||null,trial_number:fullChain?1:Number(by('miTrial').value)||1,trial_type:fullChain?'T':by('miTrialType').value,response,prompt_level:fullChain?'None':response==='prompted'?prompt:'None',chain_steps:fullChain?storedChain():null,behavior_counts:counts,notes:by('miNotes').value.trim()};
  const button=by('miSave');button.disabled=true;status(st.editingId?'Updating entry…':'Saving entry…');
  try{
@@ -441,7 +474,7 @@ async function editEntry(id){
  const sel=by('miProvider');
  const exists=row.provider_user_id&&[...sel.options].some(o=>o.value===row.provider_user_id);
  sel.value=exists?row.provider_user_id:'manual';syncProvider();if(!exists)by('miProviderManual').value=row.provider_name||'';
- for(const c of by('miBehaviors').querySelectorAll('input[type=checkbox]'))c.checked=!!countBehaviors(row.behavior_counts)[c.value];
+ renderBehaviors(row.behavior_counts);
  by('miSave').textContent='Save Changes';status('Editing manual entry. Student and original assignment are locked for record integrity.');by('miForm').scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function deleteEntries(ids){
@@ -513,7 +546,8 @@ function attach(){
  by('miProvider').addEventListener('change',syncProvider);
  by('miForm').addEventListener('submit',e=>{e.preventDefault();saveEntry()});
  by('miClear').addEventListener('click',()=>clearForm());
- by('miClearBehaviors').addEventListener('click',()=>by('miBehaviors').querySelectorAll('input[type=checkbox]').forEach(i=>i.checked=false));
+ by('miClearBehaviors').addEventListener('click',()=>renderBehaviors());
+ by('miBehaviors').addEventListener('click',adjustBehavior);
  for(const b of document.querySelectorAll('#miForm [data-response]'))b.addEventListener('click',()=>setResponse(b.dataset.response));
  by('miNoResponse').addEventListener('change',e=>setResponse(e.target.checked?'no_response':''));
  by('miNa').addEventListener('change',e=>setResponse(e.target.checked?'na':''));
