@@ -11,7 +11,8 @@ ids.forEach(id=>assert(fragment.includes('id="'+id+'"'),id+' missing from visual
 assert(fragment.includes('Student Data History'),'Exact history header missing');
 assert(fragment.includes('<th>Targets</th><th>Accuracy</th><th>Behaviors</th>'),'Session table must contain separate Targets, Accuracy and Behaviors columns');
 assert(!fragment.includes('<th>Trial</th><th>Response</th>'),'Raw trial and response columns should be removed');
-assert(html.includes('manual-progress-sync.js?v=1'));
+assert(/manual-progress-sync\.js\?v=\S+/.test(html),'Current progress loader must be present');
+assert(fragment.includes('id="miChainScoring"'),'Full-chain scoring panel must be present');
 const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</style></head><body>'+fragment+'</body></html>';
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
@@ -100,6 +101,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  await page.locator('#miProviderManual').fill('Test Provider');
  await page.locator('#miDate').fill('2026-10-27');
  await page.locator('#miTarget').selectOption('2');
+ await page.locator('#miTrialType').selectOption('T'); // Existing single-trial CRUD remains supported.
  await page.locator('#miForm [data-response="independent"]').click();
  await page.locator('#miBehaviors input[value="Elopement"]').check();
  await page.locator('#miNotes').fill('Independently identified Blue');
@@ -148,6 +150,50 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  assert.equal(await page.evaluate(()=>window.db.compass_program_sessions.length),2,'Summary archived, not hard deleted');
  assert.equal(await page.evaluate(()=>window.db.student_behavior_data.length),1,'Behavior event archived, not hard deleted');
 
+
+
+ // V25 complete Default chain: five targets, three distractors, scored separately.
+ await page.locator('#miProvider').selectOption('staff1');
+ await page.locator('#miTrialType').selectOption('chain');
+ await page.locator('#miChain').selectOption('T,T,D,T,D,D,T,T');
+ await page.locator('#miTarget').selectOption('1');
+ assert.equal(await page.locator('#miChainPreview .mi-chain-step.target').count(),5);
+ assert.equal(await page.locator('#miChainPreview .mi-chain-step.distractor').count(),3);
+ await page.locator('#miSave').click();
+ assert((await page.locator('#miFeedback').innerText()).includes('Score every target'),'Do not persist incomplete chains');
+ const seq=['independent','independent','independent','incorrect','incorrect','independent','independent','independent'];
+ // T at 1,2,4,7,8 -> 4 correct, 1 incorrect; D at 3,5,6 independently scored.
+ for(let i=0;i<8;i++)
+  await page.locator('[data-chain-step="'+i+'"][data-chain-response="'+seq[i]+'"]').click();
+ assert((await page.locator('#miChainSummary').innerText()).includes('4/5 Correct · 80%'));
+ await page.locator('#miSave').click();
+ await page.waitForFunction(()=>window.db.compass_manual_trial_entries.some(x=>Array.isArray(x.chain_steps)&&x.chain_steps.length===8),null,{timeout:8000});
+ const defaultChain=await page.evaluate(()=>window.db.compass_manual_trial_entries.find(x=>x.chain_steps?.length===8));
+ assert.equal(defaultChain.chain_steps.filter(x=>x.trial_type==='T').length,5);
+ assert.equal(defaultChain.chain_steps.filter(x=>x.trial_type==='D').length,3);
+ const defaultRow=page.locator('#miHistoryRows tr:has([data-mi-edit="manual:'+defaultChain.id+'"])');
+ assert((await defaultRow.innerText()).includes('4/5 Correct'));
+ assert((await defaultRow.innerText()).includes('80%'));
+ await defaultRow.locator('[data-mi-edit]').click();
+ assert.equal(await page.locator('#miChainPreview .mi-chain-step').count(),8,'Chain editor must restore all eight steps');
+ await page.locator('[data-chain-step="0"][data-chain-response="incorrect"]').click();
+ assert((await page.locator('#miChainSummary').innerText()).includes('3/5 Correct · 60%'));
+ await page.locator('#miSave').click();
+ await page.waitForFunction(()=>window.db.compass_manual_trial_entries.find(x=>x.id===defaultChain.id)?.chain_steps?.[0]?.response==='incorrect',null,{timeout:8000});
+ assert((await page.locator('#miHistoryRows tr:has([data-mi-edit="manual:'+defaultChain.id+'"])').innerText()).includes('3/5 Correct'));
+ // V25 IEP Chain is exactly T,T,T,T,T, without distractors.
+ await page.locator('#miTrialType').selectOption('chain');
+ await page.locator('#miChain').selectOption('T,T,T,T,T');
+ await page.locator('#miTarget').selectOption('2');
+ assert.equal(await page.locator('#miChainPreview .mi-chain-step.target').count(),5);
+ assert.equal(await page.locator('#miChainPreview .mi-chain-step.distractor').count(),0);
+ for(let i=0;i<5;i++)await page.locator('[data-chain-step="'+i+'"][data-chain-response="'+(i<2?'independent':'incorrect')+'"]').click();
+ assert((await page.locator('#miChainSummary').innerText()).includes('2/5 Correct · 40%'));
+ await page.locator('#miSave').click();
+ await page.waitForFunction(()=>window.db.compass_manual_trial_entries.filter(x=>x.chain_steps?.length===5).length===1,null,{timeout:8000});
+ const iepChain=await page.evaluate(()=>window.db.compass_manual_trial_entries.find(x=>x.chain_steps?.length===5));
+ assert.equal(iepChain.chain_steps.every(x=>x.trial_type==='T'),true);
+ assert((await page.locator('#miHistoryRows tr:has([data-mi-edit="manual:'+iepChain.id+'"])').innerText()).includes('2/5 Correct'));
 
  assert((await page.evaluate(()=>window.changes))>=3,'create edit delete notifications');
  await page.locator('#miFilterStudent').selectOption('b');
