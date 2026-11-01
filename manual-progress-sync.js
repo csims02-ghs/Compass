@@ -11,7 +11,7 @@ async function fetchManualFor(snapshot){
  try{
   for(let offset=0;offset<100000;offset+=500){
    const response=await api.query('compass_manual_trial_entries')
-    .select('id,student_id,student_compass_program_id,event_date,event_time,target_key,target_name,benchmark_key,trial_type,response,behavior_counts,chain_type,deleted_at')
+    .select('id,student_id,student_compass_program_id,event_date,event_time,target_key,target_name,benchmark_key,trial_type,response,behavior_counts,chain_type,chain_steps,deleted_at')
     .eq('student_id',sid).is('deleted_at',null).order('event_date',{ascending:true})
     .range(offset,offset+499);
    if(response.error)throw response.error;
