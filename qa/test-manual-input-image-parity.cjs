@@ -179,7 +179,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  await page.locator('[data-chain-step="0"][data-chain-response="incorrect"]').click();
  assert((await page.locator('#miChainSummary').innerText()).includes('3/5 Correct · 60%'));
  await page.locator('#miSave').click();
- await page.waitForFunction(()=>window.db.compass_manual_trial_entries.find(x=>x.id===defaultChain.id)?.chain_steps?.[0]?.response==='incorrect',null,{timeout:8000});
+ await page.waitForFunction(id=>window.db.compass_manual_trial_entries.find(x=>x.id===id)?.chain_steps?.[0]?.response==='incorrect',defaultChain.id,{timeout:8000});
  assert((await page.locator('#miHistoryRows tr:has([data-mi-edit="manual:'+defaultChain.id+'"])').innerText()).includes('3/5 Correct'));
  // V25 IEP Chain is exactly T,T,T,T,T, without distractors.
  await page.locator('#miTrialType').selectOption('chain');
