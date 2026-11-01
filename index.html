@@ -1482,7 +1482,7 @@ body{display:block!important;width:100%;min-width:0}
 
  <section id="page-student-profile" class="page">
         <div class="profile-top compass-premium-top">
-          <div class="panel-head compass-premium-toolbar"><div class="breadcrumb">Students <span>›</span> Student Profile</div><button id="printProfileBtn" class="btn" type="button">Print Profile</button></div>
+          <div class="panel-head compass-premium-toolbar"><div class="breadcrumb">Students <span>›</span> Student Profile</div><button id="printProfileBtn" class="btn" type="button" title="Existing one-page student progress summary">Print Profile</button><button id="printProfileSectionBtn" class="btn primary" type="button" title="Create a printable report for the current Student Profile page">Print Current Page</button></div>
           <div class="compass-quick-student-switch"><label for="quickStudentSwitch">Quick Student Switch</label><select id="quickStudentSwitch" aria-label="Switch to another student on your caseload" disabled><option value="">Loading caseload students…</option></select></div>
           <div class="compass-premium-grid">
             <div class="compass-premium-left">
@@ -4269,6 +4269,7 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 <script defer src="./student-profile-print.js?v=20261025-portrait"></script>
+<script defer src="./student-profile-section-report.js?v=20261101-v1"></script>
 <script src="./session-notes-tabs.js?v=1" defer></script>
 <script src="./manual-input-workspace.js?v=20261101-behavior-reference-v3" defer></script>
 <script src="./compass-date-display.js?v=20261029-1" defer></script>
