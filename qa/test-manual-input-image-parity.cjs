@@ -103,6 +103,28 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  await page.locator('#miTarget').selectOption('2');
  await page.locator('#miTrialType').selectOption('T'); // Existing single-trial CRUD remains supported.
  await page.locator('#miForm [data-response="independent"]').click();
+ // Reference layout: one full-width row per behavior, checkbox on left,
+ // large minus / frequency / plus controls on the right.
+ const layout=await page.locator('#miBehaviors').evaluate(grid=>{
+  const rows=[...grid.querySelectorAll('[data-mi-behavior-name]')],one=rows[0],two=rows[1];
+  const rect=e=>e.getBoundingClientRect();
+  const box=rect(one),check=rect(one.querySelector('input[type="checkbox"]')),
+    minus=rect(one.querySelector('[data-mi-behavior-delta="-1"]')),
+    count=rect(one.querySelector('output')),plus=rect(one.querySelector('[data-mi-behavior-delta="1"]'));
+  return {rowStacked:rows.length>1&&rect(two).top>box.bottom-1,inside:plus.right<=box.right+2,
+    order:check.left<minus.left&&minus.left<count.left&&count.left<plus.left,
+    checkbox:check.width>=29,minusWidth:minus.width>=45,plusWidth:plus.width>=45,
+    singleColumn:getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length===1};
+ });
+ assert(layout.rowStacked&&layout.inside&&layout.order&&layout.checkbox&&layout.minusWidth&&layout.plusWidth&&layout.singleColumn,
+  'Behavior row screenshot parity failed '+JSON.stringify(layout));
+ const elopementCheckbox=page.locator('#miBehaviors [data-mi-behavior-name="Elopement"] .mi-behavior-check');
+ assert.equal(await elopementCheckbox.isChecked(),false);
+ await elopementCheckbox.check();
+ assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Elopement"] output').innerText(),'1','Checking an empty behavior should record one occurrence');
+ await elopementCheckbox.uncheck();
+ assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Elopement"] output').innerText(),'0','Unchecking should reset frequency to zero');
+
  
   // Multiple independent behavior frequencies are captured in the same record.
   const plus=async(name,n)=>{for(let j=0;j<n;j++)await page.locator('#miBehaviors [data-mi-behavior-name="'+name+'"] [data-mi-behavior-delta="1"]').click()};
@@ -110,6 +132,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
   await plus('Non-Compliance',4);
   await plus('Elopement',3);
   await minus('Elopement',1);
+  assert.equal(await elopementCheckbox.isChecked(),true,'Plus checks the behavior automatically');
   assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Non-Compliance"] output').innerText(),'4');
   assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Elopement"] output').innerText(),'2');
   assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Non-Compliance"] button[data-mi-behavior-delta="-1"]').isEnabled(),true);
@@ -128,6 +151,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  assert.equal(await page.locator('#miProgram').inputValue(),'assign-a');
  assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Non-Compliance"] output').innerText(),'4','Must restore stored frequency on edit');
  assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Elopement"] output').innerText(),'2');
+ assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Elopement"] .mi-behavior-check').isChecked(),true,'Editing restores checkbox selection');
  await minus('Non-Compliance',1);
  await plus('Elopement',2);
  await page.locator('#miNotes').fill('Edited documented note');
