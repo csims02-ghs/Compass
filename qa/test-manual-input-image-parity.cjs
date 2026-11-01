@@ -103,27 +103,46 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  await page.locator('#miTarget').selectOption('2');
  await page.locator('#miTrialType').selectOption('T'); // Existing single-trial CRUD remains supported.
  await page.locator('#miForm [data-response="independent"]').click();
- await page.locator('#miBehaviors input[value="Elopement"]').check();
+ 
+  // Multiple independent behavior frequencies are captured in the same record.
+  const plus=async(name,n)=>{for(let j=0;j<n;j++)await page.locator('#miBehaviors [data-mi-behavior-name="'+name+'"] [data-mi-behavior-delta="1"]').click()};
+  const minus=async(name,n)=>{for(let j=0;j<n;j++)await page.locator('#miBehaviors [data-mi-behavior-name="'+name+'"] [data-mi-behavior-delta="-1"]').click()};
+  await plus('Non-Compliance',4);
+  await plus('Elopement',3);
+  await minus('Elopement',1);
+  assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Non-Compliance"] output').innerText(),'4');
+  assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Elopement"] output').innerText(),'2');
+  assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Non-Compliance"] button[data-mi-behavior-delta="-1"]').isEnabled(),true);
+
  await page.locator('#miNotes').fill('Independently identified Blue');
  await page.locator('#miSave').click();
  await page.waitForFunction(()=>window.db.compass_manual_trial_entries.length===2&&document.querySelector('#miHistoryRows')?.textContent.includes('Test Provider'),null,{timeout:8000});
  const saved=await page.evaluate(()=>window.db.compass_manual_trial_entries.at(-1));
  assert.equal(saved.student_id,'a');assert.equal(saved.student_compass_program_id,'assign-a');
- assert.equal(saved.target_key,'2');assert.equal(saved.provider_name,'Test Provider');assert.equal(saved.provider_entry_type,'manual');assert.equal(saved.behavior_counts.Elopement,1);
+ assert.equal(saved.target_key,'2');assert.equal(saved.provider_name,'Test Provider');assert.equal(saved.provider_entry_type,'manual');assert.deepEqual(saved.behavior_counts,{'Non-Compliance':4,Elopement:2});
  assert.equal(await page.locator('#miHistoryRows tr').count(),5,'new row added to all-student history');
  await page.locator('#miGraphToggle').click();assert.equal(await page.locator('#miGraph').isVisible(),true);
  assert((await page.locator('#miGraph').innerText()).includes('Manual and live'));
  await page.locator('[data-mi-edit="manual:'+saved.id+'"]').click();
  assert.equal(await page.locator('#miSave').innerText(),'Save Changes');
  assert.equal(await page.locator('#miProgram').inputValue(),'assign-a');
+ assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Non-Compliance"] output').innerText(),'4','Must restore stored frequency on edit');
+ assert.equal(await page.locator('#miBehaviors [data-mi-behavior-name="Elopement"] output').innerText(),'2');
+ await minus('Non-Compliance',1);
+ await plus('Elopement',2);
  await page.locator('#miNotes').fill('Edited documented note');
  await page.locator('#miSave').click();
  await page.waitForFunction(()=>!!document.querySelector('#miHistoryRows tr[title="Edited documented note"]'),null,{timeout:8000});
+ const adjusted=await page.evaluate(id=>window.db.compass_manual_trial_entries.find(x=>x.id===id)?.behavior_counts,saved.id);
+ assert.deepEqual(adjusted,{'Non-Compliance':3,Elopement:4});
+ const behaviorHistory=await page.locator('#miHistoryRows tr[title="Edited documented note"]').innerText();
+ assert(behaviorHistory.includes('Non-Compliance (3)')&&behaviorHistory.includes('Elopement (4)'),'History should show independently tallied occurrence counts');
  await page.locator('[data-mi-delete="manual:'+saved.id+'"]').click();
  await page.waitForFunction(()=>window.db.compass_manual_trial_entries.at(-1)?.deleted_at&&!!document.querySelector('#miHistoryRows tr[title="Existing manual"]')&&!document.querySelector('#miHistoryRows tr[title="Edited documented note"]'),null,{timeout:8000});
  assert.equal(await page.locator('#miHistoryRows tr').count(),4,'soft deletion removed from current history');
  assert.equal(await page.evaluate(()=>window.db.compass_manual_trial_entries.length),2,'audited deleted record not hard deleted');
  assert.equal(await page.locator('#miHistoryRows tr').count(),4,'manual, live trial, summary and behavior rows remain');
+ assert((await page.locator('#miBehaviorStats').innerText()).includes('occurrences'),'Behavior summary is a frequency, not a percent of trials');
  assert.equal(await page.locator('#miHistoryRows td.mi-record-date').first().innerText(),'10/23/2026','Displayed date is MM/DD/YYYY');
  const firstDate=await page.locator('#miHistoryRows td.mi-record-date').first().evaluate(e=>({height:e.getBoundingClientRect().height,whiteSpace:getComputedStyle(e).whiteSpace}));
  assert.equal(firstDate.whiteSpace,'nowrap','Date column must not wrap');
@@ -161,16 +180,22 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  assert.equal(await page.locator('#miChainPreview .mi-chain-step.distractor').count(),3);
  await page.locator('#miSave').click();
  assert((await page.locator('#miFeedback').innerText()).includes('Score every target'),'Do not persist incomplete chains');
- const seq=['independent','independent','independent','incorrect','incorrect','independent','independent','independent'];
+ const seq=['independent','independent','independent','prompted','incorrect','independent','independent','independent'];
  // T at 1,2,4,7,8 -> 4 correct, 1 incorrect; D at 3,5,6 independently scored.
  for(let i=0;i<8;i++)
   await page.locator('[data-chain-step="'+i+'"][data-chain-response="'+seq[i]+'"]').click();
+ await page.locator('[data-chain-prompt="3"]').selectOption('Gestural');
  assert((await page.locator('#miChainSummary').innerText()).includes('4/5 Correct · 80%'));
+ assert((await page.locator('#miChainPreview .mi-chain-step.target').nth(2).innerText()).includes('Prompted · Incorrect'),'Prompting is identified as incorrect in step review');
  await page.locator('#miSave').click();
  await page.waitForFunction(()=>window.db.compass_manual_trial_entries.some(x=>Array.isArray(x.chain_steps)&&x.chain_steps.length===8),null,{timeout:8000});
  const defaultChain=await page.evaluate(()=>window.db.compass_manual_trial_entries.find(x=>x.chain_steps?.length===8));
  assert.equal(defaultChain.chain_steps.filter(x=>x.trial_type==='T').length,5);
  assert.equal(defaultChain.chain_steps.filter(x=>x.trial_type==='D').length,3);
+ assert.equal(defaultChain.chain_steps[3].response,'prompted');
+ assert.equal(defaultChain.chain_steps[3].prompt_level,'Gestural','Retain prompt detail rather than discarding it');
+ assert((await page.locator('#miStats').innerText()).includes('Incorrect (incl. Prompted)'),'Summary labels prompted as an incorrect result');
+ assert((await page.locator('#miStats').innerText()).includes('Prompted (Incorrect)'),'Summary retains prompted subtype');
  const defaultRow=page.locator('#miHistoryRows tr:has([data-mi-edit="manual:'+defaultChain.id+'"])');
  assert((await defaultRow.innerText()).includes('4/5 Correct'));
  assert((await defaultRow.innerText()).includes('80%'));
