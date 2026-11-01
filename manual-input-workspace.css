@@ -24,9 +24,18 @@
 #sessionPanelManual .mi-response[data-response="prompted"]{background:#e8f1ff;border-color:#a9cefc;color:#1261d0}
 #sessionPanelManual .mi-response[data-response="incorrect"]{background:#fff0f0;border-color:#ffbaba;color:#bf2626}
 #sessionPanelManual .mi-response.selected{box-shadow:inset 0 0 0 2px currentColor}
-#sessionPanelManual .mi-behavior-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-#sessionPanelManual .mi-behavior{display:flex;align-items:center;gap:5px;border:1px solid #dce9f9;background:#fbfdff;border-radius:7px;padding:7px 5px;font-size:11px;color:#164783;min-width:0;word-break:break-word;cursor:pointer}
-#sessionPanelManual .mi-behavior:has(input:checked){background:#eaf3ff;border-color:#5c9efa}
+/* Assigned behavior occurrences use independent accessible +/- counters.
+   Each behavior can be selected repeatedly; no event totals are inferred from trials. */
+#sessionPanelManual .mi-behavior-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#sessionPanelManual .mi-behavior{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #dce9f9;background:#fbfdff;border-radius:9px;padding:8px;font-size:12px;color:#164783;min-width:0}
+#sessionPanelManual .mi-behavior.recorded{background:#eaf3ff;border-color:#6eacf3}
+#sessionPanelManual .mi-behavior-name{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:650;line-height:1.25}
+#sessionPanelManual .mi-behavior-counter{display:flex;align-items:center;flex-shrink:0;gap:4px}
+#sessionPanelManual .mi-behavior-adjust{display:grid;place-items:center;width:32px;height:32px;min-width:32px;padding:0;border:1px solid #a6c8f1;border-radius:8px;background:#edf5ff;color:#1554a5;font-size:21px;font-weight:750;cursor:pointer;line-height:1}
+#sessionPanelManual .mi-behavior-adjust:hover:not(:disabled){background:#d8eaff;border-color:#3377cf}
+#sessionPanelManual .mi-behavior-adjust:focus-visible{outline:2px solid #3179ed;outline-offset:2px}
+#sessionPanelManual .mi-behavior-adjust:disabled{opacity:.4;cursor:not-allowed}
+#sessionPanelManual .mi-behavior-count{display:grid;place-items:center;min-width:29px;font-size:14px;font-weight:800;color:#133c75;font-variant-numeric:tabular-nums}
 #sessionPanelManual textarea{display:block;width:100%;min-height:55px;resize:vertical;line-height:1.45}
 #sessionPanelManual .mi-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 #sessionPanelManual .mi-btn{border:1px solid #b2cbed;border-radius:8px;min-height:39px;font-weight:730;font-size:13px;cursor:pointer;background:#fff;color:#154478}
@@ -74,7 +83,7 @@
 #sessionPanelManual .mi-empty{padding:30px 12px;text-align:center;color:#55739b}
 #sessionPanelManual .mi-source-note{font-size:11px;color:#627c99;line-height:1.35;margin:6px 0 0}
 @media(max-width:1250px){#sessionPanelManual .mi-grid{grid-template-columns:minmax(310px,.85fr) minmax(0,1.7fr)}#sessionPanelManual .mi-toolbar{grid-template-columns:repeat(3,minmax(0,1fr))}#sessionPanelManual .mi-behavior-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#sessionPanelManual .mi-stat-grid,#sessionPanelManual .mi-behavior-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:850px){#sessionPanelManual .mi-grid{grid-template-columns:1fr}#sessionPanelManual .mi-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}#sessionPanelManual .mi-behavior-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:850px){#sessionPanelManual .mi-grid{grid-template-columns:1fr}#sessionPanelManual .mi-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}#sessionPanelManual .mi-behavior-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){#sessionPanelManual .mi-field{grid-template-columns:1fr;gap:4px}#sessionPanelManual .mi-provider-manual{grid-column:1}#sessionPanelManual .mi-behavior-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#sessionPanelManual .mi-stat-grid,#sessionPanelManual .mi-behavior-stat-grid{grid-template-columns:1fr 1fr}#sessionPanelManual .mi-toolbar{grid-template-columns:1fr 1fr}}
 
 /* 2026-10-29: One-line month/day/year and usable history selection controls. */
@@ -176,3 +185,5 @@
 #sessionPanelManual #miChainSummary{margin-top:10px;border-top:1px solid #d9e7f6;padding-top:10px;color:#214f82;font-size:12px;font-weight:750;line-height:1.5}
 #sessionPanelManual .mi-chain-score{display:inline-block;background:#e8f6ee;color:#12693c;border-radius:6px;padding:3px 7px;margin-right:6px}
 #sessionPanelManual .mi-chain-incomplete{color:#a86021}
+
+@media(max-width:430px){#sessionPanelManual .mi-behavior-grid{grid-template-columns:1fr}}
