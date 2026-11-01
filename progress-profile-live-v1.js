@@ -120,16 +120,20 @@ return {date:dt(s.session_date||s.started_at||s.created_at),program:s.student_co
 });
 const manual=(Array.isArray(snap?.manualTrials)?snap.manualTrials:[])
  .filter(m=>allowed.has(String(m.student_compass_program_id))&&!m.deleted_at&&m.trial_type==='T')
- .filter(m=>['independent','prompted','incorrect','no_response'].includes(m.response))
- .map(m=>{
+ .flatMap(m=>{
   const counts=m.behavior_counts&&typeof m.behavior_counts==='object'?m.behavior_counts:{};
   const behaviorTotal=Object.values(counts).reduce((sum,n)=>sum+Math.max(0,Number(n)||0),0);
-  return {date:dt(m.event_date),program:m.student_compass_program_id,
+  const targetSteps=Array.isArray(m.chain_steps)&&m.chain_steps.length
+   ?m.chain_steps.filter(step=>step.trial_type==='T'&&['independent','prompted','incorrect','no_response'].includes(step.response))
+   :['independent','prompted','incorrect','no_response'].includes(m.response)?[{response:m.response}]:[];
+  return targetSteps.map((step,i)=>({
+   date:dt(m.event_date),program:m.student_compass_program_id,
    key:String(m.target_key||m.target_name||''),name:String(m.target_name||m.target_key||'Manual target'),
    benchmark:m.benchmark_key||null,valid:true,trial:1,
-   correct:m.response==='independent'?1:0,prompt:m.response==='prompted'?1:0,
-   beh:behaviorTotal,hasBehavior:true,raw:m,manual:true,
-   probe:m.chain_type==='probe',maintenance:false,explicitMaintenance:false};
+   correct:step.response==='independent'?1:0,prompt:step.response==='prompted'?1:0,
+   beh:i===0?behaviorTotal:0,hasBehavior:i===0,raw:m,manual:true,
+   probe:m.chain_type==='probe',maintenance:false,explicitMaintenance:false
+  }));
  });
 return [...live,...manual].filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)).sort((a,b)=>a.date.localeCompare(b.date));
 }
