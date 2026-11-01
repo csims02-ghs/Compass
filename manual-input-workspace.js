@@ -12,7 +12,7 @@ const status=(msg,error=false,where='miFeedback')=>{const el=by(where);if(el){el
 const context=()=>window.COMPASS_MANUAL_BRIDGE?.context()||{};
 const table=name=>{if(!window.COMPASS_MANUAL_BRIDGE)throw Error('Sign in to COMPASS to access student records.');return window.COMPASS_MANUAL_BRIDGE.query(name)};
 const query=async q=>{const r=await q;if(r.error)throw r.error;return r.data||[]};
-const st={students:[],assignments:[],catalog:[],profiles:[],goals:[],selectedStudent:'',selectedProgram:'',selectedResponse:'',editingId:'',manual:[],live:[],rows:[],visible:[],page:0,limit:8,filters:{},loading:false,ready:false,selected:new Set(),cache:new Map(),showGraph:false};
+const st={students:[],assignments:[],catalog:[],profiles:[],goals:[],selectedStudent:'',selectedProgram:'',selectedResponse:'',editingId:'',manual:[],live:[],rows:[],visible:[],page:0,limit:8,filters:{},loading:false,ready:false,selected:new Set(),cache:new Map(),showGraph:false,chainScores:[]};
 const student=sid=>st.students.find(s=>s.id===sid);
 const studentName=s=>String(s?.display_label||s?.student_code||'Student');
 const assignment=id=>st.assignments.find(a=>a.id===id);
@@ -33,6 +33,90 @@ function assignedPrograms(sid){const byProgram=new Map();for(const a of st.assig
 function currentTargetMeta(){const a=assignment(by('miProgram').value);return program(a?.program_id)?.program_config||{}}
 function benchmarkItems(cfg){let raw=cfg.benchmark_sets||cfg.benchmarks||cfg.levels||[];if(!Array.isArray(raw))raw=[];return raw.map((x,i)=>[String(i+1),typeof x==='string'?x:String(x.label||x.name||x.title||'Benchmark '+(i+1))])}
 function targetRows(cfg){const arr=Array.isArray(cfg.targets)?cfg.targets:Array.isArray(cfg.direction_bank)?cfg.direction_bank:[];return arr.map((t,i)=>({key:String(t.target_key||t.key||t.id||i+1),name:String(t.name||t.target_name||t.label||'Target '+(i+1)),benchmark:String(t.metadata?.benchmark||t.metadata?.benchmark_number||t.benchmark||t.metadata?.level||'')}))}
+
+/* A complete chain is one auditable manual record, with individually scored T/D steps.
+   The actual steps are sourced from the assigned program, not a global guessed pattern. */
+function parseChain(raw){
+ const str=(Array.isArray(raw)?raw.join(','):String(raw||'')).replace(/[\s,]/g,'').toUpperCase();
+ return /^[TD]{1,50}$/.test(str)?str.split(''):[];
+}
+function chainOptions(cfg){
+ const raw=[...(Array.isArray(cfg.trial_chains)?cfg.trial_chains:[]),...(Array.isArray(cfg.dti_chains)?cfg.dti_chains:[])];
+ const entries=[];const seen=new Set();
+ function add(label,pattern){
+  const steps=parseChain(pattern);
+  if(!steps.length)return;
+  const key=String(label||'Custom chain').replace(/^\d+\.\s*/,'').trim();
+  const normalized=key.toLowerCase().replace(/\s*[·—-]\s*.*$/,'').trim();
+  if(seen.has(normalized))return;
+  seen.add(normalized);entries.push({label:key,value:steps.join(',')});
+ }
+ add('Default',cfg.default_chain||'T,T,D,T,D,D,T,T');
+ raw.forEach((entry,i)=>add(entry.label||entry.name||entry.title||'Chain '+(i+1),entry.value||entry.pattern||entry.steps||entry.sequence));
+ if(!entries.some(x=>/short/i.test(x.label)))add('Short','T,T,T');
+ if(!entries.some(x=>/iep chain/i.test(x.label)))add('IEP Chain','T,T,T,T,T');
+ if(!entries.some(x=>/single/i.test(x.label)))add('Single','T');
+ const priority=x=>/default/i.test(x.label)?0:/^momentum\b/i.test(x.label)?1:/short/i.test(x.label)?2:/iep chain/i.test(x.label)?3:10;
+ return entries.map((x,i)=>({...x,index:i})).sort((a,b)=>priority(a)-priority(b)||a.index-b.index);
+}
+function refreshChainOptions(){
+ const el=by('miChain'),cfg=currentTargetMeta(),previous=el.value,options=chainOptions(cfg);
+ el.innerHTML=options.map(x=>option(x.value,x.label)).join('')+
+   option('NET','NET / Natural Opportunity (single trial only)')+
+   option('probe','Probe Benchmark (single trial only)');
+ const match=options.find(x=>x.value===previous);
+ el.value=match?match.value:options[0]?.value||'';
+ st.chainScores=[];renderChain();
+}
+function chainSteps(){
+ return parseChain(by('miChain')?.value);
+}
+function renderChain(){
+ const active=by('miTrialType')?.value==='chain',panel=by('miChainScoring');
+ if(!panel)return;
+ panel.hidden=!active;
+ by('miSingleResponse').hidden=active;
+ by('miTrial').closest('.mi-field').hidden=active;
+ by('miPrompt').closest('.mi-field').hidden=active;
+ if(!active)return;
+ const steps=chainSteps(),previous=st.chainScores;
+ if(steps.join('')!==previous.map(x=>x.type).join(''))
+  st.chainScores=steps.map(type=>({type,response:'',prompt:'None'}));
+ if(!steps.length){
+  by('miChainPreview').textContent='Select a valid DTI trial chain for this program.';
+  by('miChainSummary').textContent='A complete target/distractor sequence is required.';
+  return;
+ }
+ const prompts=['None','Gestural','Verbal','Model','Visual','Partial Physical','Full Physical','Other'];
+ const choices=[['independent','✓ Correct'],['prompted','◉ Prompted'],['incorrect','✕ Incorrect'],['no_response','— No Response']];
+ by('miChainPreview').innerHTML=st.chainScores.map((step,i)=>{
+  const buttons=choices.map(([value,label])=>'<button type="button" class="mi-chain-result" data-chain-step="'+i+'" data-chain-response="'+value+'" aria-pressed="'+(step.response===value)+'">'+label+'</button>').join('');
+  const prompt=step.response==='prompted'?'<select aria-label="Prompt level for step '+(i+1)+'" data-chain-prompt="'+i+'">'+prompts.map(p=>'<option value="'+esc(p)+'" '+(step.prompt===p?'selected':'')+'>'+esc(p)+'</option>').join('')+'</select>':'';
+  return '<div class="mi-chain-step '+(step.type==='D'?'distractor':'target')+'"><div class="mi-chain-step-head"><span class="mi-chain-tile">'+step.type+'</span><strong>Step '+(i+1)+' · '+(step.type==='T'?'Target':'Distractor')+'</strong><span>'+esc(step.response?({'independent':'Correct','prompted':'Prompted','incorrect':'Incorrect','no_response':'No Response'}[step.response]||step.response):'Awaiting score')+'</span></div><div class="mi-chain-scoring-buttons">'+buttons+'</div>'+prompt+'</div>';
+ }).join('');
+ const targets=st.chainScores.filter(x=>x.type==='T'),distractors=st.chainScores.filter(x=>x.type==='D');
+ const correct=targets.filter(x=>x.response==='independent').length;
+ const complete=st.chainScores.filter(x=>x.response).length;
+ const accuracy=targets.length?Math.round(correct/targets.length*100):0;
+ by('miChainSummary').innerHTML='<span class="mi-chain-score">'+correct+'/'+targets.length+' Correct · '+accuracy+'%</span> '+targets.length+' targets · '+distractors.length+' distractors · '+complete+'/'+steps.length+' steps scored'+(complete===steps.length?' · Ready to save':' <span class="mi-chain-incomplete">· Finish all steps</span>');
+}
+function validChain(){
+ const steps=chainSteps();
+ if(!steps.length||steps.length!==st.chainScores.length)return 'Select a valid full trial chain.';
+ if(st.chainScores.some((step,i)=>step.type!==steps[i]||!['independent','prompted','incorrect','no_response'].includes(step.response)))
+  return 'Score every target and distractor before saving.';
+ if(st.chainScores.some(s=>s.response==='prompted'&&(!s.prompt||s.prompt==='None')))
+  return 'Choose a prompt level for every prompted chain step.';
+ return '';
+}
+function storedChain(){
+ return st.chainScores.map((step,i)=>({trial_number:i+1,trial_type:step.type,response:step.response,prompt_level:step.response==='prompted'?step.prompt:'None'}));
+}
+function scoredTargets(row){
+ const steps=Array.isArray(row.chain_steps)?row.chain_steps:[];
+ return steps.filter(x=>x.trial_type==='T'&&['independent','prompted','incorrect','no_response'].includes(x.response));
+}
+
 async function loadTargetOptions(){const a=assignment(by('miProgram').value);const cfg=currentTargetMeta(),b=by('miBenchmark').value;
 let targets=targetRows(cfg);
 if(a&&targets.length===0){try{const rows=await query(table('compass_programming_targets').select('target_key,target_name,metadata').eq('program_id',a.program_id).order('display_order'));targets=rows.map(t=>({key:String(t.target_key||t.target_name),name:t.target_name,benchmark:String(t.metadata?.benchmark||'')}))}catch(e){status('Targets could not load: '+e.message,true);}}
@@ -77,6 +161,7 @@ async function selectProgram(){
 const cfg=currentTargetMeta(),bs=benchmarkItems(cfg);
 fillSelect('miBenchmark',bs,'All / Not specified');
 await loadTargetOptions();
+refreshChainOptions();
 }
 async function loadMetadata(){
 const ctx=context();if(!ctx.userId)throw Error('Sign in to COMPASS before entering student data.');
@@ -202,6 +287,10 @@ function targetMetrics(row){
         noResponse=Math.max(0,Number(t.no_response)||0);
   return {total,correct,valid:Math.max(0,total-noResponse)};
  }
+ if(row.origin==='manual'&&Array.isArray(row.chain_steps)&&row.chain_steps.length){
+  const ts=scoredTargets(row),correct=ts.filter(x=>x.response==='independent').length;
+  return {total:ts.length,correct,valid:ts.filter(x=>x.response!=='no_response').length};
+ }
  if(row.origin==='manual'&&row.trial_type!=='D'&&row.response!=='na'){
   const valid=row.response!=='no_response'?1:0;
   return {total:1,correct:row.response==='independent'?1:0,valid};
@@ -232,7 +321,10 @@ function historyTr(row){
 function metricTotals(rows){
  const totals={trials:0,independent:0,prompted:0,incorrect:0,no_response:0,behaviors:{}};
  for(const r of rows){
-  if(r.response==='summary'){const m=r.totals||{};totals.trials+=Number(m.count||0);totals.independent+=Number(m.independent||0);totals.prompted+=Number(m.prompted||0);totals.incorrect+=Number(m.incorrect||0);totals.no_response+=Number(m.no_response||0)}
+  if(r.origin==='manual'&&Array.isArray(r.chain_steps)&&r.chain_steps.length){
+   for(const step of scoredTargets(r)){totals.trials++;totals[step.response]++;}
+  }
+  else if(r.response==='summary'){const m=r.totals||{};totals.trials+=Number(m.count||0);totals.independent+=Number(m.independent||0);totals.prompted+=Number(m.prompted||0);totals.incorrect+=Number(m.incorrect||0);totals.no_response+=Number(m.no_response||0)}
   else if(['independent','prompted','incorrect','no_response'].includes(r.response)){totals.trials++;totals[r.response]++;}
   for(const [name,n] of Object.entries(countBehaviors(r.behavior_counts)))totals.behaviors[name]=(totals.behaviors[name]||0)+n;
  }return totals;
@@ -251,7 +343,8 @@ function renderSummary(rows){
 function renderGraph(rows){
  const div=by('miGraph');if(!st.showGraph){div.hidden=true;return}div.hidden=false;
  const days=new Map();
- for(const r of rows){const key=r.event_date;if(!key||!['summary','independent','prompted','incorrect','no_response'].includes(r.response))continue;const prev=days.get(key)||{total:0,correct:0};if(r.response==='summary'){prev.total+=Number(r.totals?.count||0);prev.correct+=Number(r.totals?.independent||0)}else{prev.total++;if(r.response==='independent')prev.correct++;}days.set(key,prev)}
+ for(const r of rows){const key=r.event_date;if(!key)continue;const prev=days.get(key)||{total:0,correct:0};if(r.origin==='manual'&&Array.isArray(r.chain_steps)&&r.chain_steps.length){const ts=scoredTargets(r);prev.total+=ts.length;prev.correct+=ts.filter(x=>x.response==='independent').length;}
+ else if(r.response==='summary'){prev.total+=Number(r.totals?.count||0);prev.correct+=Number(r.totals?.independent||0)}else if(['independent','prompted','incorrect','no_response'].includes(r.response)){prev.total++;if(r.response==='independent')prev.correct++;}else continue;days.set(key,prev)}
  const points=[...days].sort((a,b)=>a[0].localeCompare(b[0]));
  if(!points.length){div.textContent='No scored trials in this range to graph.';return}
  const w=680,h=195,pad=26,step=points.length>1?(w-2*pad)/(points.length-1):0;
@@ -283,7 +376,7 @@ function clearForm(keepContext=true){
  if(keepContext){by('miStudent').value=sid;by('miProgram').value=pid;by('miProvider').value=provider;syncProvider();if(provider==='manual')by('miProviderManual').value=providerManual;}
  document.querySelectorAll('#miForm [data-response]').forEach(b=>{b.classList.remove('selected');b.setAttribute('aria-pressed','false')});
  document.querySelectorAll('#miBehaviors input[type=checkbox]').forEach(i=>i.checked=false);
- by('miTrial').value='1';status('');
+ by('miTrial').value='1';st.chainScores=[];renderChain();status('');
 }
 async function saveEntry(){
  if(st.loading||!st.selectedStudent)return status('Select the student first.',true);
@@ -295,12 +388,16 @@ async function saveEntry(){
  if(!providerName)return status('Select a provider, or choose Manual Enter and type their name.',true);
  if(!target.value||!targetName||!Array.from(target.options).some(o=>o.value===target.value))
    return status('Select a target belonging to the assigned program.',true);
- const response=st.selectedResponse;if(!response)return status('Select the student response.',true);
- const prompt=by('miPrompt').value;if(response==='prompted'&&prompt==='None')return status('Select the prompt level used.',true);
+ const fullChain=by('miTrialType').value==='chain';
+ if(fullChain){const issue=validChain();if(issue)return status(issue,true)}
+ const firstTarget=fullChain?st.chainScores.find(x=>x.type==='T'):null;
+ const response=fullChain?(firstTarget?.response||'incorrect'):st.selectedResponse;
+ if(!response)return status('Select the student response.',true);
+ const prompt=by('miPrompt').value;if(!fullChain&&response==='prompted'&&prompt==='None')return status('Select the prompt level used.',true);
  if(!by('miDate').value)return status('Select the data collection date.',true);
  const goals=st.goals;const gid=by('miGoal').value;if(gid&&!goals.some(g=>g.id===gid))return status('Choose an IEP goal for the selected student.',true);
  const counts=Object.fromEntries([...by('miBehaviors').querySelectorAll('input[type=checkbox]:checked')].map(i=>[i.value,1]));
- const values={event_date:by('miDate').value,event_time:by('miTime').value||null,provider_user_id:!isManual&&providerChoice?providerChoice:null,provider_name:providerName,provider_entry_type:isManual?'manual':'directory',location_setting:by('miLocation').value.trim(),service_type:by('miService').value,chain_type:by('miChain').value,benchmark_key:by('miBenchmark').value,target_key:target.value,target_name:targetName,goal_id:gid||null,trial_number:Number(by('miTrial').value)||1,trial_type:by('miTrialType').value,response,prompt_level:response==='prompted'?prompt:'None',behavior_counts:counts,notes:by('miNotes').value.trim()};
+ const values={event_date:by('miDate').value,event_time:by('miTime').value||null,provider_user_id:!isManual&&providerChoice?providerChoice:null,provider_name:providerName,provider_entry_type:isManual?'manual':'directory',location_setting:by('miLocation').value.trim(),service_type:by('miService').value,chain_type:by('miChain').value,benchmark_key:by('miBenchmark').value,target_key:target.value,target_name:targetName,goal_id:gid||null,trial_number:fullChain?1:Number(by('miTrial').value)||1,trial_type:fullChain?'T':by('miTrialType').value,response,prompt_level:fullChain?'None':response==='prompted'?prompt:'None',chain_steps:fullChain?storedChain():null,behavior_counts:counts,notes:by('miNotes').value.trim()};
  const button=by('miSave');button.disabled=true;status(st.editingId?'Updating entry…':'Saving entry…');
  try{
   let answer;
@@ -331,7 +428,15 @@ async function editEntry(id){
  await loadTargetOptions();
  if(![...by('miTarget').options].some(o=>o.value===row.target_key))by('miTarget').add(new Option(row.target_name,row.target_key));
  by('miTarget').value=row.target_key;
- by('miGoal').value=row.goal_id||'';by('miTrial').value=row.trial_number||1;by('miTrialType').value=row.trial_type||'T';setResponse(row.response);
+ by('miGoal').value=row.goal_id||'';by('miTrial').value=row.trial_number||1;
+ const savedChain=Array.isArray(row.chain_steps)&&row.chain_steps.length;
+ by('miTrialType').value=savedChain?'chain':row.trial_type||'T';
+ if(savedChain){
+  st.chainScores=row.chain_steps.map(x=>({type:x.trial_type,response:x.response,prompt:x.prompt_level||'None'}));
+  if(![...by('miChain').options].some(o=>o.value===row.chain_type))by('miChain').add(new Option('Saved chain',row.chain_type));
+  by('miChain').value=row.chain_type;
+ }
+ renderChain();setResponse(savedChain?'':row.response);
  by('miPrompt').value=row.prompt_level||'None';by('miNotes').value=row.notes||'';
  const sel=by('miProvider');
  const exists=row.provider_user_id&&[...sel.options].some(o=>o.value===row.provider_user_id);
@@ -400,6 +505,11 @@ function attach(){
  by('miFilterStudent').addEventListener('change',e=>selectStudent(e.target.value));
  by('miProgram').addEventListener('change',async()=>{await selectProgram();by('miFilterProgram').value=assignment(by('miProgram').value)?.program_id||'';st.filters=activeFilters();st.page=0;renderRows()});
  by('miBenchmark').addEventListener('change',loadTargetOptions);
+ by('miChain').addEventListener('change',()=>{st.chainScores=[];renderChain()});
+ by('miTrialType').addEventListener('change',()=>{st.chainScores=[];renderChain()});
+ by('miTarget').addEventListener('change',()=>{st.chainScores=[];renderChain()});
+ by('miChainPreview').addEventListener('click',e=>{const b=e.target.closest('[data-chain-step]');if(!b)return;const i=Number(b.dataset.chainStep),step=st.chainScores[i];if(!step)return;step.response=b.dataset.chainResponse;step.prompt='None';renderChain()});
+ by('miChainPreview').addEventListener('change',e=>{const i=Number(e.target.dataset.chainPrompt);if(!Number.isInteger(i)||!st.chainScores[i])return;st.chainScores[i].prompt=e.target.value;renderChain()});
  by('miProvider').addEventListener('change',syncProvider);
  by('miForm').addEventListener('submit',e=>{e.preventDefault();saveEntry()});
  by('miClear').addEventListener('click',()=>clearForm());
