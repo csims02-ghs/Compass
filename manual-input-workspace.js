@@ -140,7 +140,7 @@ function renderBehaviors(previous={}){
  const names=uniq([...assigned,...Object.keys(counts)]);
  by('miBehaviors').innerHTML=names.length?names.map(name=>{
   const n=Math.min(9999,Math.max(0,Math.floor(Number(counts[name])||0)));
-  return '<div class="mi-behavior" data-mi-behavior-name="'+esc(name)+'">'+
+  return '<div class="mi-behavior'+(n>0?' recorded':'')+'" data-mi-behavior-name="'+esc(name)+'">'+
    '<span class="mi-behavior-name">'+esc(name)+'</span>'+
    '<div class="mi-behavior-counter" role="group" aria-label="'+esc(name)+' frequency">'+
    '<button type="button" class="mi-behavior-adjust" data-mi-behavior-delta="-1" aria-label="Decrease '+esc(name)+' frequency" '+(n===0?'disabled':'')+'>−</button>'+
