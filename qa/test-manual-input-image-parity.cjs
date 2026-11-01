@@ -20,7 +20,7 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
  const page=await browser.newPage({viewport:{width,height:1024}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('about:blank');await page.setContent(tmpl,{waitUntil:'domcontentloaded'});
  await page.evaluate(()=>{
-  const students=[{id:'a',display_label:'Sample Student A',selected_behaviors:['Non-Compliance','Elopement'],secondary_behaviors:[],status:'active'},{id:'b',display_label:'Sample Student B',selected_behaviors:['Property'],secondary_behaviors:[],status:'active'}];
+  const students=[{id:'a',display_label:'Sample Student A',selected_behaviors:['Non-Compliance','Elopement','Aggression (Peer)','Leaving the area','Work avoidance','Stealing'],secondary_behaviors:[],status:'active'},{id:'b',display_label:'Sample Student B',selected_behaviors:['Property'],secondary_behaviors:[],status:'active'}];
   const assignments=[{id:'assign-a',student_id:'a',program_id:'prog-a',status:'active',assigned_date:'2026-10-01'},{id:'assign-b',student_id:'b',program_id:'prog-b',status:'active',assigned_date:'2026-10-01'}];
   const programs=[{id:'prog-a',program_name:'Colors',program_config:{targets:[{id:1,name:'Red',metadata:{benchmark:1}},{id:2,name:'Blue',metadata:{benchmark:1}}],benchmark_sets:[{label:'Colors 1–2',start:1,end:2}]}},{id:'prog-b',program_name:'Shapes',program_config:{targets:[{id:1,name:'Circle'}]}}];
   const profiles=[{id:'staff1',full_name:'Staff One',role:'bcba',active:true},{id:'staff2',full_name:'Staff Two',role:'teacher',active:true}];
@@ -113,11 +113,34 @@ const tmpl='<!doctype html><html><head><meta charset="utf-8"><style>'+css+'</sty
     count=rect(one.querySelector('output')),plus=rect(one.querySelector('[data-mi-behavior-delta="1"]'));
   return {rowStacked:rows.length>1&&rect(two).top>box.bottom-1,inside:plus.right<=box.right+2,
     order:check.left<minus.left&&minus.left<count.left&&count.left<plus.left,
-    checkbox:check.width>=29,minusWidth:minus.width>=45,plusWidth:plus.width>=45,
+    checkbox:check.width>=22,minusWidth:minus.width>=29,plusWidth:plus.width>=29,
     singleColumn:getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length===1};
  });
  assert(layout.rowStacked&&layout.inside&&layout.order&&layout.checkbox&&layout.minusWidth&&layout.plusWidth&&layout.singleColumn,
   'Behavior row screenshot parity failed '+JSON.stringify(layout));
+ // Reproduce the narrow/zoomed 280px entry area in the user screenshot.
+ // Every behavior name must stay on a single visible line; controls must remain in-row.
+ const narrow=await page.locator('#miBehaviors').evaluate(grid=>{
+  const prev=grid.style.width;
+  grid.style.width='280px';
+  const all=[...grid.querySelectorAll('[data-mi-behavior-name]')].map(row=>{
+   const label=row.querySelector('.mi-behavior-name'),check=row.querySelector('.mi-behavior-check'),
+    ctr=row.querySelector('.mi-behavior-counter');
+   const rr=row.getBoundingClientRect(),lr=label.getBoundingClientRect(),cr=ctr.getBoundingClientRect(),
+    ck=check.getBoundingClientRect();
+   const style=getComputedStyle(label);
+   return {behavior:row.dataset.miBehaviorName,whiteSpace:style.whiteSpace,fontSize:parseFloat(style.fontSize),
+    noTextClip:label.scrollWidth<=label.clientWidth+1,
+    noOverlap:lr.right<=cr.left+2,
+    inside:cr.right<=rr.right+1&&ck.left>=rr.left-1,
+    noWrap:lr.height<=parseFloat(style.lineHeight)+1};
+  });
+  grid.style.width=prev;
+  return all;
+ });
+ assert(narrow.length>=6,'Screenshot reference behaviors should be included');
+ for(const item of narrow)assert(item.whiteSpace==='nowrap'&&item.fontSize<=12&&item.noTextClip&&item.noOverlap&&item.inside&&item.noWrap,
+  'Behavior text must remain fully visible on one line at 280px: '+JSON.stringify(item));
  const elopementCheckbox=page.locator('#miBehaviors [data-mi-behavior-name="Elopement"] .mi-behavior-check');
  assert.equal(await elopementCheckbox.isChecked(),false);
  await elopementCheckbox.check();
