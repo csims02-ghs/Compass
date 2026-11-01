@@ -141,9 +141,12 @@ function renderBehaviors(previous={}){
  by('miBehaviors').innerHTML=names.length?names.map(name=>{
   const n=Math.min(9999,Math.max(0,Math.floor(Number(counts[name])||0)));
   return '<div class="mi-behavior'+(n>0?' recorded':'')+'" data-mi-behavior-name="'+esc(name)+'">'+
+   '<label class="mi-behavior-select">'+
+   '<input class="mi-behavior-check" type="checkbox" aria-label="Record '+esc(name)+'" '+(n>0?'checked':'')+'>'+
    '<span class="mi-behavior-name">'+esc(name)+'</span>'+
+   '</label>'+
    '<div class="mi-behavior-counter" role="group" aria-label="'+esc(name)+' frequency">'+
-   '<button type="button" class="mi-behavior-adjust" data-mi-behavior-delta="-1" aria-label="Decrease '+esc(name)+' frequency" '+(n===0?'disabled':'')+'>−</button>'+
+   '<button type="button" class="mi-behavior-adjust" data-mi-behavior-delta="-1" aria-label="Decrease '+esc(name)+' frequency">−</button>'+
    '<output class="mi-behavior-count" aria-label="'+esc(name)+' occurrences" aria-live="polite">'+n+'</output>'+
    '<button type="button" class="mi-behavior-adjust" data-mi-behavior-delta="1" aria-label="Increase '+esc(name)+' frequency" '+(n===9999?'disabled':'')+'>+</button>'+
    '</div></div>';
@@ -154,16 +157,32 @@ function behaviorCountsFromForm(){
   .map(row=>[row.dataset.miBehaviorName,Number(row.querySelector('output')?.textContent)||0])
   .filter(([name,n])=>name&&Number.isInteger(n)&&n>0&&n<=9999));
 }
+function updateBehaviorCount(row,amount){
+ const out=row?.querySelector('output');
+ if(!out)return;
+ const next=Math.min(9999,Math.max(0,Math.floor(Number(amount)||0)));
+ out.textContent=String(next);
+ row.classList.toggle('recorded',next>0);
+ const checkbox=row.querySelector('.mi-behavior-check');
+ if(checkbox)checkbox.checked=next>0;
+ const plus=row.querySelector('[data-mi-behavior-delta="1"]');
+ if(plus)plus.disabled=next===9999;
+}
 function adjustBehavior(e){
  const button=e.target.closest('[data-mi-behavior-delta]');
  if(!button||!by('miBehaviors').contains(button))return;
- const row=button.closest('[data-mi-behavior-name]'),out=row?.querySelector('output');
- if(!out)return;
- const next=Math.min(9999,Math.max(0,Number(out.textContent||0)+Number(button.dataset.miBehaviorDelta)));
- out.textContent=String(next);
- row.classList.toggle('recorded',next>0);
- row.querySelector('[data-mi-behavior-delta="-1"]').disabled=next===0;
- row.querySelector('[data-mi-behavior-delta="1"]').disabled=next===9999;
+ const row=button.closest('[data-mi-behavior-name]');
+ if(!row)return;
+ updateBehaviorCount(row,(Number(row.querySelector('output')?.textContent)||0)+Number(button.dataset.miBehaviorDelta));
+}
+function selectBehavior(e){
+ const checkbox=e.target.closest('.mi-behavior-check');
+ if(!checkbox||!by('miBehaviors').contains(checkbox))return;
+ const row=checkbox.closest('[data-mi-behavior-name]');
+ if(!row)return;
+ const count=Number(row.querySelector('output')?.textContent)||0;
+ // Selecting an unrecorded behavior starts at one; clearing it resets its frequency.
+ updateBehaviorCount(row,checkbox.checked?Math.max(1,count):0);
 }
 function syncProvider(){
  const sel=by('miProvider'),manual=sel.value==='manual',input=by('miProviderManual');
@@ -548,6 +567,7 @@ function attach(){
  by('miClear').addEventListener('click',()=>clearForm());
  by('miClearBehaviors').addEventListener('click',()=>renderBehaviors());
  by('miBehaviors').addEventListener('click',adjustBehavior);
+ by('miBehaviors').addEventListener('change',selectBehavior);
  for(const b of document.querySelectorAll('#miForm [data-response]'))b.addEventListener('click',()=>setResponse(b.dataset.response));
  by('miNoResponse').addEventListener('change',e=>setResponse(e.target.checked?'no_response':''));
  by('miNa').addEventListener('change',e=>setResponse(e.target.checked?'na':''));
