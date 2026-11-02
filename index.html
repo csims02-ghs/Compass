@@ -3092,6 +3092,65 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         behaviorBreakdown:breakdown,sessionCount:sum('sessionCount'),linkedProgramNames:linked.map(function(p){return p.programName}),programCount:linked.length};
     });
   }
+  function compassBehaviorBreakdownHTML(){
+    // Separate recorded incidents from proposed review values; never sum them for clinical reporting.
+    if(!state.currentStudent)return '';
+    const sessions=Array.isArray(state.sessions)?state.sessions:[];
+    const periods={recorded:new Map(),pending:new Map()};
+    const normalize=function(s){
+      s=String(s||'').trim();
+      if(/^work avoidance$/i.test(s))return 'Work Avoidance';
+      if(/^leaving the area$/i.test(s))return 'Leaving the Area';
+      return s;
+    };
+    const add=function(bucket,date,values){
+      if(!values||typeof values!=='object'||Array.isArray(values))return;
+      const day=bucket.get(date)||{};
+      Object.entries(values).forEach(function(entry){
+        const label=normalize(entry[0]),n=Number(entry[1]);
+        if(!label||!Number.isFinite(n)||n<=0)return;
+        day[label]=(day[label]||0)+Math.floor(n);
+      });
+      bucket.set(date,day);
+    };
+    const seen=new Set();
+    sessions.forEach(function(s){
+      if(!s||!s.id||seen.has(String(s.id)))return;
+      seen.add(String(s.id));
+      const date=String(s.session_date||'').slice(0,10);
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;
+      add(periods.recorded,date,s.behavior_counts);
+      const meta=s.source_record&&typeof s.source_record==='object'?s.source_record:{};
+      if(String(meta.behavior_estimate_status||'').toUpperCase()==='PENDING VERIFICATION'){
+        add(periods.pending,date,meta.estimated_behavior_counts_unverified);
+      }
+    });
+    const colors=['#2563eb','#b91c1c','#0d9488','#7c3aed','#b45309','#db2777','#475569','#0284c7'];
+    function chart(bucket,title,note){
+      const labels={};bucket.forEach(function(v){Object.entries(v).forEach(function(x){labels[x[0]]=(labels[x[0]]||0)+x[1]})});
+      const types=Object.keys(labels).filter(function(k){return labels[k]>0}).sort(function(a,b){return labels[b]-labels[a]||a.localeCompare(b)});
+      const dates=[...bucket.keys()].filter(function(d){return Object.values(bucket.get(d)).some(function(v){return v>0})}).sort();
+      if(!types.length)return '<section style="flex:1;min-width:320px;border:1px solid #dbe5ef;border-radius:14px;padding:15px"><h3 style="margin:0;font-size:18px">'+esc(title)+'</h3><p style="font-size:12px;color:#64748b">'+esc(note)+'</p><p style="font-size:13px">No positive behavior events in this data source.</p></section>';
+      const W=Math.max(810,dates.length*58+130),H=270,L=52,R=22,T=20,B=68;
+      const topCount=Math.max(1,...dates.map(function(d){return Math.max(0,...types.map(function(t){return bucket.get(d)[t]||0}))}));
+      const X=function(i){return L+(dates.length===1?(W-L-R)/2:(W-L-R)*i/(dates.length-1))};
+      const Y=function(n){return H-B-(H-T-B)*n/topCount};
+      let svg='<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(title)+' dated behavior frequency trends">';
+      for(let i=0;i<=4;i++){const v=topCount*i/4,y=Y(v);svg+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="#e2e8f0"/><text x="'+(L-8)+'" y="'+(y+4)+'" fill="#475569" text-anchor="end" font-size="12">'+(topCount<=4?v.toFixed(1):v.toFixed(0))+'</text>'}
+      dates.forEach(function(d,i){if(i%Math.max(1,Math.ceil(dates.length/12))!==0&&i!==dates.length-1)return;const x=X(i);svg+='<text x="'+x+'" y="'+(H-B+22)+'" transform="rotate(-38 '+x+' '+(H-B+22)+')" text-anchor="end" fill="#475569" font-size="11">'+esc(d.slice(5))+'</text>'});
+      types.forEach(function(t,j){
+        const color=colors[j%colors.length],pts=dates.map(function(d,i){return X(i).toFixed(1)+','+Y(bucket.get(d)[t]||0).toFixed(1)}).join(' ');
+        svg+='<polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="3" stroke-linejoin="round"/>';
+        dates.forEach(function(d,i){const v=bucket.get(d)[t]||0;if(v>0)svg+='<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="4" fill="'+color+'"><title>'+esc(t)+' — '+v+' on '+esc(d)+'</title></circle>'});
+      });
+      svg+='</svg>';
+      const total=types.reduce(function(n,t){return n+labels[t]},0);
+      const legend=types.map(function(t,j){return '<span style="display:inline-flex;gap:5px;align-items:center;font-size:12px"><i style="display:inline-block;width:15px;height:4px;background:'+colors[j%colors.length]+'"></i>'+esc(t)+' ('+labels[t]+')</span>'}).join('');
+      return '<section style="flex:1;min-width:320px;border:1px solid #dbe5ef;border-radius:14px;padding:15px"><h3 style="margin:0;font-size:18px">'+esc(title)+' — '+total+' occurrences</h3><p style="font-size:12px;color:#64748b">'+esc(note)+'</p><div style="overflow-x:auto;max-width:100%">'+svg+'</div><div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px">'+legend+'</div></section>';
+    }
+    return '<section id="compassBehaviorCategoryGraphs" style="margin:25px 0 0"><h2 style="font-size:21px;margin-bottom:6px">Behavior frequency by category</h2><p style="font-size:13px;color:#60738a">Student-wide behavior series. Counts are separated by source; “Out of Area” and “Leaving the Area” remain distinct, as do unspecified “Aggression” and “Aggression (Peer).”</p><div style="display:flex;flex-wrap:wrap;gap:14px">'+chart(periods.recorded,'Recorded behavior incidents','Observed session counts. Not deduplicated against separately collected observations outside these sessions.')+chart(periods.pending,'Pending verification — not observed','Review-only proposed counts. Excluded from recorded behavior rate and FBA/BIP totals.')+'</div></section>';
+  }
+
   function compassRenderGraphSelection(){
     const element=$('compassProgramChart'),label=$('compassProgramChartLabel');
     if(!element||!label)return;
@@ -3113,6 +3172,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         .replace('>Program Goal</span>','>IEP Goal</span>');
       label.textContent=label.textContent.replace('linked programs','IEP goals');
     }
+    element.insertAdjacentHTML('beforeend',compassBehaviorBreakdownHTML());
   }
   function compassRenderProgramChart(el,label,entries){
     if(!el||!label)return;if(!entries.length){label.textContent='No programs linked to IEP goals';el.innerHTML='<div class="chart-empty">No IEP-linked student programs are available.</div>';return}
@@ -4240,7 +4300,7 @@ if(removed.length){
 })();
 </script>
 <script src="./assigned-program-iep-links.js?v=1"></script>
-<script src="./progress-profile-live-v1.js?v=20261101-chain-v1"></script>
+<script src="./progress-profile-live-v1.js?v=20261102-behavior-review-v1"></script>
 <script src="./compass-admin-ui.js?v=20261019"></script>
 <script>
 /* Native COMPASS sidebar: one scrolling menu with permanently visible Additional Tools button. */
