@@ -225,6 +225,85 @@ for(const e of es){
 }
 return [...found,...phasePreview.filter(x=>x.program===picks.program)].filter(x=>x.date>=range().from&&x.date<=range().to);
 }
+function behaviorBreakdownGraph(){
+  // Two separate sources: never merge inferred/review values with recorded clinical incidents.
+  if(!snap||!Array.isArray(snap.sessions))return '';
+  const scoped=range(),allowed=new Set(assignmentPrograms().map(p=>String(p.id)));
+  const buckets={observed:new Map(),pending:new Map()};
+  const names=v=>{
+    const label=String(v||'').trim();
+    if(/^work avoidance$/i.test(label))return 'Work Avoidance';
+    if(/^leaving the area$/i.test(label))return 'Leaving the Area';
+    return label;
+  };
+  const count=v=>Number.isFinite(Number(v))?Math.max(0,Math.floor(Number(v))):0;
+  const append=(bucket,date,counts)=>{
+    if(!counts||typeof counts!=='object'||Array.isArray(counts))return;
+    const record=bucket.get(date)||{};
+    for(const [raw,val] of Object.entries(counts)){
+      const name=names(raw),n=count(val);
+      if(name&&n>0)record[name]=(record[name]||0)+n;
+    }
+    bucket.set(date,record);
+  };
+  const wanted=(program,date,target,bench)=>{
+    if(!allowed.has(String(program))||!matchesProgram(picks.program,program))return false;
+    if(!date||date<scoped.from||date>scoped.to)return false;
+    if(picks.program!=='all'&&picks.target!=='all'&&String(target||'')!==picks.target)return false;
+    if(picks.program!=='all'&&picks.benchmark!=='all'&&String(bench||'')!==picks.benchmark)return false;
+    return true;
+  };
+  const seen=new Set();
+  for(const s of snap.sessions){
+    if(!s||!s.id||seen.has(String(s.id)))continue;
+    seen.add(String(s.id));
+    const src=s.source_record&&typeof s.source_record==='object'?s.source_record:{};
+    const date=dt(s.session_date||s.started_at||s.created_at);
+    const key=String(s.target_key||src.target_key||s.target_id||s.target_name||'');
+    const bench=src.benchmark||src.benchmark_name||src.benchmark_label||src.benchmark_id||'';
+    if(!wanted(s.student_compass_program_id,date,key,bench))continue;
+    const period=scoped.byMonth?monthKey(date):date;
+    append(buckets.observed,period,s.behavior_counts);
+    if(String(src.behavior_estimate_status||'').toUpperCase()==='PENDING VERIFICATION'){
+      append(buckets.pending,period,src.estimated_behavior_counts_unverified);
+    }
+  }
+  // Manual behavior observations belong to the recorded series, never the review series.
+  const manualSeen=new Set();
+  for(const m of (Array.isArray(snap.manualTrials)?snap.manualTrials:[])){
+    if(!m||!m.id||m.deleted_at||manualSeen.has(String(m.id)))continue;
+    manualSeen.add(String(m.id));
+    const date=dt(m.event_date),target=String(m.target_key||m.target_name||'');
+    if(!wanted(m.student_compass_program_id,date,target,m.benchmark_key))continue;
+    append(buckets.observed,scoped.byMonth?monthKey(date):date,m.behavior_counts);
+  }
+  const palette=['#2563eb','#db2777','#0d9488','#b45309','#7c3aed','#dc2626','#64748b','#0891b2'];
+  function render(bucket,title,description){
+    const dates=[...bucket.keys()].sort();
+    const totals={};
+    for(const values of bucket.values())for(const [name,v] of Object.entries(values))totals[name]=(totals[name]||0)+v;
+    const labels=Object.keys(totals).filter(k=>totals[k]>0).sort((a,b)=>totals[b]-totals[a]||a.localeCompare(b));
+    if(!labels.length)return '<section style="flex:1;min-width:320px;border:1px solid #dbe4ef;border-radius:12px;padding:14px"><strong>'+E(title)+'</strong><p class="cpr-muted">'+E(description)+'</p><p class="cpr-muted">No positive behavior counts in this date and program selection.</p></section>';
+    const W=Math.max(750,dates.length*56+105),H=245,L=48,R=22,T=18,B=62;
+    const X=i=>L+(dates.length===1?(W-L-R)/2:i*(W-L-R)/(dates.length-1));
+    const ceiling=Math.max(1,...dates.map(d=>labels.reduce((m,n)=>Math.max(m,bucket.get(d)[n]||0),0)));
+    const Y=v=>T+(H-T-B)*(1-v/ceiling);
+    let svg='<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" role="img" aria-label="'+E(title)+' frequency by date">';
+    for(let i=0;i<=4;i++){const v=ceiling*i/4,y=Y(v);svg+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#e2e8f0"/><text x="'+(L-8)+'" y="'+(y+4)+'" text-anchor="end" font-size="11" fill="#475569">'+v.toFixed(ceiling<4?1:0)+'</text>'}
+    for(let i=0;i<dates.length;i++){if(i%Math.max(1,Math.ceil(dates.length/12))!==0&&i!==dates.length-1)continue;const x=X(i);svg+='<text x="'+x+'" y="'+(H-B+17)+'" transform="rotate(-35 '+x+' '+(H-B+17)+')" font-size="10" text-anchor="end" fill="#475569">'+E(scoped.byMonth?dates[i]:shortDate(dates[i]))+'</text>'}
+    labels.forEach((label,j)=>{
+      const color=palette[j%palette.length],coordinates=dates.map((d,i)=>X(i).toFixed(1)+','+Y(bucket.get(d)[label]||0).toFixed(1)).join(' ');
+      svg+='<polyline points="'+coordinates+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+      dates.forEach((d,i)=>{const v=bucket.get(d)[label]||0;if(v>0)svg+='<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="3" fill="'+color+'"><title>'+E(label)+': '+v+' on '+E(d)+'</title></circle>'});
+    });
+    svg+='</svg>';
+    const total=Object.values(totals).reduce((sum,n)=>sum+n,0);
+    const legend=labels.map((label,j)=>'<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px"><i style="width:14px;height:4px;background:'+palette[j%palette.length]+';display:inline-block"></i>'+E(label)+' ('+totals[label]+')</span>').join('');
+    return '<section style="flex:1;min-width:320px;border:1px solid #dbe4ef;border-radius:12px;padding:14px"><strong>'+E(title)+' — '+total+' total</strong><p class="cpr-muted">'+E(description)+'</p><div style="width:100%;overflow-x:auto">'+svg+'</div><div style="display:flex;flex-wrap:wrap;gap:12px;margin:8px 0">'+legend+'</div></section>';
+  }
+  return '<div style="margin:22px 0"><h3 style="font-size:20px;color:#17365d">Behavior frequency by category</h3><p class="cpr-muted">Separate sources. Individual categories use their recorded labels; “Out of Area” is not merged with “Leaving the Area,” and unspecified “Aggression” is not assumed to be peer aggression.</p><div style="display:flex;flex-wrap:wrap;gap:14px">'+render(buckets.observed,'Recorded behavior incidents','Recorded session and manual counts; eligible for clinical review.')+render(buckets.pending,'Pending verification — not observed','Review-only proposed counts; excluded from recorded incidence, FBA/BIP frequencies, and clinical behavior rate.')+'</div></div>';
+}
+
 function graph(){
 let g=aggregate(),r=range(),phase=phases();
 const W=g.length<=24?1200:Math.max(1200,g.length*52+160),L=80,R=70,T=Math.max(140,90+phase.length*24),H=300,B=120,base=T+H,width=W-L-R,hh=T+H+B;
@@ -256,6 +335,7 @@ if(v.behavior!=null){svg+='<circle cx="'+xx+'" cy="'+by(v.behavior)+'" r="3.7" f
 svg+='<text x="'+xx+'" y="'+(base+25)+'" transform="rotate(-55 '+xx+' '+(base+25)+')" text-anchor="end" font-size="'+(g.length>19?9:12)+'" fill="#334155">'+E(v.label)+'</text>';
 });svg+='</svg>';
 sel("chart").innerHTML='<div class="cpr-graph-title">Achieved and Goal</div><div class="cpr-legend"><span><i class="cpr-line" style="background:#4285f4"></i>Achieved</span><span><i class="cpr-line" style="background:#ea4335"></i>Goal</span><span><i class="cpr-line" style="background:#f4b400"></i>Behavior Rate</span><span><i class="cpr-line" style="background:#7c3aed;width:3px;height:17px"></i>Phase Line</span></div><div class="cpr-scroll">'+svg+'</div><div class="cpr-muted" style="text-align:center">Behavior Rate = recorded behavior events ÷ trials; missing observations do not count as zero.</div>';
+sel("chart").insertAdjacentHTML("beforeend",behaviorBreakdownGraph());
 let trials=g.reduce((t,x)=>t+x.trial,0),correct=g.reduce((t,x)=>t+x.correct,0),bf=g.filter(x=>x.behavior!=null),btrial=bf.reduce((t,x)=>t+x.trial,0),btotal=bf.reduce((t,x)=>t+x.behaviorEvents,0);
 sel("stats").innerHTML=[["Achieved",trials?(correct*100/trials).toFixed(1)+"%":"—"],["Goal",g.some(x=>x.goal!=null)?(g.filter(x=>x.goal!=null).reduce((t,x)=>t+x.goal,0)/g.filter(x=>x.goal!=null).length).toFixed(1)+"%":"—"],["Behavior rate",btrial?(btotal/btrial).toFixed(2):"—"],["Recorded program runs",g.reduce((t,x)=>t+x.runs,0)]].map(z=>'<div class="cpr-stat"><strong>'+E(z[1])+'</strong><small>'+E(z[0])+'</small></div>').join("");
 sel("history").innerHTML=phase.length?phase.map(z=>'<tr><td>'+E(shortDate(z.date))+'</td><td>'+E(z.type)+'</td><td>'+E(z.text)+'</td><td>'+E(z.preview?"Preview only · not saved":"Detected from sessions")+'</td></tr>').join(""):'<tr><td colspan="4">No recorded phase changes in this date range.</td></tr>';
