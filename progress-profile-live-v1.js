@@ -79,6 +79,17 @@ let trials=n(mastery.probes_required??cfg.probes_required??cfg.mastery_probes??c
 let threshold=n(mastery.percent??mastery.percentage??cfg.mastery_pct);
 return {days:days&&days>0?Math.floor(days):null,probes:trials&&trials>0?Math.floor(trials):null,percent:threshold!=null?threshold:null};
 }
+function combinedUserConfirmedBehaviorCount(session){
+ const recorded=Math.max(0,Number(session&&session.total_behaviors)||0);
+ const source=session&&session.source_record&&typeof session.source_record==='object'?session.source_record:{};
+ if(source.behavior_review_user_attested_verified!==true)return recorded;
+ const proposed=source.estimated_behavior_counts_unverified;
+ if(!proposed||typeof proposed!=='object'||Array.isArray(proposed))return recorded;
+ const approved=Object.values(proposed).reduce((sum,v)=>{
+   const n=Number(v);return sum+(Number.isFinite(n)&&n>0?Math.floor(n):0);
+ },0);
+ return recorded+approved;
+}
 function events(){
 const allowed=new Set(assignmentPrograms().map(p=>String(p.id)));
 const detail=(Array.isArray(snap&&snap.trialEvents)?snap.trialEvents:[]),bySession=new Map();
@@ -104,12 +115,12 @@ if(verified){
    return {date:dt(ev.occurred_at||s.session_date),program:s.student_compass_program_id,key,name,
      benchmark:ev.benchmark_key||source.benchmark||source.benchmark_name||null,
      valid:true,trial:1,correct:ev.result==='independent_correct'?1:0,prompt:ev.result==='prompted'?1:0,
-     beh:first?Number(s.total_behaviors||0):0,raw:s,
+     beh:first?combinedUserConfirmedBehaviorCount(s):0,raw:s,
      probe:/probe|baseline/.test(phase)||source.v25_run?.probe===true,maintenance:distractor||explicitMaintenance,
      hasBehavior:!distractor,explicitMaintenance:!distractor&&explicitMaintenance};
  });
 }
-const t=n(s.trials_total),correct=n(s.targets_correct),prompt=n(s.prompted_correct),beh=n(s.total_behaviors),src=s.source_record||{};
+const t=n(s.trials_total),correct=n(s.targets_correct),prompt=n(s.prompted_correct),beh=combinedUserConfirmedBehaviorCount(s),src=s.source_record||{};
 const valid=t!=null&&t>0&&correct!=null&&correct>=0&&correct<=t&&(prompt==null||correct+prompt<=t);
 const named=String(s.target_name||src.target_name||"").trim(),key=String(s.target_key||src.target_key||s.target_id||named||"").trim();
 const mark=src.benchmark||src.benchmark_name||src.benchmark_label||src.benchmark_id||null;
@@ -334,10 +345,10 @@ if(v.ach!=null){svg+='<circle cx="'+xx+'" cy="'+y(v.ach)+'" r="3.7" fill="#4285f
 if(v.behavior!=null){svg+='<circle cx="'+xx+'" cy="'+by(v.behavior)+'" r="3.7" fill="#f4b400"/><text x="'+xx+'" y="'+(by(v.behavior)+22)+'" text-anchor="middle" font-size="'+size+'" font-weight="700" fill="#db9f00">'+v.behavior.toFixed(2)+'</text>'}
 svg+='<text x="'+xx+'" y="'+(base+25)+'" transform="rotate(-55 '+xx+' '+(base+25)+')" text-anchor="end" font-size="'+(g.length>19?9:12)+'" fill="#334155">'+E(v.label)+'</text>';
 });svg+='</svg>';
-sel("chart").innerHTML='<div class="cpr-graph-title">Achieved and Goal</div><div class="cpr-legend"><span><i class="cpr-line" style="background:#4285f4"></i>Achieved</span><span><i class="cpr-line" style="background:#ea4335"></i>Goal</span><span><i class="cpr-line" style="background:#f4b400"></i>Behavior Rate</span><span><i class="cpr-line" style="background:#7c3aed;width:3px;height:17px"></i>Phase Line</span></div><div class="cpr-scroll">'+svg+'</div><div class="cpr-muted" style="text-align:center">Behavior Rate = recorded behavior events ÷ trials; missing observations do not count as zero.</div>';
+sel("chart").innerHTML='<div class="cpr-graph-title">Achieved and Goal</div><div class="cpr-legend"><span><i class="cpr-line" style="background:#4285f4"></i>Achieved</span><span><i class="cpr-line" style="background:#ea4335"></i>Goal</span><span><i class="cpr-line" style="background:#f4b400"></i>Behavior Rate</span><span><i class="cpr-line" style="background:#7c3aed;width:3px;height:17px"></i>Phase Line</span></div><div class="cpr-scroll">'+svg+'</div><div class="cpr-muted" style="text-align:center">Behavior Rate = (recorded events + user-confirmed review counts) ÷ trials. The source review file originally labeled its behavior counts estimates; these remain separately identifiable. Potential overlap has not been independently reconciled.</div>';
 sel("chart").insertAdjacentHTML("beforeend",behaviorBreakdownGraph());
 let trials=g.reduce((t,x)=>t+x.trial,0),correct=g.reduce((t,x)=>t+x.correct,0),bf=g.filter(x=>x.behavior!=null),btrial=bf.reduce((t,x)=>t+x.trial,0),btotal=bf.reduce((t,x)=>t+x.behaviorEvents,0);
-sel("stats").innerHTML=[["Achieved",trials?(correct*100/trials).toFixed(1)+"%":"—"],["Goal",g.some(x=>x.goal!=null)?(g.filter(x=>x.goal!=null).reduce((t,x)=>t+x.goal,0)/g.filter(x=>x.goal!=null).length).toFixed(1)+"%":"—"],["Behavior rate",btrial?(btotal/btrial).toFixed(2):"—"],["Recorded program runs",g.reduce((t,x)=>t+x.runs,0)]].map(z=>'<div class="cpr-stat"><strong>'+E(z[1])+'</strong><small>'+E(z[0])+'</small></div>').join("");
+sel("stats").innerHTML=[["Achieved",trials?(correct*100/trials).toFixed(1)+"%":"—"],["Goal",g.some(x=>x.goal!=null)?(g.filter(x=>x.goal!=null).reduce((t,x)=>t+x.goal,0)/g.filter(x=>x.goal!=null).length).toFixed(1)+"%":"—"],["Combined behavior rate",btrial?(btotal/btrial).toFixed(2):"—"],["Recorded program runs",g.reduce((t,x)=>t+x.runs,0)]].map(z=>'<div class="cpr-stat"><strong>'+E(z[1])+'</strong><small>'+E(z[0])+'</small></div>').join("");
 sel("history").innerHTML=phase.length?phase.map(z=>'<tr><td>'+E(shortDate(z.date))+'</td><td>'+E(z.type)+'</td><td>'+E(z.text)+'</td><td>'+E(z.preview?"Preview only · not saved":"Detected from sessions")+'</td></tr>').join(""):'<tr><td colspan="4">No recorded phase changes in this date range.</td></tr>';
 }
 function calculateTargets(p){
