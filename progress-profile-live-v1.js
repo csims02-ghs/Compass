@@ -237,7 +237,7 @@ for(const e of es){
 return [...found,...phasePreview.filter(x=>x.program===picks.program)].filter(x=>x.date>=range().from&&x.date<=range().to);
 }
 function behaviorBreakdownGraph(){
-  // Two separate sources: never merge inferred/review values with recorded clinical incidents.
+  // Merge for display only when user-attested; retain separated recorded/review source data.
   if(!snap||!Array.isArray(snap.sessions))return '';
   const scoped=range(),allowed=new Set(assignmentPrograms().map(p=>String(p.id)));
   const buckets={observed:new Map(),pending:new Map()};
@@ -275,7 +275,7 @@ function behaviorBreakdownGraph(){
     if(!wanted(s.student_compass_program_id,date,key,bench))continue;
     const period=scoped.byMonth?monthKey(date):date;
     append(buckets.observed,period,s.behavior_counts);
-    if(String(src.behavior_estimate_status||'').toUpperCase()==='PENDING VERIFICATION'){
+    if(src.behavior_review_user_attested_verified===true && String(src.behavior_estimate_status||'').toUpperCase()==='PENDING VERIFICATION'){
       append(buckets.pending,period,src.estimated_behavior_counts_unverified);
     }
   }
@@ -287,6 +287,17 @@ function behaviorBreakdownGraph(){
     const date=dt(m.event_date),target=String(m.target_key||m.target_name||'');
     if(!wanted(m.student_compass_program_id,date,target,m.benchmark_key))continue;
     append(buckets.observed,scoped.byMonth?monthKey(date):date,m.behavior_counts);
+  }
+  const merged=new Map();let recordedTotal=0,reviewTotal=0;
+  for(const [kind,bucket] of Object.entries(buckets)){
+    for(const [date,counts] of bucket){
+      const one=merged.get(date)||{};
+      for(const [label,n] of Object.entries(counts)){
+        one[label]=(one[label]||0)+n;
+        if(kind==='observed')recordedTotal+=n;else reviewTotal+=n;
+      }
+      merged.set(date,one);
+    }
   }
   const palette=['#2563eb','#db2777','#0d9488','#b45309','#7c3aed','#dc2626','#64748b','#0891b2'];
   function render(bucket,title,description){
@@ -312,7 +323,7 @@ function behaviorBreakdownGraph(){
     const legend=labels.map((label,j)=>'<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px"><i style="width:14px;height:4px;background:'+palette[j%palette.length]+';display:inline-block"></i>'+E(label)+' ('+totals[label]+')</span>').join('');
     return '<section style="flex:1;min-width:320px;border:1px solid #dbe4ef;border-radius:12px;padding:14px"><strong>'+E(title)+' — '+total+' total</strong><p class="cpr-muted">'+E(description)+'</p><div style="width:100%;overflow-x:auto">'+svg+'</div><div style="display:flex;flex-wrap:wrap;gap:12px;margin:8px 0">'+legend+'</div></section>';
   }
-  return '<div style="margin:22px 0"><h3 style="font-size:20px;color:#17365d">Behavior frequency by category</h3><p class="cpr-muted">Separate sources. Individual categories use their recorded labels; “Out of Area” is not merged with “Leaving the Area,” and unspecified “Aggression” is not assumed to be peer aggression.</p><div style="display:flex;flex-wrap:wrap;gap:14px">'+render(buckets.observed,'Recorded behavior incidents','Recorded session and manual counts; eligible for clinical review.')+render(buckets.pending,'Pending verification — not observed','Review-only proposed counts; excluded from recorded incidence, FBA/BIP frequencies, and clinical behavior rate.')+'</div></div>';
+  return '<div style="margin:22px 0"><h3 style="font-size:20px;color:#17365d">Combined behavior frequency by category</h3><p class="cpr-muted">One display combining '+recordedTotal+' recorded and '+reviewTotal+' user-confirmed review occurrences. Original file estimates remain traceable; possible overlap has not been independently reconciled. Distinct behavior labels stay separate.</p><div style="display:flex;flex-wrap:wrap;gap:14px">'+render(merged,'Combined behavior category trend','Recorded and user-confirmed review counts, shown together without modifying the original source fields.')+'</div></div>';
 }
 
 function graph(){
