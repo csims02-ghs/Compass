@@ -92,7 +92,8 @@ function payload(snap,manual,error){
  const last=sessions.slice().sort((a,b)=>iso(b.session_date||b.created_at).localeCompare(iso(a.session_date||a.created_at)))[0];
  const goals=(snap.goals||[]).filter(g=>String(g.student_id)===String(snap.studentId));
  const review=goals.map(g=>g.review_date).filter(Boolean).sort()[0];
- return {studentId:String(snap.studentId),now:new Date().toISOString(),identity:{
+ const localNow=new Date(),localStamp=localNow.getFullYear()+'-'+String(localNow.getMonth()+1).padStart(2,'0')+'-'+String(localNow.getDate()).padStart(2,'0')+'T12:00:00';
+ return {studentId:String(snap.studentId),now:localStamp,identity:{
    name:str(el('profileName')?.textContent)||snap.studentName||'Student',
    code:str(el('profileMeta')?.textContent).replace(/^Student ID:\s*/i,''),
    grade:quick('Grade'),school:quick('School'),classroom:quick('Classroom')},
