@@ -9,7 +9,8 @@ const {chromium}=require('playwright');
 const html=fs.readFileSync(path.resolve(__dirname,'../index.html'),'utf8');
 const code=fs.readFileSync(path.resolve(__dirname,'../student-profile-print.js'),'utf8');
 assert.match(html,/printProfileBtn'\)\.addEventListener\('click',async/,'Native Print Profile must use portrait report handler');
-assert.match(html,/student-profile-print\.js\?v=20261025-portrait/,'Published HTML must load print module');
+assert.match(html,/student-profile-print\.js\?v=[A-Za-z0-9_-]+/,'Published HTML must load a versioned print module');
+assert.match(html,/id="printFullStudentReportBtn"[\s\S]*?id="printProfileBtn"/,'Combined Print Report must appear immediately left of Print Profile');
 assert.doesNotMatch(html,/\$\('printProfileBtn'\)\.addEventListener\('click',\(\)=>window\.print\(\)\)/,'Legacy full-app printing should be removed');
 assert.equal((code.match(/Technology & Transition Readiness/g)||[]).length>0,true);
 
