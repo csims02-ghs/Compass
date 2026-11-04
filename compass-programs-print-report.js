@@ -132,5 +132,22 @@ async function openReport(){
 }
 function setup(){const b=el('printStudentProgramsReportBtn');if(b&&!b.dataset.reportBound){b.dataset.reportBound='1';b.addEventListener('click',openReport)}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
-w.CompassProgramsPrintReport={derive,render,openReport};
+async function prepareCombinedReport(expectedStudentId){
+ const snap=w.__compassProgressSnapshot,ctx=w.COMPASS_MANUAL_BRIDGE?.context?.();
+ if(!snap?.studentId||!ctx?.currentStudentId||String(snap.studentId)!==String(ctx.currentStudentId)
+    ||String(snap.studentId)!==String(expectedStudentId))
+  throw Error('Select a fully loaded student profile before printing.');
+ const root=el('page-student-profile');
+ if(root?.classList.contains('compass-profile-loading')||root?.getAttribute('aria-busy')==='true')
+  throw Error('The selected student profile has not finished loading.');
+ let manual=[],error=false;
+ try{manual=await manualRecords(snap.studentId,since(new Date()))}
+ catch(e){console.warn('Manual data unavailable for combined report',e);error=true;
+  if(snap.manualTrialsLoaded&&Array.isArray(snap.manualTrials)){manual=snap.manualTrials;error=false}}
+ const current=w.__compassProgressSnapshot;
+ if(!current||String(current.studentId)!==String(expectedStudentId)||String(w.COMPASS_MANUAL_BRIDGE?.context?.()?.currentStudentId)!==String(expectedStudentId))
+  throw Error('The selected student changed while preparing the report.');
+ return payload(current,manual,error);
+}
+w.CompassProgramsPrintReport={derive,render,openReport,prepareCombinedReport};
 })(window);
