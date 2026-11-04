@@ -2948,7 +2948,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     const overviewButton=buttons.find(function(b){return String(b.textContent||'').replace(/\s+/g,' ').trim().toLowerCase()==='overview'});
     let tab=root.querySelector('[data-compass-graphs-tab="1"]'),pane=document.getElementById('compassGraphsChartsPane');
     const overviewPanel=compassOverviewPanel(root,overviewButton);
-    if(!pane){pane=document.createElement('section');pane.id='compassGraphsChartsPane';pane.className='compass-graphs-charts-pane';pane.hidden=true;pane.style.setProperty('display','none','important');pane.innerHTML='<div class="card compass-program-chart-card" style="max-width:none;width:100%;margin-left:0;margin-right:0"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 id="compassGraphModeHeading" style="margin:0 0 4px">Program Performance & Behavior Rate</h2><div id="compassProgramChartLabel" style="color:#637b98;font-size:13px">Loading program graph…</div></div></div><div id="compassProgramChart" style="margin-top:12px"></div></div>';
+    if(!pane){pane=document.createElement('section');pane.id='compassGraphsChartsPane';pane.className='compass-graphs-charts-pane';pane.hidden=true;pane.style.setProperty('display','none','important');pane.innerHTML='<div class="card compass-program-chart-card" style="max-width:none;width:100%;margin-left:0;margin-right:0"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap"><div><h2 id="compassGraphModeHeading" style="margin:0 0 4px">Program Performance & Behavior Rate</h2><div id="compassProgramChartLabel" style="color:#637b98;font-size:13px">Loading program graph…</div></div><button id="printStudentGraphsSectionBtn" type="button" class="btn small" title="Print the selected Graphs view" aria-label="Print selected graphs and data">Print Section</button></div><div id="compassProgramChart" style="margin-top:12px"></div></div>';
       if(overviewPanel&&overviewPanel.parentElement)overviewPanel.insertAdjacentElement('afterend',pane);else root.appendChild(pane);
     }
     if(!tab){
@@ -4369,6 +4369,7 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 <script defer src="./student-profile-print.js?v=20261025-portrait"></script>
 <script defer src="./compass-programs-print-report.js?v=20261103-accuracy-nowrap-v2"></script>
+<script defer src="./compass-graphs-print-report.js?v=20261104-light-graphs-v1"></script>
 <script src="./session-notes-tabs.js?v=1" defer></script>
 <script src="./manual-input-workspace.js?v=20261101-behavior-reference-v3" defer></script>
 <script src="./compass-date-display.js?v=20261029-1" defer></script>
