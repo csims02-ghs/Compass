@@ -1939,6 +1939,24 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   window.COMPASS_MANUAL_BRIDGE={
     query(table){const allowed=new Set(['students','student_compass_programs','compass_programming_programs','compass_programming_targets','student_iep_goals','compass_program_sessions','compass_trial_events','compass_manual_trial_entries','student_behavior_data','profiles']);if(!allowed.has(table))throw Error('Unsupported table');return sb.from(table)},
     context(){return {students:[...state.students],currentStudentId:state.currentStudent?.id||'',userId:state.user?.id||'',providerName:state.profile?.full_name||'',role:state.profile?.role||''}},
+    observedBehaviors(){
+      const student=state.currentStudent;
+      if(!student)return {studentId:'',behaviors:[]};
+      const used=new Set();
+      const rows=[];
+      const selected=(names,type)=>{
+        for(const value of (Array.isArray(names)?names:[])){
+          const name=String(value||'').trim();
+          if(!name||used.has(name))continue;
+          used.add(name);
+          const source=state.behaviorDefinitions.find(b=>b.name===name);
+          rows.push({type,name,definition:String(source?.definition||'').trim()});
+        }
+      };
+      selected(student.selected_behaviors,'Primary');
+      selected(student.secondary_behaviors,'Secondary');
+      return {studentId:student.id,behaviors:rows};
+    },
     notify(){window.dispatchEvent(new CustomEvent('compass-manual-record-changed'))}
   };
   const $=id=>document.getElementById(id),qsa=(s,r=document)=>[...r.querySelectorAll(s)];
