@@ -75,11 +75,11 @@ function report(type,body,student){
  const fields=[['Student',student.student],['Student ID',student.id],['Grade',student.grade],['School',student.school],['Classroom',student.classroom],['Status',student.status],['Prepared by',student.provider],['Prepared',date]];
  const meta=fields.map(([key,value])=>'<div><b>'+esc(key)+'</b><span>'+esc(value)+'</span></div>').join('');
  const style=REPORT_STYLES.replace(/__ORIENT__/g,landscape?'landscape':'portrait').replace(/__WIDTH__/g,landscape?'10in':'7.3in');
- return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>COMPASS · '+esc(title)+' Report</title><style>'+style+'</style></head><body>'+
- '<div class="controls"><span>COMPASS student report · '+esc(title)+' · '+(landscape?'Landscape':'Portrait')+'</span><button type="button" onclick="window.print()">Print / Save as PDF</button></div>'+
- '<div class="sheet"><header class="report-header"><div class="brandline"><strong>COMPASS</strong><small>Student Support · Confidential Report</small></div>'+
+ return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+' Report</title><style>'+style+'</style></head><body>'+
+ '<div class="controls"><span>Student report · '+esc(title)+' · '+(landscape?'Landscape':'Portrait')+'</span><button type="button" onclick="window.print()">Print / Save as PDF</button></div>'+
+ '<div class="sheet"><header class="report-header"><div class="brandline"><strong>STUDENT REPORT</strong><small>Student Support · Confidential Report</small></div>'+
  '<h1>'+esc(title)+' Report</h1><p class="report-deck">Student-specific record · '+esc(date)+'</p><div class="report-meta">'+meta+'</div></header>'+body.outerHTML+
- '<footer class="report-footer"><strong>Confidential student education record.</strong> For authorized educational use. Information reflects the records currently displayed in COMPASS. Review source evidence and professional judgment before making instructional or service decisions.</footer></div></body></html>';
+ '<footer class="report-footer"><strong>Confidential student education record.</strong> For authorized educational use. Information reflects the records currently displayed in the student record. Review source evidence and professional judgment before making instructional or service decisions.</footer></div></body></html>';
 }
 function openReport(){
  const profile=$('page-student-profile');
@@ -89,7 +89,7 @@ function openReport(){
  }
  const type=section(),student=info(),body=contents(type);
  const win=window.open('','_blank','width=1040,height=1150');
- if(!win){window.alert('Allow pop-ups to open the COMPASS section report.');return}
+ if(!win){window.alert('Allow pop-ups to open the section report.');return}
  try{
   win.document.open();win.document.write(report(type,body,student));win.document.close();win.focus();
  }catch(e){
