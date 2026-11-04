@@ -53,7 +53,7 @@ function graph(rows,mode){
  const labels='<text x="15" y="'+(T+PH/2)+'" text-anchor="middle" transform="rotate(-90 15 '+(T+PH/2)+')" fill="#17395d" font-size="11">Goal / Achievement %</text><text x="'+(W-7)+'" y="'+(T+PH/2)+'" text-anchor="middle" transform="rotate(-90 '+(W-7)+' '+(T+PH/2)+')" fill="#17395d" font-size="10">Events / trial</text><text x="'+W/2+'" y="'+(H-9)+'" text-anchor="middle" fill="#17395d" font-size="12">'+(mode==='iep'?'IEP Goals':'Student Programs')+'</text>';
  return '<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Goal achievement and combined behavior rate">'+grid+bars+path+markers+labels+'</svg>';
 }
-function render(rows,mode,p,behaviors=[]){
+function render(rows,mode,p,behaviors=null){
  const parts=[];for(let i=0;i<rows.length;i+=5)parts.push(rows.slice(i,i+5));if(!parts.length)parts.push([]);
  const title=mode==='iep'?'IEP Goal Progress':'Program Progress',detailTitle=mode==='iep'?'IEP Goal Details':'Program Details';
  const firstCol=mode==='iep'?'IEP GOAL / LINKED PROGRAMS':'PROGRAM / LINKED IEP GOALS';
@@ -74,14 +74,14 @@ function render(rows,mode,p,behaviors=[]){
  const behaviorRows=monitored.map(b=>
   '<tr><td>'+esc(b.type==='Secondary'?'Secondary':'Primary')+'</td><td>'+esc(b.name)+'</td><td>'+
   esc(b.definition||'Definition not available in the current Behavior Library.')+'</td></tr>').join('');
- const appendix='<section class="sheet behavior-sheet"><div class="head"><div><div class="brand">STUDENT REPORT</div><div class="subbrand">STUDENT SUPPORT</div></div>'+
+ const appendix=Array.isArray(behaviors)?'<section class="sheet behavior-sheet"><div class="head"><div><div class="brand">STUDENT REPORT</div><div class="subbrand">STUDENT SUPPORT</div></div>'+
   '<div class="title"><h1>Student Progress Report</h1><small>Graphs &amp; Charts · '+date()+'</small></div></div>'+
   '<div class="identity"><strong>'+esc(p.name)+' &nbsp; | &nbsp; ID '+esc(p.code)+'</strong><small>'+meta+'</small></div>'+
   '<h2 class="behavior-section-title">Behavior Definitions Being Monitored</h2>'+
   '<p class="behavior-caption">Operational definitions for the primary and secondary behaviors currently selected on this student’s profile. These describe what staff are monitoring, not confirmed occurrence counts.</p>'+
   '<div class="behavior-definitions"><table><colgroup><col><col><col></colgroup><thead><tr><th>MONITORING TYPE</th><th>BEHAVIOR</th><th>OPERATIONAL DEFINITION</th></tr></thead><tbody>'+
   (behaviorRows||'<tr><td colspan="3">No primary or secondary behaviors are currently selected for this student.</td></tr>')+
-  '</tbody></table></div><div class="foot behavior-foot"><span>Behavior definitions are drawn from the current student profile and Behavior Library.</span><span>Behavior Monitoring Reference</span></div></section>';
+  '</tbody></table></div><div class="foot behavior-foot"><span>Behavior definitions are drawn from the current student profile and Behavior Library.</span><span>Behavior Monitoring Reference</span></div></section>':'';
  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'+esc(p.name)+' - Graphs Report</title><style>'+CSS+'</style></head><body><div class="controls"><span>Student Support · Graphs & Charts</span><button type="button" onclick="window.print()">Print / Save as PDF</button></div>'+sections+appendix+'</body></html>';
 }
 function print(){
