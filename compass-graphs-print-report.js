@@ -62,7 +62,7 @@ function render(rows,mode,p){
   const rowsHtml=set.map(v=>'<tr><td><div class="name">'+esc(v.title)+'</div><div class="sub">'+esc(v.detail)+'</div></td><td>'+esc(v.goal==null?'—':v.goal+'%')+'</td><td>'+esc(v.achieved==null?'—':v.achieved.toFixed(1)+'%')+'</td><td>'+esc(v.rate==null?'—':v.rate.toFixed(2))+'</td><td>'+esc(v.events)+'</td></tr>').join('');
   return '<section class="sheet"><div class="head"><div><div class="brand">COMPASS</div><div class="subbrand">STUDENT SUPPORT</div></div><div class="title"><h1>Student Progress Report</h1><small>Graphs &amp; Charts · '+date()+'</small></div></div>'+
    '<div class="identity"><strong>'+esc(p.name)+' &nbsp; | &nbsp; ID '+esc(p.code)+'</strong><small>'+meta+'</small></div>'+
-   '<div class="box"><div class="box-heading">'+title+(parts.length>1?' (continued)':'')+'</div>'+
+   '<div class="box"><div class="box-heading">'+title+(i>0?' (continued)':'')+'</div>'+
    '<div class="legend"><span><i class="swatch" style="background:#4285f4"></i>'+(mode==='iep'?'IEP Goal':'Program Goal')+'</span><span><i class="swatch" style="background:#ea4335"></i>Achieved</span><span><i class="swatch line" style="background:#f4b400"></i>Combined Behavior Rate (recorded + user-confirmed)</span></div>'+
    '<div class="plot">'+graph(set,mode)+'</div></div>'+
    '<div class="detail-title">'+detailTitle+'</div><div class="box"><table><colgroup><col><col><col><col><col></colgroup><thead><tr><th>'+firstCol+'</th><th>GOAL</th><th>ACHIEVED</th><th>COMBINED RATE / TRIAL</th><th>COMBINED EVENTS</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div>'+
