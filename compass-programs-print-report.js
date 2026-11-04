@@ -52,7 +52,7 @@ function derive(data){
   const iep=linked.length?linked.map(g=>'Goal '+(g.annual_goal_number==null?'—':Number(g.annual_goal_number))+' – '+str(g.title||g.goal_area||'IEP Goal')).join(' | '):'—';
   const status=String(a.status||'').toLowerCase(),phase=String(a.instance_config?.acquisition_status||a.instance_config?.program_phase||'').toLowerCase();
   const display=status==='mastered'?'Mastered':status==='hold'?'On Hold':/maintenance/.test(phase)?'Maintenance':status==='active'?'In Progress':status||'—';
-  return {n:i+1,name:str(d.program_name||a.program_name||'Program'),domain:str(cfg.skill_type||cfg.primary_domain||cfg.program_type||d.runner_key||'General'),iep,behavior:rate==null?'—':String(rate),accuracy:total?Math.round(correct/total*100)+'%':'—',status:display};
+  return {n:i+1,name:str(d.program_name||a.program_name||'Program'),domain:str(cfg.skill_type||cfg.primary_domain||cfg.program_type||d.runner_key||'General').replace(/\bcompass[-_\s]+/gi,'').replace(/[_-]/g,' '),iep,behavior:rate==null?'—':String(rate),accuracy:total?Math.round(correct/total*100)+'%':'—',status:display};
  });
  return {rows,active:assignments.filter(p=>p.assignment.status==='active').length,goals:goals.filter(g=>g.status==='active').length};
 }
@@ -65,7 +65,7 @@ function render(data){
  const rows=d.rows.length?d.rows.map(r=>'<tr><td>'+r.n+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.domain)+'</td><td>'+esc(r.iep)+'</td><td>'+esc(r.behavior)+'</td><td>'+esc(r.accuracy)+'</td><td>'+esc(r.status)+'</td></tr>').join('')
    :'<tr><td colspan="7">No programs assigned.</td></tr>';
  const paper='<main class="sheet">'+
-  '<header class="head"><div><div class="brand">COMPASS</div><div class="subbrand">STUDENT SUPPORT</div></div><div class="report"><h1>Student Progress Report</h1><small>Last 4 weeks &nbsp; · &nbsp; '+date(data.now)+'</small></div></header>'+
+  '<header class="head"><div><div class="brand">STUDENT REPORT</div><div class="subbrand">STUDENT SUPPORT</div></div><div class="report"><h1>Student Progress Report</h1><small>Last 4 weeks &nbsp; · &nbsp; '+date(data.now)+'</small></div></header>'+
   '<section class="student"><strong>'+esc(who.name||'Student')+' &nbsp; | &nbsp; ID '+esc(who.code||'—')+'</strong><small>'+meta+'</small></section>'+
   '<div class="snap-title">Student Support Snapshot</div><section class="snap">'+
   tile('Primary Service',snap.primaryService||'None entered')+
@@ -76,8 +76,8 @@ function render(data){
   '<p class="note">Program progress and linked IEP goals &nbsp;·&nbsp; Behavior rate shown as number per session</p>'+
   '<table>'+heading+'<tbody>'+rows+'</tbody></table>'+
   '<footer class="foot"><span>Based on saved student-specific records (last 4 weeks). Behavior Rate = incidents per recorded session or manual observation day. “—” means insufficient data.'+(data.manualReadError?' Some manual data could not be loaded.':'')+'</span></footer></main>';
- return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>COMPASS - '+esc(who.name||'Student')+' - Programs Report</title><style>'+STYLE+'</style></head><body>'+
-  '<div class="controls"><span>COMPASS · Programs report · '+d.rows.length+' programs</span><button type="button" onclick="window.print()">Print / Save as PDF</button></div>'+
+ return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'+esc(who.name||'Student')+' - Programs Report</title><style>'+STYLE+'</style></head><body>'+
+  '<div class="controls"><span>Student Support · Programs report · '+d.rows.length+' programs</span><button type="button" onclick="window.print()">Print / Save as PDF</button></div>'+
   paper+'</body></html>';
 }
 async function manualRecords(sid,start){
@@ -117,7 +117,7 @@ async function openReport(){
  if(root?.classList.contains('compass-profile-loading')||root?.getAttribute('aria-busy')==='true'){
   w.alert('Finish loading the student profile before printing.');return;
  }
- const win=w.open('','_blank','width=930,height=1150');if(!win){w.alert('Allow pop-ups to open the COMPASS Programs report.');return}
+ const win=w.open('','_blank','width=930,height=1150');if(!win){w.alert('Allow pop-ups to open the Programs report.');return}
  win.document.open();win.document.write('<!doctype html><html><body style="font:14px Arial;padding:30px">Preparing Programs report…</body></html>');win.document.close();
  try{
   let manual=[],error=false;
