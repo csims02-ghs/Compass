@@ -1482,7 +1482,7 @@ body{display:block!important;width:100%;min-width:0}
 
  <section id="page-student-profile" class="page">
         <div class="profile-top compass-premium-top">
-          <div class="panel-head compass-premium-toolbar"><div class="breadcrumb">Students <span>›</span> Student Profile</div><button id="printProfileBtn" class="btn" type="button" title="Existing one-page student progress summary">Print Profile</button></div>
+          <div class="panel-head compass-premium-toolbar"><div class="breadcrumb">Students <span>›</span> Student Profile</div><div class="profile-report-actions" style="display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-left:auto"><button id="printFullStudentReportBtn" class="btn" type="button" title="Print the complete student report: Overview, Programs, and IEP Graphs">Print Report</button><button id="printProfileBtn" class="btn" type="button" title="Existing one-page student progress summary">Print Profile</button></div></div>
           <div class="compass-quick-student-switch"><label for="quickStudentSwitch">Quick Student Switch</label><select id="quickStudentSwitch" aria-label="Switch to another student on your caseload" disabled><option value="">Loading caseload students…</option></select></div>
           <div class="compass-premium-grid">
             <div class="compass-premium-left">
@@ -4211,7 +4211,39 @@ if(removed.length){
   $('casePrevPage')?.addEventListener('click',()=>{caseloadPage--;filterCaseload()});
   $('caseNextPage')?.addEventListener('click',()=>{caseloadPage++;filterCaseload()});
   document.querySelector('#page-caseload')?.addEventListener('click',e=>{const sort=e.target.closest('[data-case-sort]');if(!sort)return;const key=sort.dataset.caseSort;if(caseloadSort===key)caseloadAscending=!caseloadAscending;else{caseloadSort=key;caseloadAscending=true}caseloadPage=1;filterCaseload()});
-  $('studentSearchInput').addEventListener('input',renderStudentSearch);$('programSearch').addEventListener('input',()=>{programLibraryPage=1;filterProgramLibrary()});$('programTopSearch').addEventListener('input',()=>{programLibraryPage=1;filterProgramLibrary()});$('programDomainFilter').addEventListener('change',()=>{programLibraryPage=1;filterProgramLibrary()});$('programStatusFilter').addEventListener('change',()=>{programLibraryPage=1;filterProgramLibrary()});$('programSkillDomainFilter').addEventListener('change',()=>{programLibraryPage=1;filterProgramLibrary()});$('programLibrarySort').addEventListener('change',()=>{programLibraryPage=1;filterProgramLibrary()});$('programPrevPage').addEventListener('click',()=>{programLibraryPage--;filterProgramLibrary()});$('programNextPage').addEventListener('click',()=>{programLibraryPage++;filterProgramLibrary()});$('globalProgressSearch').addEventListener('input',filterGlobalProgress);$('refreshCaseload').addEventListener('click',refreshReferences);$('createStudentBtn')?.addEventListener('click',openCreateStudent);$('studentsAddStudentBtn')?.addEventListener('click',openCreateStudent);$('editStudentBtn').addEventListener('click',openEditStudent);$('runStudentProgramsBtn')?.addEventListener('click',()=>openStudentProgramHub());$('assignFromLibraryBtn').addEventListener('click',openLibraryAssign);$('quickRunBtn').addEventListener('click',openQuickRun);$('globalQuickRunBtn').addEventListener('click',openQuickRun);$('addNoteBtn').addEventListener('click',openNoteModal);$('addServiceRequirementBtn').addEventListener('click',openServiceRequirement);$('logServiceBtn').addEventListener('click',openServiceLog);$('openAssessmentWorkspaceBtn')?.addEventListener('click',()=>{state.assessmentStudent=state.currentStudent;showPage('assessments')});$('addTaskBtn').addEventListener('click',openTaskModal);$('printProfileBtn').addEventListener('click',async()=>{
+  $('studentSearchInput').addEventListener('input',renderStudentSearch);$('programSearch').addEventListener('input',()=>{programLibraryPage=1;filterProgramLibrary()});$('programTopSearch').addEventListener('input',()=>{programLibraryPage=1;filterProgramLibrary()});$('programDomainFilter').addEventListener('change',()=>{programLibraryPage=1;filterProgramLibrary()});$('programStatusFilter').addEventListener('change',()=>{programLibraryPage=1;filterProgramLibrary()});$('programSkillDomainFilter').addEventListener('change',()=>{programLibraryPage=1;filterProgramLibrary()});$('programLibrarySort').addEventListener('change',()=>{programLibraryPage=1;filterProgramLibrary()});$('programPrevPage').addEventListener('click',()=>{programLibraryPage--;filterProgramLibrary()});$('programNextPage').addEventListener('click',()=>{programLibraryPage++;filterProgramLibrary()});$('globalProgressSearch').addEventListener('input',filterGlobalProgress);$('refreshCaseload').addEventListener('click',refreshReferences);$('createStudentBtn')?.addEventListener('click',openCreateStudent);$('studentsAddStudentBtn')?.addEventListener('click',openCreateStudent);$('editStudentBtn').addEventListener('click',openEditStudent);$('runStudentProgramsBtn')?.addEventListener('click',()=>openStudentProgramHub());$('assignFromLibraryBtn').addEventListener('click',openLibraryAssign);$('quickRunBtn').addEventListener('click',openQuickRun);$('globalQuickRunBtn').addEventListener('click',openQuickRun);$('addNoteBtn').addEventListener('click',openNoteModal);$('addServiceRequirementBtn').addEventListener('click',openServiceRequirement);$('logServiceBtn').addEventListener('click',openServiceLog);$('openAssessmentWorkspaceBtn')?.addEventListener('click',()=>{state.assessmentStudent=state.currentStudent;showPage('assessments')});$('addTaskBtn').addEventListener('click',openTaskModal);window.CompassStudentReportContext=async function(expectedStudentId){
+  const st=state.currentStudent;
+  if(!st||String(st.id)!==String(expectedStudentId))throw Error('Student profile changed; report was not created.');
+  const sid=st.id,rel=schoolForStudent(st);
+  const assignments=(state.studentPrograms||[]).filter(p=>p.student_id===sid);
+  const ids=assignments.map(p=>p.id),idSet=new Set(ids);
+  const data={
+    student:{id:sid,display_label:studentLabel(st),student_code:st.student_code,
+      grade_level:st.grade_level,selected_behaviors:(st.selected_behaviors||[]).slice()},
+    school:rel.school?.name||'—',classroom:rel.classroom?.name||'—',
+    primaryService:(state.services||[]).find(s=>s.student_id===sid)?.service_name||'None entered',
+    goals:(state.goals||[]).filter(g=>g.student_id===sid).map(g=>({...g})),
+    programs:assignments.map(p=>({assignment:{...p},definition:programById(p.program_id)||{}})),
+    sessions:(state.sessions||[]).filter(s=>idSet.has(s.student_compass_program_id)).map(s=>({...s})),
+    trialEvents:(state.trialEvents||[]).filter(t=>idSet.has(t.student_compass_program_id)).map(t=>({...t})),
+    weeks:12,now:new Date().toISOString(),printedDate:localISO(new Date()),masteredCount:null
+  };
+  if(ids.length){
+    try{
+      const response=await Promise.race([
+        sb.from('student_compass_program_targets').select('id',{count:'exact',head:true})
+          .in('student_compass_program_id',ids).or('status.eq.mastered,mastered_at.not.is.null'),
+        new Promise(resolve=>setTimeout(()=>resolve({error:new Error('Timed out')}),6000))
+      ]);
+      if(!response?.error&&typeof response.count==='number')data.masteredCount=response.count;
+    }catch(error){console.warn('Printable mastery count unavailable',error)}
+  }
+  if(!state.currentStudent||String(state.currentStudent.id)!==String(expectedStudentId))
+    throw Error('Student changed while preparing the report.');
+  return data;
+};
+
+$('printProfileBtn').addEventListener('click',async()=>{
   const st=state.currentStudent;
   if(!st){toast('Open a student profile before printing.','error');return}
   if(!window.CompassStudentPrint){toast('The printer-friendly report is unavailable. Reload COMPASS and try again.','error');return}
@@ -4367,9 +4399,10 @@ document.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('click',function(e){if(e.target.closest('#profileTabs [data-tab]')){const more=document.querySelector('#profileTabs details');if(more)more.open=false}});
 });
 </script>
-<script defer src="./student-profile-print.js?v=20261025-portrait"></script>
-<script defer src="./compass-programs-print-report.js?v=20261103-accuracy-nowrap-v2"></script>
-<script defer src="./compass-graphs-print-report.js?v=20261104-light-graphs-v2"></script>
+<script defer src="./student-profile-print.js?v=20261104-combined-v1"></script>
+<script defer src="./compass-programs-print-report.js?v=20261104-combined-v1"></script>
+<script defer src="./compass-graphs-print-report.js?v=20261104-combined-v1"></script>
+<script defer src="./student-combined-print-report.js?v=20261104-v1"></script>
 <script src="./session-notes-tabs.js?v=1" defer></script>
 <script src="./manual-input-workspace.js?v=20261101-behavior-reference-v3" defer></script>
 <script src="./compass-date-display.js?v=20261029-1" defer></script>
