@@ -60,16 +60,16 @@ function render(rows,mode,p){
  const meta=['Grade '+p.grade,p.school,p.classroom].map(esc).join(' &nbsp; · &nbsp; ');
  const sections=parts.map((set,i)=>{
   const rowsHtml=set.map(v=>'<tr><td><div class="name">'+esc(v.title)+'</div><div class="sub">'+esc(v.detail)+'</div></td><td>'+esc(v.goal==null?'—':v.goal+'%')+'</td><td>'+esc(v.achieved==null?'—':v.achieved.toFixed(1)+'%')+'</td><td>'+esc(v.rate==null?'—':v.rate.toFixed(2))+'</td><td>'+esc(v.events)+'</td></tr>').join('');
-  return '<section class="sheet"><div class="head"><div><div class="brand">COMPASS</div><div class="subbrand">STUDENT SUPPORT</div></div><div class="title"><h1>Student Progress Report</h1><small>Graphs &amp; Charts · '+date()+'</small></div></div>'+
+  return '<section class="sheet"><div class="head"><div><div class="brand">STUDENT REPORT</div><div class="subbrand">STUDENT SUPPORT</div></div><div class="title"><h1>Student Progress Report</h1><small>Graphs &amp; Charts · '+date()+'</small></div></div>'+
    '<div class="identity"><strong>'+esc(p.name)+' &nbsp; | &nbsp; ID '+esc(p.code)+'</strong><small>'+meta+'</small></div>'+
    '<div class="box"><div class="box-heading">'+title+(i>0?' (continued)':'')+'</div>'+
    '<div class="legend"><span><i class="swatch" style="background:#4285f4"></i>'+(mode==='iep'?'IEP Goal':'Program Goal')+'</span><span><i class="swatch" style="background:#ea4335"></i>Achieved</span><span><i class="swatch line" style="background:#f4b400"></i>Combined Behavior Rate (recorded + user-confirmed)</span></div>'+
    '<div class="plot">'+graph(set,mode)+'</div></div>'+
    '<div class="detail-title">'+detailTitle+'</div><div class="box"><table><colgroup><col><col><col><col><col></colgroup><thead><tr><th>'+firstCol+'</th><th>GOAL</th><th>ACHIEVED</th><th>COMBINED RATE / TRIAL</th><th>COMBINED EVENTS</th></tr></thead><tbody>'+rowsHtml+'</tbody></table></div>'+
-   '<p class="note">Combined Behavior Rate means recorded and user-confirmed behavior incidents per trial, not probability. Figures are taken from the selected COMPASS graph; overlapping observations have not been independently reconciled.</p>'+
-   '<div class="foot"><span>COMPASS Student Support · '+rows.length+' '+(mode==='iep'?'IEP goals':'programs')+'</span><span>Page '+(i+1)+' of '+parts.length+'</span></div></section>';
+   '<p class="note">Combined Behavior Rate means recorded and user-confirmed behavior incidents per trial, not probability. Figures are taken from the selected graph; overlapping observations have not been independently reconciled.</p>'+
+   '<div class="foot"><span>Student Support · '+rows.length+' '+(mode==='iep'?'IEP goals':'programs')+'</span><span>Page '+(i+1)+' of '+parts.length+'</span></div></section>';
  }).join('');
- return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>COMPASS - '+esc(p.name)+' - Graphs Report</title><style>'+CSS+'</style></head><body><div class="controls"><span>COMPASS · Graphs & Charts</span><button type="button" onclick="window.print()">Print / Save as PDF</button></div>'+sections+'</body></html>';
+ return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>'+esc(p.name)+' - Graphs Report</title><style>'+CSS+'</style></head><body><div class="controls"><span>Student Support · Graphs & Charts</span><button type="button" onclick="window.print()">Print / Save as PDF</button></div>'+sections+'</body></html>';
 }
 function print(){
  const snap=w.__compassProgressSnapshot,ctx=w.COMPASS_MANUAL_BRIDGE?.context?.();
@@ -79,7 +79,7 @@ function print(){
  const data=capture();if(!data.length){w.alert('Graph data has not loaded yet.');return}
  const mode=id('compassGraphsModeSelect')?.value==='iep'?'iep':'program';
  const html=render(data,mode,person()),win=w.open('','_blank','width=930,height=1150');
- if(!win){w.alert('Allow pop-ups to print the COMPASS graph.');return}
+ if(!win){w.alert('Allow pop-ups to print the graph.');return}
  win.document.open();win.document.write(html);win.document.close();win.focus();
  setTimeout(()=>{if(!win.closed)try{win.print()}catch(e){console.warn('Graph print dialog unavailable',e)}},200);
 }
