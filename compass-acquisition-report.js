@@ -128,7 +128,7 @@ th{background:#eaf1f7;color:#173b61;font:bold 6.4pt/1.2 Arial;text-align:left}
 td.program{font-weight:bold}td.center{text-align:center}td.dates{text-align:center;white-space:nowrap;font-size:6.2pt}
 td.targets{font-size:6.3pt}td.targets small{display:block;color:#657e93;margin-top:3pt}td.status{font-weight:bold;font-size:6.2pt}td.notes{font-size:6.2pt;color:#566c7e}
 tbody tr{break-inside:avoid;page-break-inside:avoid}
-.legend{border-top:.6pt solid #dae3ec;margin-top:10pt;padding-top:6pt;display:flex;justify-content:space-between;gap:8pt;font:6.4pt/1.35 Arial;color:#60778b}
+.legend{border-top:.6pt solid #dae3ec;margin-top:10pt;padding-top:6pt;display:flex;flex-direction:column;gap:3pt;font:6.4pt/1.35 Arial;color:#60778b}
 .legend b{color:#183c60}
 .footer{margin-top:auto;border-top:1pt solid #123f69;padding-top:6pt;display:flex;justify-content:space-between;color:#58728a;font:6.6pt Arial}
 @media print{body{background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}.toolbar{display:none!important}.sheet{margin:0;box-shadow:none;width:8.5in;height:11in;page-break-after:always;break-after:page}.sheet:last-child{break-after:auto;page-break-after:auto}}
@@ -155,7 +155,7 @@ function render(model,start,end,loadError){
    '<div class="subline"><span>Assigned Programs · Target & IEP Connections</span><span>Programs '+(chunk.length?pi*10+1:0)+'–'+(pi*10+chunk.length)+' of '+records.length+'</span></div>'+
    '<table><colgroup><col style="width:14%"><col style="width:17%"><col style="width:8%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:6%"><col style="width:16%"></colgroup>'+
    '<thead><tr><th>Program</th><th>Target</th><th>IEP<br>Goal</th><th>Introduced</th><th>Mastered</th><th>Reintroduced</th><th>Current Status</th><th>Days</th><th>Notes</th></tr></thead><tbody>'+tableRows+'</tbody></table>'+
-   '<div class="legend"><span>* First recorded instructional date when no explicit introduction date is saved.</span><span>“—” = no saved milestone in range.'+(loadError?' Target list incomplete.':'')+'</span></div>'+
+   '<div class="legend"><span><b>Status:</b> Mastered · In Progress · Maintenance · Reintroduced · On Hold</span><span>* First recorded instructional date if no explicit introduction date is saved. “—” = no milestone in range.'+(loadError?' Target list incomplete.':'')+'</span></div>'+
    '<div class="footer"><span>COMPASS Student Support · Acquisition history</span><span>Page '+(pi+1)+' of '+pages.length+'</span><span>Printed '+longDate(new Date().toISOString())+'</span></div></section>';
  }).join('');
 }
