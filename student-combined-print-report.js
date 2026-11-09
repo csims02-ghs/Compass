@@ -1,4 +1,4 @@
-/* Student Profile > Print Report: one student-specific, four-section report.
+/* Student Profile > Print Report: complete student-specific report including acquisition history.
  * Reuses the established Overview, Programs, and Graphs print renderers.
  * No hardcoded students, percentages, behaviors, or public data fetches.
  */
@@ -46,42 +46,47 @@ function extract(src,part,expectCount){
  if(!style||pages.length<expectCount)throw Error('A printable '+part+' section is missing.');
  return {css:safeStyle(style,'.report-'+part),html:pages.map(x=>x.outerHTML).join('\n'),pages:pages.length};
 }
-function printDocument(overviewHtml,programsHtml,graphsHtml,studentName){
+function printDocument(overviewHtml,programsHtml,graphsHtml,studentName,acquisitionHtml){
  const overview=extract(overviewHtml,'overview',1);
  const programs=extract(programsHtml,'programs',1);
  const graphs=extract(graphsHtml,'graphs',1);
+ const acquisition=acquisitionHtml?extract(acquisitionHtml,'acquisition',1):null;
  const title=escape(studentName)+' - Student Progress Report';
  const styles=[
  '@page{size:letter portrait;margin:0}',
  'html,body{margin:0!important;padding:0!important;background:#f2f5f8;color:#163456;font-family:Arial,Helvetica,sans-serif}',
  '*{box-sizing:border-box}',
  '.report-part{width:8.5in;max-width:100%;margin:0 auto}',
- '.report-overview .sheet,.report-programs .sheet,.report-graphs .sheet{box-sizing:border-box}',
+ '.report-overview .sheet,.report-programs .sheet,.report-acquisition .sheet,.report-graphs .sheet{box-sizing:border-box}',
  '.print-tools{width:min(8.5in,100%);margin:10px auto;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:#526e88;font:12px Arial,sans-serif}',
  '.print-tools button{background:#164b7c;color:#fff;border:0;border-radius:7px;padding:10px 14px;cursor:pointer;font:700 12px Arial,sans-serif}',
  // Preserve the reference report's empty brand area, with Student Support below.
  '.report-part .brand{visibility:hidden!important}',
  '.report-overview .subbrand,.report-programs .subbrand,.report-graphs .subbrand{visibility:visible!important}',
- overview.css,programs.css,graphs.css,
+ overview.css,programs.css,acquisition?.css||'',graphs.css,
  '@media print{',
  'html,body{width:8.5in;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}',
  '.print-tools{display:none!important}',
  '.report-part{max-width:none;width:8.5in;margin:0!important}',
  '.report-overview{break-after:page;page-break-after:always}',
  '.report-programs{break-after:page;page-break-after:always}',
+ '.report-acquisition{break-after:page;page-break-after:always}',
  '.report-overview .sheet{width:8.5in!important;height:11in!important;min-height:11in!important;max-width:none!important;padding:.37in .43in .29in!important;margin:0!important;box-shadow:none!important;overflow:hidden!important;break-after:auto!important}',
  '.report-programs .sheet{width:8.5in!important;min-height:11in!important;height:auto!important;max-width:none!important;padding:.43in .43in .56in!important;margin:0!important;box-shadow:none!important;overflow:visible!important;break-after:auto!important}',
  '.report-programs thead{display:table-header-group!important}',
  '.report-programs tbody tr{break-inside:avoid!important;page-break-inside:avoid!important}',
+ '.report-acquisition .sheet{width:8.5in!important;height:11in!important;min-height:11in!important;max-width:none!important;padding:.4in!important;margin:0!important;box-shadow:none!important;overflow:hidden!important;break-after:page!important;page-break-after:always!important}',
+ '.report-acquisition .sheet:last-child{break-after:auto!important;page-break-after:auto!important}',
  '.report-graphs .sheet{width:8.5in!important;height:11in!important;min-height:11in!important;max-width:none!important;padding:.37in .41in .36in!important;margin:0!important;box-shadow:none!important;break-after:auto!important}',
- '.report-overview .brand,.report-programs .brand,.report-graphs .brand{visibility:hidden!important}',
+ '.report-overview .brand,.report-programs .brand,.report-acquisition .brand,.report-graphs .brand{visibility:hidden!important}',
  '}'
  ].join('\n');
  return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+title+'</title>'+
  '<style>'+styles+'</style></head><body><div class="print-tools"><span>Student Support · Complete Student Progress Report</span>'+
  '<button type="button" onclick="window.print()">Print / Save as PDF</button></div>'+
  '<div class="report-part report-overview">'+overview.html+'</div>'+
- '<div class="report-part report-programs">'+programs.html+'</div>'+
+ '<div class="report-part report-programs">'+programs.html+'</div>'+ 
+ (acquisition?'<div class="report-part report-acquisition">'+acquisition.html+'</div>':'')+
  '<div class="report-part report-graphs">'+graphs.html+'</div></body></html>';
 }
 async function captureIepGraph(expectedId){
@@ -116,19 +121,20 @@ async function printReport(){
  if(printing)return;
  let sid;
  try{sid=confirmStudent()}catch(err){w.alert(err.message);return}
- if(!w.CompassStudentPrint?.render||!w.CompassProgramsPrintReport?.prepareCombinedReport||!w.CompassGraphsPrint?.render||!w.CompassStudentReportContext){
+ if(!w.CompassStudentPrint?.render||!w.CompassProgramsPrintReport?.prepareCombinedReport||!w.CompassAcquisitionReport?.prepareCombinedReport||!w.CompassGraphsPrint?.render||!w.CompassStudentReportContext){
   w.alert('One or more report components are still loading. Reload the Student Profile and retry.');return;
  }
  const win=w.open('','_blank','width=930,height=1150');
  if(!win){w.alert('Allow pop-ups to open the Student Report.');return}
  printing=true;
- win.document.open();win.document.write('<!doctype html><html><head><title>Preparing Student Report</title></head><body style="font:15px Arial;padding:32px;color:#163456">Preparing the selected student’s four-section report…</body></html>');win.document.close();
+ win.document.open();win.document.write('<!doctype html><html><head><title>Preparing Student Report</title></head><body style="font:15px Arial;padding:32px;color:#163456">Preparing the selected student’s full report, including acquisition history…</body></html>');win.document.close();
  try{
   // Graph mode is captured from the live chart, not reconstructed from stale data.
   const graphRows=await captureIepGraph(sid);
-  const [overviewData,programData]=await Promise.all([
+  const [overviewData,programData,acquisitionHtml]=await Promise.all([
    w.CompassStudentReportContext(sid),
-   w.CompassProgramsPrintReport.prepareCombinedReport(sid)
+   w.CompassProgramsPrintReport.prepareCombinedReport(sid),
+   w.CompassAcquisitionReport.prepareCombinedReport(sid)
   ]);
   if(confirmStudent()!==sid||win.closed)throw Error('Student changed or the report window closed.');
   const overviewHtml=w.CompassStudentPrint.render(overviewData);
@@ -138,7 +144,7 @@ async function printReport(){
    grade:programData.identity.grade,school:programData.identity.school,classroom:programData.identity.classroom
   };
   const graphsHtml=w.CompassGraphsPrint.render(graphRows,'iep',graphPerson);
-  const html=printDocument(overviewHtml,programsHtml,graphsHtml,programData.identity.name);
+  const html=printDocument(overviewHtml,programsHtml,graphsHtml,programData.identity.name,acquisitionHtml);
   win.document.open();win.document.write(html);win.document.close();win.focus();
   // Give the inline SVG chart and print stylesheet a chance to lay out.
   await new Promise(resolve=>{if(win.document.readyState==='complete')resolve();else win.addEventListener('load',resolve,{once:true})});
