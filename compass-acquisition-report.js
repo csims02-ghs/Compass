@@ -9,6 +9,7 @@ const longDate=v=>{const s=iso(v);return s?s.slice(5,7)+'/'+s.slice(8,10)+'/'+s.
 const days=(a,b)=>{if(!iso(a)||!iso(b))return '—';const n=Math.round((Date.parse(iso(b)+'T12:00:00Z')-Date.parse(iso(a)+'T12:00:00Z'))/86400000);return n>=0?String(n):'—';};
 const range=(v,a,b)=>{const s=iso(v);return s&&(!a||s>=a)&&(!b||s<=b)?s:'';};
 const lastDate=a=>a.map(iso).filter(Boolean).sort().at(-1)||'';
+const firstDate=a=>a.map(iso).filter(Boolean).sort()[0]||'';
 function reintro(cfg){
  if(!cfg||typeof cfg!=='object')return '';
  const history=cfg.acquisition_history||cfg.acquisitionHistory||cfg.acquisition?.history||[];
@@ -42,25 +43,62 @@ async function getTargets(studentId,assignments){
  if(String(api.context?.()?.currentStudentId)!==String(studentId))throw Error('Student selection changed while report was loading');
  return result;
 }
-function model(snap,targets,student){
+// Use the earliest saved instructional event when an explicit introduction date
+// has not been recorded. An assignment date is NOT a teaching date.
+function observedIntroduction(snap,manual){
+ const out=new Map();
+ function record(id,when){
+  const key=String(id||''),v=iso(when);
+  if(!key||!v)return;
+  const old=out.get(key);
+  if(!old||v<old)out.set(key,v);
+ }
+ for(const s of snap.sessions||[])if(!s.deleted_at&&Number(s.trials_total||0)>0)
+  record(s.student_compass_program_id,s.session_date);
+ for(const t of snap.trialEvents||[])if(!t.deleted_at&&(!t.trial_type||t.trial_type==='T'))
+  record(t.student_compass_program_id,t.occurred_at);
+ for(const m of manual||[])if(!m.deleted_at&&(!m.trial_type||m.trial_type==='T'))
+  record(m.student_compass_program_id,m.event_date);
+ return out;
+}
+async function manualIntroductionDates(sid){
+ const bridge=w.COMPASS_MANUAL_BRIDGE;if(!bridge?.query)return [];
+ const out=[];
+ for(let offset=0;offset<20000;offset+=500){
+  const r=await bridge.query('compass_manual_trial_entries')
+   .select('student_compass_program_id,event_date,trial_type,deleted_at')
+   .eq('student_id',sid).is('deleted_at',null)
+   .order('event_date',{ascending:true}).range(offset,offset+499);
+  if(r.error)throw r.error;
+  const data=Array.isArray(r.data)?r.data:[];
+  out.push(...data);if(data.length<500)return out;
+ }
+ throw Error('Manual record limit exceeded');
+}
+function model(snap,targets,student,manual=[]){
  const sid=String(snap.studentId),goals=new Map((snap.goals||[]).filter(x=>String(x.student_id)===sid).map(g=>[String(g.id),g])),
   links=new Map(),targetGroups=new Map();
  for(const l of snap.goalLinks||[]){const g=goals.get(String(l.goal_id)),key=String(l.student_compass_program_id);if(!g)continue;if(!links.has(key))links.set(key,[]);if(!links.get(key).some(x=>x.id===g.id))links.get(key).push(g);}
  for(const t of targets){const key=String(t.student_compass_program_id);if(!targetGroups.has(key))targetGroups.set(key,[]);targetGroups.get(key).push(t);}
+ const observed=observedIntroduction(snap,manual);
  const rank=t=>t.status==='acquisition'?0:t.status==='maintenance'?1:t.status==='mastered'?2:t.status==='not_introduced'?3:4;
  const assignments=(snap.programs||[]).filter(x=>String(x.assignment?.student_id)===sid&&x.assignment?.status!=='archived').sort((a,b)=>(Number(a.assignment.display_order)||0)-(Number(b.assignment.display_order)||0));
  return {student,rows:assignments.map((p,i)=>{
   const a=p.assignment,key=String(a.id),def=p.definition||{},ts=(targetGroups.get(key)||[]).sort((x,y)=>rank(x)-rank(y)||(Number(x.display_order)||0)-(Number(y.display_order)||0)),primary=ts[0],
    goalsLinked=(links.get(key)||[]).sort((x,y)=>(Number(x.annual_goal_number)||999)-(Number(y.annual_goal_number)||999));
-  // Dates are recorded milestones, never inferred from creation timestamps or sessions.
-  const introduced=iso(a.start_date)||iso(primary?.introduced_at),mastered=iso(a.mastery_date)||iso(primary?.mastered_at),
-    reintroduced=lastDate([reintro(a.instance_config),reintro(primary?.metadata)]);
+  // Explicit start/target introduction is authoritative. Otherwise use the first
+  // documented instructional date, not the date the program was assigned.
+  const explicitIntroduced=firstDate([a.start_date,...ts.map(t=>t.introduced_at)]);
+  const introduced=explicitIntroduced||observed.get(key)||'';
+  const introducedSource=explicitIntroduced?'explicit':introduced?'first-session':'unrecorded';
+  const mastered=iso(a.mastery_date)||firstDate(ts.map(t=>t.mastered_at));
+  const reintroduced=lastDate([reintro(a.instance_config),...ts.map(t=>reintro(t.metadata))]);
   const phase=str(a.instance_config?.program_phase||a.instance_config?.acquisition_status).toLowerCase();
   let status=a.status==='mastered'?'Mastered':a.status==='hold'?'On Hold':phase.includes('maintenance')?'Maintenance':'In Progress';
   if(reintroduced&&(!mastered||reintroduced>mastered))status='Reintroduced';
   return {n:i+1,name:str(def.program_name||a.program_name||'Program'),target:ts.slice(0,2).map(t=>str(t.target_name||t.target_key||'Unnamed target')),
    extra:Math.max(0,ts.length-2),goals:goalsLinked.map(g=>'Goal '+(g.annual_goal_number??'—')).join(', ')||'—',
-   introduced,mastered,reintroduced,status,notes:str(a.instance_config?.acquisition_notes||a.instance_config?.acquisition_note||'')};
+   introduced,introducedSource,mastered,reintroduced,status,notes:str(a.instance_config?.acquisition_notes||a.instance_config?.acquisition_note||'')};
  })};
 }
 const CSS=`
@@ -105,7 +143,7 @@ function render(model,start,end,loadError){
  return pages.map((chunk,pi)=>{
   const tableRows=chunk.length?chunk.map(r=>'<tr>'+
    '<td class="program">'+esc(r.name)+'</td><td class="targets">'+(r.target.length?r.target.map(esc).join('; '):'—')+(r.extra?'<small>+'+r.extra+' more targets</small>':'')+'</td>'+
-   '<td class="center">'+esc(r.goals)+'</td><td class="dates">'+fdate(r.introducedIn)+'</td><td class="dates">'+fdate(r.masteredIn)+'</td>'+
+   '<td class="center">'+esc(r.goals)+'</td><td class="dates">'+fdate(r.introducedIn)+(r.introducedIn&&r.introducedSource==='first-session'?'*':'')+'</td><td class="dates">'+fdate(r.masteredIn)+'</td>'+
    '<td class="dates">'+fdate(r.reintroducedIn)+'</td><td class="status">'+esc(r.status)+'</td><td class="center">'+days(r.introducedIn,r.masteredIn)+'</td>'+
    '<td class="notes">'+esc(r.notes||'—')+'</td></tr>').join(''):'<tr><td colspan="9">No active assigned programs recorded.</td></tr>';
   return '<section class="sheet"><div class="header"><div class="brand">COMPASS<small>STUDENT SUPPORT</small></div><div class="heading"><h1>Programs Acquisition Report</h1><small>'+esc(time)+'</small></div></div>'+
@@ -117,7 +155,7 @@ function render(model,start,end,loadError){
    '<div class="subline"><span>Assigned Programs · Target & IEP Connections</span><span>Programs '+(chunk.length?pi*10+1:0)+'–'+(pi*10+chunk.length)+' of '+records.length+'</span></div>'+
    '<table><colgroup><col style="width:14%"><col style="width:17%"><col style="width:8%"><col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:9%"><col style="width:6%"><col style="width:16%"></colgroup>'+
    '<thead><tr><th>Program</th><th>Target</th><th>IEP<br>Goal</th><th>Introduced</th><th>Mastered</th><th>Reintroduced</th><th>Current Status</th><th>Days</th><th>Notes</th></tr></thead><tbody>'+tableRows+'</tbody></table>'+
-   '<div class="legend"><span><b>Status:</b> Mastered · In Progress · Maintenance · Reintroduced · On Hold</span><span>“—” indicates no recorded milestone for this period.'+(loadError?' Target data unavailable.':'')+'</span></div>'+
+   '<div class="legend"><span>* First recorded instructional date when no explicit introduction date is saved.</span><span>“—” = no saved milestone in range.'+(loadError?' Target list incomplete.':'')+'</span></div>'+
    '<div class="footer"><span>COMPASS Student Support · Acquisition history</span><span>Page '+(pi+1)+' of '+pages.length+'</span><span>Printed '+longDate(new Date().toISOString())+'</span></div></section>';
  }).join('');
 }
@@ -138,10 +176,11 @@ async function openReport(){
  popup.document.close();
  try{
   const assigned=(snap.programs||[]).filter(p=>String(p.assignment?.student_id)===studentId&&p.assignment?.status!=='archived');
-  let targets=[],error=false;
+  let targets=[],manual=[],error=false;
   try{targets=await getTargets(studentId,assigned);}catch(e){console.warn('Target read unavailable for acquisition report',e);error=true;}
-  if(popup.closed)return;
-  const m=model(snap,targets,student);redraw(popup,m,error);
+  try{manual=await manualIntroductionDates(studentId);}catch(e){console.warn('Manual instructional dates unavailable for acquisition report',e);}
+  if(popup.closed||String(w.COMPASS_MANUAL_BRIDGE?.context?.()?.currentStudentId)!==studentId)return;
+  const m=model(snap,targets,student,manual);redraw(popup,m,error);
   for(const id of ['acqFrom','acqTo'])popup.document.getElementById(id).addEventListener('change',()=>redraw(popup,m,error));
   const btn=popup.document.getElementById('acqPrint');btn.disabled=false;btn.addEventListener('click',()=>{if(redraw(popup,m,error))popup.print();});popup.focus();
  }catch(e){console.error('Acquisition Report error',e);if(!popup.closed)popup.document.getElementById('acqHint').textContent='Unable to prepare report. Reopen the student profile and try again.';}
