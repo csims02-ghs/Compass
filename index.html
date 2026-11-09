@@ -2993,6 +2993,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     }
     if(tab){tab.classList.remove('selected');if(overviewButton&&overviewButton.classList.contains('active')){tab.classList.remove('active');tab.setAttribute('aria-selected','false');if(pane){pane.hidden=true;pane.style.setProperty('display','none','important')}}}
     compassLayoutProfileTabs(root,overviewButton);
+    window.CompassBehaviorGraphPrint?.mount(pane);
     return {tab:tab,pane:pane,overviewButton:overviewButton,overviewPanel:overviewPanel};
   }
   function compassGoalNumber(g){const m=String(g&&g.title||'').match(/goal\s*(\d+)/i);return m?Number(m[1]):999}
@@ -4421,6 +4422,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <script defer src="./compass-programs-print-report.js?v=20261104-combined-v1"></script>
 <script defer src="./compass-acquisition-report.js?v=20261109-first-introduction-v2"></script>
 <script defer src="./compass-graphs-print-report.js?v=20261104-behavior-definitions-v4"></script>
+<script defer src="./compass-behavior-graph-print.js?v=20261109-frequency-timeline-v1"></script>
 <script defer src="./student-combined-print-report.js?v=20261104-v1"></script>
 <script src="./session-notes-tabs.js?v=1" defer></script>
 <script src="./manual-input-workspace.js?v=20261101-behavior-reference-v3" defer></script>
