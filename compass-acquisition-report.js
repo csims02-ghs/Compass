@@ -185,7 +185,19 @@ async function openReport(){
   const btn=popup.document.getElementById('acqPrint');btn.disabled=false;btn.addEventListener('click',()=>{if(redraw(popup,m,error))popup.print();});popup.focus();
  }catch(e){console.error('Acquisition Report error',e);if(!popup.closed)popup.document.getElementById('acqHint').textContent='Unable to prepare report. Reopen the student profile and try again.';}
 }
+async function prepareCombinedReport(expectedId){
+ const snap=selectedSnapshot(),sid=String(snap.studentId);
+ if(sid!==String(expectedId))throw Error('The student changed while preparing the acquisition report.');
+ const student=getStudent(snap);
+ const assigned=(snap.programs||[]).filter(p=>String(p.assignment?.student_id)===sid&&p.assignment?.status!=='archived');
+ let targets=[],manual=[],error=false;
+ try{targets=await getTargets(sid,assigned);}catch(e){error=true;console.warn('Acquisition targets unavailable',e);}
+ try{manual=await manualIntroductionDates(sid);}catch(e){console.warn('Acquisition manual dates unavailable',e);}
+ if(String(w.COMPASS_MANUAL_BRIDGE?.context?.()?.currentStudentId)!==sid)throw Error('Student changed while preparing the acquisition report.');
+ const content=render(model(snap,targets,student,manual),'','',error);
+ return '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Acquisition History</title><style>'+CSS+'</style></head><body>'+content+'</body></html>';
+}
 function setup(){const b=byId('printStudentAcquisitionReportBtn');if(b&&!b.dataset.acquisitionBound){b.dataset.acquisitionBound='true';b.addEventListener('click',openReport);}}
 if(d.readyState==='loading')d.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
-w.CompassAcquisitionReport={openReport,model,render};
+w.CompassAcquisitionReport={openReport,model,render,prepareCombinedReport};
 })(window,document);
